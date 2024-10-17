@@ -1,8 +1,8 @@
 CREATE TABLE Users (
     id SERIAL PRIMARY KEY,
-    netid VARCHAR(50) UNIQUE NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    netid VARCHAR(10) UNIQUE NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(50) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -10,10 +10,10 @@ CREATE TABLE Users (
 CREATE TABLE Rides (
     id SERIAL PRIMARY KEY,
     admin_owner_id INTEGER REFERENCES Users(id),
-    max_capacity INTEGER NOT NULL,
-    available_spots INTEGER NOT NULL,
-    origin VARCHAR(255) NOT NULL,
-    destination VARCHAR(255) NOT NULL,
+    max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 10) NOT NULL,
+    available_spots INTEGER CHECK (available_spots >= 0) NOT NULL,
+    origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
+    destination INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
     arrival_time TIMESTAMP NOT NULL,
     status VARCHAR(20) CHECK (status IN ('open', 'full', 'completed')) NOT NULL,
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
