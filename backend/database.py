@@ -122,7 +122,7 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
     else:
         print("Connection not established.")
 
-def update_ride(user_id, ride_id, status, request_time, response_time):
+def update_ride(user_id, ride_id, status):
     """"
     Updates an existing ride in the Rides database
     """
@@ -133,6 +133,32 @@ def create_ride_request():
     """"
     Adds a ride request in the RidesRequest database
     """
+
+def create_notification(user_id, message, type):
+    """
+    Adds a notifiction in the Notifications database
+    """
+
+    sql_command = f"""
+        INSERT INTO Notifications (user_id, message, type) VALUES ({user_id}, {message}, {type});        
+    """
+    
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command)
+                conn.commit()
+                print("Notification addded successfully!")
+        except Exception as e:
+            print(f"Error adding notification: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
 
 def add_location(id, name):
     """
