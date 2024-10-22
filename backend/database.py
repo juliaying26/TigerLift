@@ -85,6 +85,80 @@ def connect():
         return None
 
 # we will also add other methods to change the DB via user interaction later
- 
+
+def create_user():
+    """
+    Adds a user to the Users database
+    """
+
+    # Ritika: Not sure what argments and how this works in relation to CAS...
+
+def create_ride(admin, max_capacity, available_spots, origin, destination, arrival_time):
+    """
+    Adds a ride to the Rides database
+    """
+
+    status = 'OPEN'
+
+    sql_command = f"""
+        INSERT INTO Rides (admin_owner_id, max_capacity, available_spots, 
+        origin, destination, arrival_time, status) VALUES ({admin}, {max_capacity}, 
+        {available_spots}, {origin}, {destination}, {arrival_time}, {status});        
+    """
+    
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command)
+                conn.commit()
+                print("Ride addded successfully!")
+        except Exception as e:
+            print(f"Error adding ride: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+def update_ride(user_id, ride_id, status, request_time, response_time):
+    """"
+    Updates an existing ride in the Rides database
+    """
+
+
+
+def create_ride_request():
+    """"
+    Adds a ride request in the RidesRequest database
+    """
+
+def add_location(id, name):
+    """
+    Adds a location in the Locations database
+    """
+
+    sql_command = f"""
+        INSERT INTO PredefinedLocations (id, name) VALUES ({id}, {name});        
+    """
+    
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command)
+                conn.commit()
+                print("Location addded successfully!")
+        except Exception as e:
+            print(f"Error adding location: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+
 if __name__ == "__main__":
     database_setup()
