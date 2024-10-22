@@ -91,7 +91,7 @@ def create_user():
     Adds a user to the Users database
     """
 
-    # Ritika: Not sure what argments and how this works in relation to CAS...
+    # Ask Xinran/TA whether a users table is even needed??
 
 def create_ride(admin, max_capacity, available_spots, origin, destination, arrival_time):
     """
@@ -128,11 +128,32 @@ def update_ride(user_id, ride_id, status):
     """
 
 
-
 def create_ride_request():
     """"
     Adds a ride request in the RidesRequest database
     """
+    
+    sql_command = f"""
+        
+    """
+    
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command)
+                conn.commit()
+                print("Notification addded successfully!")
+        except Exception as e:
+            print(f"Error adding notification: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+
 
 def create_notification(user_id, message, type):
     """
