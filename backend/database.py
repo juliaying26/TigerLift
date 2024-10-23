@@ -98,13 +98,16 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
     Adds a ride to the Rides database
     """
 
-    status = 'OPEN'
+    status = 'open'
 
     sql_command = f"""
         INSERT INTO Rides (admin_owner_id, max_capacity, available_spots, 
-        origin, destination, arrival_time, status) VALUES ({admin}, {max_capacity}, 
-        {available_spots}, {origin}, {destination}, {arrival_time}, {status});        
+        origin, destination, arrival_time, status) VALUES (%s, %s, %s, 
+        %s, %s, %s, %s);   
     """
+
+    values = (admin, max_capacity, available_spots, origin, destination, 
+              arrival_time, status)  
     
     conn = connect()
     
@@ -112,7 +115,7 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
     if conn:
         try:
             with conn.cursor() as cursor:
-                cursor.execute(sql_command)
+                cursor.execute(sql_command, values)
                 conn.commit()
                 print("Ride addded successfully!")
         except Exception as e:
@@ -122,21 +125,37 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
     else:
         print("Connection not established.")
 
-def update_ride(user_id, ride_id, status):
+def update_ride(ride_id, max_capacity=None, available_spots=None, origin=None, destination=None, 
+                arrival_time=None):
     """"
     Updates an existing ride in the Rides database
     """
 
+    # NEED TO FIX TO DEAL WITH INJECTION ATTACKS!!!
 
-def create_ride_request():
-    """"
-    Adds a ride request in the RidesRequest database
-    """
-    
+    if available_spots == max_capacity:
+        status = 'full'
+  
     sql_command = f"""
-        
+        UPDATE Rides
+        SET updated_at = CURRENT_TIMESTAMP
     """
-    
+
+    if max_capacity != None:
+        sql_command += f""", max_capacity = {max_capacity}"""
+    if available_spots != None:
+        sql_command += f""", available_spots = {available_spots}"""
+    if origin != None:
+        sql_command += f""", origin = {origin}, """
+    if destination != None:
+        sql_command += f""", destination = {destination}"""
+    if arrival_time != None:
+        sql_command += f""", arrival_time = {arrival_time}"""
+    if status == 'full':
+        sql_command += f""", status = {status}"""
+
+    sql_command += f""" WHERE id = {ride_id} AND status != 'completed';"""
+
     conn = connect()
     
     # if it was successful connection, execute SQL commands to database & commit
@@ -144,6 +163,37 @@ def create_ride_request():
         try:
             with conn.cursor() as cursor:
                 cursor.execute(sql_command)
+                conn.commit()
+                print("Ride updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+
+def create_ride_request(user_id, ride_id):
+    """"
+    Adds a ride request in the RidesRequest database
+    """
+
+    status = 'pending'
+    
+    sql_command = f"""
+        INSERT INTO RideRequests (user_id, ride_id, status) VALUES (%s, 
+        %s, %s);
+    """
+
+    values = (user_id, ride_id, status)     
+    
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
                 conn.commit()
                 print("Notification addded successfully!")
         except Exception as e:
@@ -153,16 +203,17 @@ def create_ride_request():
     else:
         print("Connection not established.")
 
-
-
 def create_notification(user_id, message, type):
     """
     Adds a notifiction in the Notifications database
     """
 
     sql_command = f"""
-        INSERT INTO Notifications (user_id, message, type) VALUES ({user_id}, {message}, {type});        
+        INSERT INTO Notifications (user_id, message, type) VALUES 
+        (%s, %s, %s);        
     """
+    
+    values = (user_id, message, type)
     
     conn = connect()
     
@@ -170,7 +221,7 @@ def create_notification(user_id, message, type):
     if conn:
         try:
             with conn.cursor() as cursor:
-                cursor.execute(sql_command)
+                cursor.execute(sql_command, values)
                 conn.commit()
                 print("Notification addded successfully!")
         except Exception as e:
@@ -187,8 +238,10 @@ def add_location(id, name):
     """
 
     sql_command = f"""
-        INSERT INTO PredefinedLocations (id, name) VALUES ({id}, {name});        
+        INSERT INTO PredefinedLocations (id, name) VALUES (%s, %s);        
     """
+
+    values = (id, name)
     
     conn = connect()
     
@@ -196,7 +249,7 @@ def add_location(id, name):
     if conn:
         try:
             with conn.cursor() as cursor:
-                cursor.execute(sql_command)
+                cursor.execute(sql_command, values)
                 conn.commit()
                 print("Location addded successfully!")
         except Exception as e:
