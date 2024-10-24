@@ -102,8 +102,8 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
 
     sql_command = f"""
         INSERT INTO Rides (admin_owner_id, max_capacity, available_spots, 
-        origin, destination, arrival_time, status) VALUES (%s, %s, %s, 
-        %s, %s, %s, %s);   
+        origin, destination, arrival_time, status) VALUES (?, ?, ?, 
+        ?, ?, ?, ?);   
     """
 
     values = (admin, max_capacity, available_spots, origin, destination, 
@@ -181,8 +181,8 @@ def create_ride_request(user_id, ride_id):
     status = 'pending'
     
     sql_command = f"""
-        INSERT INTO RideRequests (user_id, ride_id, status) VALUES (%s, 
-        %s, %s);
+        INSERT INTO RideRequests (user_id, ride_id, status) VALUES (?, 
+        ?, ?);
     """
 
     values = (user_id, ride_id, status)     
@@ -210,7 +210,7 @@ def create_notification(user_id, message, type):
 
     sql_command = f"""
         INSERT INTO Notifications (user_id, message, type) VALUES 
-        (%s, %s, %s);        
+        (?, ?, ?);        
     """
     
     values = (user_id, message, type)
@@ -238,7 +238,7 @@ def add_location(id, name):
     """
 
     sql_command = f"""
-        INSERT INTO PredefinedLocations (id, name) VALUES (%s, %s);        
+        INSERT INTO PredefinedLocations (id, name) VALUES (?, ?);        
     """
 
     values = (id, name)
