@@ -172,6 +172,34 @@ def update_ride(ride_id, max_capacity=None, available_spots=None, origin=None, d
     else:
         print("Connection not established.")
 
+def delete_ride(user_id, ride_id):
+    """
+    Delete a ride in the Rides database
+    """
+
+    sql_command = """ 
+        DELETE FROM Rides
+        WHERE id = %s AND admin_owner_id = %s;
+    """
+
+    values = (user_id, ride_id)
+
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride deleted successfully!")
+        except Exception as e:
+            print(f"Error deleting ride: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
 
 def create_ride_request(user_id, ride_id):
     """"
