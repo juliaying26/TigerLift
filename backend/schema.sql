@@ -9,7 +9,7 @@ CREATE TABLE Users (
 
 CREATE TABLE Rides (
     id SERIAL PRIMARY KEY,
-    admin_owner_id INTEGER REFERENCES Users(id),
+    admin_netid VARCHAR(20),
     max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 10) NOT NULL,
     available_spots INTEGER CHECK (available_spots >= 0) NOT NULL,
     origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,

@@ -27,7 +27,7 @@ def database_setup():
 
         CREATE TABLE IF NOT EXISTS Rides (
             id SERIAL PRIMARY KEY,
-            admin_owner_id INTEGER REFERENCES Users(id),
+            admin_netid VARCHAR(20)
             max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 10) NOT NULL,
             available_spots INTEGER CHECK (available_spots >= 0) NOT NULL,
             origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
@@ -102,7 +102,7 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
     status = 'open'
 
     sql_command = f"""
-        INSERT INTO Rides (admin_owner_id, max_capacity, available_spots, 
+        INSERT INTO Rides (admin_netid, max_capacity, available_spots, 
         origin, destination, arrival_time, status) VALUES (%s, %s, %s, 
         %s, %s, %s, %s);   
     """
@@ -111,8 +111,6 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
               arrival_time, status)  
     
     conn = connect()
-
-    print("owjefoiajwfeoij")
     
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
@@ -183,7 +181,7 @@ def delete_ride(user_id, ride_id):
 
     sql_command = """ 
         DELETE FROM Rides
-        WHERE id = %s AND admin_owner_id = %s;
+        WHERE id = %s AND admin_netid = %s;
     """
 
     values = (user_id, ride_id)
@@ -310,6 +308,25 @@ def delete_all_locations():
     else:
         print("Connection not established.")
 
+def delete_all_rides():
+    sql_command = "DELETE FROM Rides"
+    
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command)
+                conn.commit()
+                print("Ride deleted successfully!")
+        except Exception as e:
+            print(f"Error deleting rides: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
 def get_users_rides(user_id):
     """
     Get all of a user's rides from Rides database
@@ -317,7 +334,7 @@ def get_users_rides(user_id):
 
     sql_command = """
             SELECT * FROM Rides
-            WHERE admin_owner_id = %s;
+            WHERE admin_netid = %s;
     """
     values = (user_id)
     
