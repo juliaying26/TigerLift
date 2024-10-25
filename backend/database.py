@@ -27,7 +27,7 @@ def database_setup():
 
         CREATE TABLE IF NOT EXISTS Rides (
             id SERIAL PRIMARY KEY,
-            admin_netid VARCHAR(20)
+            admin_netid VARCHAR(20),
             max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 10) NOT NULL,
             available_spots INTEGER CHECK (available_spots >= 0) NOT NULL,
             origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,

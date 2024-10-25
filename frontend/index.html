@@ -9,48 +9,6 @@
   <body>
     <h1>Welcome to TigerLift!</h1>
     <a href="/login">Log in</a>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Column1</th>
-          <th>Column2</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for ride in rides %}
-        <tr>
-          <td>{{ ride[0] }}</td>
-          <td>{{ ride[1] }}</td>
-          <td>{{ ride[2] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <a href="/addride">Add a new ride</a>
-    <pre>{{ locations | tojson }}</pre>
-
-    <table border="1">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Column1</th>
-          <th>Column2</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for location in locations %}
-        <tr>
-          <td>{{ location[0] }}</td>
-          <td>{{ location[1] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <a href="/addlocation">Add a new location</a>
-    <a href="/deletelocations">Delete all locations</a>
     <script src="script.js"></script>
   </body>
 </html>
