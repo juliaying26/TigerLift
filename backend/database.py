@@ -20,6 +20,11 @@ def database_setup():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS PredefinedLocations (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL
+        );
+
         CREATE TABLE IF NOT EXISTS Rides (
             id SERIAL PRIMARY KEY,
             admin_owner_id INTEGER REFERENCES Users(id),
@@ -49,11 +54,7 @@ def database_setup():
             type VARCHAR(50) CHECK (type IN ('ride update', 'request made', 'request accepted', 'request rejected')) NOT NULL,
             notification_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-
-        CREATE TABLE IF NOT EXISTS PredefinedLocations (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
-        );
+        
     """
     # Connect
     conn = connect()
@@ -102,19 +103,22 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
 
     sql_command = f"""
         INSERT INTO Rides (admin_owner_id, max_capacity, available_spots, 
-        origin, destination, arrival_time, status) VALUES (?, ?, ?, 
-        ?, ?, ?, ?);   
+        origin, destination, arrival_time, status) VALUES (%s, %s, %s, 
+        %s, %s, %s, %s);   
     """
 
     values = (admin, max_capacity, available_spots, origin, destination, 
               arrival_time, status)  
     
     conn = connect()
+
+    print("owjefoiajwfeoij")
     
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
             with conn.cursor() as cursor:
+                print("here")
                 cursor.execute(sql_command, values)
                 conn.commit()
                 print("Ride addded successfully!")
@@ -209,8 +213,8 @@ def create_ride_request(user_id, ride_id):
     status = 'pending'
     
     sql_command = f"""
-        INSERT INTO RideRequests (user_id, ride_id, status) VALUES (?, 
-        ?, ?);
+        INSERT INTO RideRequests (user_id, ride_id, status) VALUES (%s, 
+        %s, %s);
     """
 
     values = (user_id, ride_id, status)     
@@ -238,7 +242,7 @@ def create_notification(user_id, message, type):
 
     sql_command = f"""
         INSERT INTO Notifications (user_id, message, type) VALUES 
-        (?, ?, ?);        
+        (%s, %s, %s);        
     """
     
     values = (user_id, message, type)
@@ -260,13 +264,13 @@ def create_notification(user_id, message, type):
         print("Connection not established.")
 
 
-def add_location(id, name):
+def create_location(id, name):
     """
     Adds a location in the Locations database
     """
 
     sql_command = f"""
-        INSERT INTO PredefinedLocations (id, name) VALUES (?, ?);        
+        INSERT INTO PredefinedLocations (id, name) VALUES (%s, %s);        
     """
 
     values = (id, name)
@@ -279,14 +283,104 @@ def add_location(id, name):
             with conn.cursor() as cursor:
                 cursor.execute(sql_command, values)
                 conn.commit()
-                print("Location addded successfully!")
+                print("Location created successfully!")
         except Exception as e:
-            print(f"Error adding location: {e}")
+            print(f"Error creating location: {e}")
         finally:
             conn.close()
     else:
         print("Connection not established.")
 
+def delete_all_locations():
+    sql_command = "DELETE FROM PredefinedLocations"
+    
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command)
+                conn.commit()
+                print("Location deleted successfully!")
+        except Exception as e:
+            print(f"Error deleting locations: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+def get_users_rides(user_id):
+    """
+    Get all of a user's rides from Rides database
+    """
+
+    sql_command = """
+            SELECT * FROM Rides
+            WHERE admin_owner_id = %s;
+    """
+    values = (user_id)
+    
+    conn = connect()
+    if conn:
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute(sql_command, values)
+                    rides = cursor.fetchall()
+                    print("Rides retrieved successfully!")
+            except Exception as e:
+                print(f"Error retrieving rides: {e}")
+            finally:
+                conn.close()
+    else:
+        print("Connection not established.")
+
+    return rides
+
+def get_all_rides():
+    sql_command = "SELECT * FROM Rides"
+    conn = connect()
+
+    rides = []
+
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command)
+                rides = cursor.fetchall()
+                print("Rides retrieved successfully!")
+        except Exception as e:
+            print(f"Error retrieving rides: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    return rides
+
+
+def get_all_locations():
+    sql_command = "SELECT * FROM PredefinedLocations"
+    conn = connect()
+
+    locations = []
+
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command)
+                locations = cursor.fetchall()
+                print("Locations retrieved successfully!")
+        except Exception as e:
+            print(f"Error retrieving locations: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    return locations
 
 if __name__ == "__main__":
     database_setup()

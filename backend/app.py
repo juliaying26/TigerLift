@@ -15,7 +15,11 @@ _cas = CASClient()
 def index():
     if(_cas.is_logged_in()):
         redirect("/loggedin")
-    html_code = render_template('index.html')
+    rides = database.get_all_rides()
+    locations = database.get_all_locations()
+    print(rides)
+    print(locations)
+    html_code = render_template('index.html', rides=rides, locations=locations)
     response = make_response(html_code)
     return response
 
@@ -35,6 +39,22 @@ def loggedin():
 @app.route("/logout", methods=["GET"])
 def logout():
     _cas.logout()
+    return redirect("/")
+
+@app.route("/addride", methods=["GET"])
+def addride():
+    database.create_ride(24308, 3, 3, 1, 2, "2021-05-01 12:00:00")
+    return redirect("/")
+
+@app.route("/addlocation", methods=["GET"])
+def addlocation():
+    database.create_location(1, "Princeton")
+    database.create_location(2, "Airport")
+    return redirect("/")
+
+@app.route("/deletelocations", methods=["GET"])
+def deletelocations():
+    database.delete_all_locations()
     return redirect("/")
 
 if __name__ == "__main__":
