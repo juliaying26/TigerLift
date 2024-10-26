@@ -355,7 +355,7 @@ def get_users_rides(user_id):
     return rides
 
 def get_all_rides():
-    sql_command = "SELECT * FROM Rides"
+    sql_command = "SELECT id, admin_netid, max_capacity, available_spots, origin, destination, arrival_time, status, creation_time, updated_at FROM Rides"
     conn = connect()
 
     rides = []

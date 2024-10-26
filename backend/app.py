@@ -14,7 +14,7 @@ _cas = CASClient()
 @app.route('/index', methods=['GET'])
 def index():
     if(_cas.is_logged_in()):
-        redirect("/loggedin")
+        redirect("/dashboard")
     html_code = render_template('index.html')
     response = make_response(html_code)
     return response
@@ -28,10 +28,10 @@ def login():
     locations = database.get_all_locations()
     print(rides)
     print(locations)
-    return redirect(url_for('loggedin', netid=netid, rides=rides, locations=locations))
+    return redirect(url_for('dashboard', netid=netid, rides=rides, locations=locations))
     
-@app.route('/loggedin', methods=['GET'])
-def loggedin():
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
     netid = ""
     if 'netid' in session:
         netid = session['netid']
@@ -39,7 +39,7 @@ def loggedin():
     locations = database.get_all_locations()
     print(rides)
     print(locations)
-    html_code = render_template('loggedin.html', netid=netid, rides=rides, locations=locations)
+    html_code = render_template('dashboard.html', netid=netid, rides=rides, locations=locations)
     response = make_response(html_code)
     return response
 
@@ -51,28 +51,28 @@ def logout():
 @app.route("/addride", methods=["GET"])
 def addride():
     database.create_ride("jy2920", 3, 3, 1, 2, "2021-05-01 12:00:00")
-    return redirect("/loggedin")
+    return redirect("/dashboard")
 
 @app.route("/deleteride", methods=["GET"])
 def deleteride():
     database.delete_ride("jy2920", 6)
-    return redirect("/loggedin")
+    return redirect("/dashboard")
 
 @app.route("/addlocation", methods=["GET"])
 def addlocation():
     database.create_location(1, "Princeton")
     database.create_location(2, "Airport")
-    return redirect("/loggedin")
+    return redirect("/dashboard")
 
 @app.route("/deletelocations", methods=["GET"])
 def deletelocations():
     database.delete_all_locations()
-    return redirect("/loggedin")
+    return redirect("/dashboard")
 
 @app.route("/deleteallrides", methods=["GET"])
 def deleteallrides():
     database.delete_all_rides()
-    return redirect("/loggedin")
+    return redirect("/dashboard")
 
 if __name__ == "__main__":
     if not app._got_first_request:
