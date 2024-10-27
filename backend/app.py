@@ -22,24 +22,22 @@ def index():
 # We need a CAS login route here that redirects to home page (these other pages should be separate file?)
 @app.route('/login', methods=['GET'])
 def login():
-    netid = _cas.authenticate()
-    session['netid'] = netid
+    user_info = _cas.authenticate()
+    print(user_info)
     rides = database.get_all_rides()
     locations = database.get_all_locations()
     print(rides)
     print(locations)
-    return redirect(url_for('dashboard', netid=netid, rides=rides, locations=locations))
+    return redirect(url_for('dashboard', user_info=user_info, rides=rides, locations=locations))
     
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
-    netid = ""
-    if 'netid' in session:
-        netid = session['netid']
+    user_info = _cas.authenticate()
     rides = database.get_all_rides()
     locations = database.get_all_locations()
     print(rides)
     print(locations)
-    html_code = render_template('dashboard.html', netid=netid, rides=rides, locations=locations)
+    html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations)
     response = make_response(html_code)
     return response
 
