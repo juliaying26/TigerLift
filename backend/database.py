@@ -233,6 +233,37 @@ def create_ride_request(user_id, ride_id):
     else:
         print("Connection not established.")
 
+
+def update_ride_request(request_id, status):
+    """"
+    Updates an existing ride request in the RidesRequest database
+    """
+
+    sql_command = f"""
+        UPDATE RideRequests
+        SET status = %s, response_time = CURRENT_TIMESTAMP
+        WHERE id = %s;
+    """
+
+    values = (status, request_id)
+
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride request updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride request: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+
 def create_notification(user_id, message, type):
     """
     Adds a notifiction in the Notifications database
