@@ -60,7 +60,13 @@
             <a href="{{ url_for('deleteride', rideid=ride[0]) }}"
               >Delete ride</a>
           </td>
-          <td></td>
+          <td>
+            {% for user in ride[10] %}
+            {{ user }}
+            <a href="">Accept</a>
+            <a href="">Reject</a>
+            {% endfor %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>
