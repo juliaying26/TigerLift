@@ -59,7 +59,11 @@ def logout():
 @app.route("/addride", methods=["GET"])
 def addride():
     user_info = _cas.authenticate()
-    database.create_ride(user_info['netid'], 3, 1, 2, "2021-05-01 12:00:00")
+    capacity = request.args.get('max_capacity')
+    origin = request.args.get('origin')
+    destination = request.args.get('destination')
+    arrival_time = request.args.get('arrival_time')
+    database.create_ride(user_info['netid'], capacity, origin, destination, arrival_time)
     return redirect("/dashboard")
 
 @app.route("/deleteride", methods=["GET"])
