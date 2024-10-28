@@ -17,7 +17,7 @@ CREATE TABLE Rides (
     status VARCHAR(20) CHECK (status IN ('open', 'full', 'completed')) NOT NULL,
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    current_riders VARCHAR(20)[] DEFAULT '{}'
+    current_riders TEXT[] DEFAULT '{}'
 );
 
 CREATE TABLE RideRequests (
