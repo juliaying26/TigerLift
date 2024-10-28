@@ -48,7 +48,9 @@
         {% endfor %}
       </tbody>
     </table>
-    <a href="/addride">Add a new ride</a>
+
+    {% include 'addride.html' %}
+
     <pre>{{ locations | tojson }}</pre>
 
     <table border="1">
