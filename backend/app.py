@@ -64,8 +64,10 @@ def addride():
 
 @app.route("/deleteride", methods=["GET"])
 def deleteride():
-    database.delete_ride("jy2920", 6)
-    return redirect("/dashboard")
+    user_info = _cas.authenticate()
+    rideid = request.args.get('rideid')
+    database.delete_ride(str(user_info['netid']), rideid)
+    return redirect("/myrides")
 
 @app.route("/addlocation", methods=["GET"])
 def addlocation():

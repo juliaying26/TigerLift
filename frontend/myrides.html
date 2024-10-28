@@ -23,6 +23,7 @@
           <th>Creation Time</th>
           <th>Updated At</th>
           <th>Current Riders</th>
+          <th>Delete Ride</th>
         </tr>
       </thead>
       <tbody>
@@ -39,6 +40,11 @@
           <td>{{ ride[7] }}</td>
           <td>{{ ride[8] }}</td>
           <td>{{ ride[9] }}</td>
+          <td>
+            <a href="{{ url_for('deleteride', rideid=ride[0]) }}"
+              >Delete ride</a
+            >
+          </td>
         </tr>
         {% endfor %}
       </tbody>

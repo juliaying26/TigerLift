@@ -181,7 +181,7 @@ def delete_ride(netid, ride_id):
 
     sql_command = """ 
         DELETE FROM Rides
-        WHERE id = %s AND admin_netid = %s;
+        WHERE admin_netid = %s AND id = %s;
     """
 
     values = (netid, ride_id)
