@@ -468,7 +468,13 @@ def get_users_requested_rides(netid):
     """
     
     sql_command = """
-        SELECT ride_id FROM RideRequests WHERE netid = %s
+        SELECT id, admin_netid, max_capacity, origin, destination, 
+            arrival_time, status, creation_time, updated_at, 
+            current_riders 
+        FROM Rides 
+        WHERE id IN (
+            SELECT ride_id FROM RideRequests WHERE netid = %s
+        );
         """
 
     values = (str(netid),)
@@ -482,13 +488,41 @@ def get_users_requested_rides(netid):
                 req_rides = cursor.fetchall()
                 print("RideRequests retrieved successfully!")
         except Exception as e:
-            print(f"Error retrieving req_rides: {e}")
+            print(f"Error retrieving ride requests: {e}")
         finally:
             conn.close()
     else:
         print("Connection not established.")
 
     return req_rides
+
+def delete_ride_request(netid, ride_id):
+    """
+    Deletes row with ride of ride_id & User of netid from RideRequests
+    """
+    sql_command = """
+        DELETE FROM RideRequests
+        WHERE netid = %s AND ride_id = %s;
+    """
+
+    values = (str(netid), ride_id)
+
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("RideRequest deleted successfully!")
+        except Exception as e:
+            print(f"Error deleting ride: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
 
 if __name__ == "__main__":
     database_setup()

@@ -50,8 +50,8 @@ def myrides():
     if view_type == "posted":
         myrides = database.get_users_rides(user_info['netid'])
     else:
-        pass
-        # myreqrides = database.get_users_requested_rides(user_info['netid'])
+        myreqrides = database.get_users_requested_rides(user_info['netid'])
+        print("MY REQUESTED RIDES ARE" , myreqrides)
     html_code = render_template('myrides.html', view_type=view_type, myrides=myrides, myreqrides=myreqrides)
     response = make_response(html_code)
     return response
@@ -77,6 +77,14 @@ def deleteride():
     rideid = request.args.get('rideid')
     database.delete_ride(str(user_info['netid']), rideid)
     return redirect("/myrides")
+
+@app.route("/cancelriderequest", methods=["GET"])
+def cancelriderequest():
+    user_info = _cas.authenticate()
+    rideid = request.args.get('rideid')
+    database.delete_ride_request(str(user_info['netid']), rideid)
+    return redirect("/myrides")
+    
 
 @app.route("/addlocation", methods=["GET"])
 def addlocation():
