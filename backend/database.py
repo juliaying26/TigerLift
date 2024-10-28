@@ -367,7 +367,7 @@ def get_users_rides(netid):
             SELECT id, admin_netid, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides
             WHERE admin_netid = %s;
     """
-    values = (str(netid))
+    values = (str(netid),)
     rides = []
     
     conn = connect()
