@@ -7,8 +7,42 @@
     <title>TigerLift</title>
   </head>
   <body>
+    {{ myrides }}
     <h1>My rides</h1>
-
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Admin Netid</th>
+          <th>Max capacity</th>
+          <th>Available spots</th>
+          <th>Origin</th>
+          <th>Destination</th>
+          <th>Arrival Time</th>
+          <th>Status</th>
+          <th>Creation Time</th>
+          <th>Updated At</th>
+          <th>Current Riders</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ride in myrides %}
+        <tr>
+          <td>{{ ride[0] }}</td>
+          <td>{{ ride[1] }}</td>
+          <td>{{ ride[2] }}</td>
+          <td>{{ ride[2] - ride[9]|length }}</td>
+          <td>{{ ride[3] }}</td>
+          <td>{{ ride[4] }}</td>
+          <td>{{ ride[5] }}</td>
+          <td>{{ ride[6] }}</td>
+          <td>{{ ride[7] }}</td>
+          <td>{{ ride[8] }}</td>
+          <td>{{ ride[9] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
     <script src="script.js"></script>
   </body>
 </html>
