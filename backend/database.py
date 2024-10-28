@@ -433,9 +433,10 @@ def get_all_locations():
 
 def search_rides(origin, destination, arrival_time=None):
     query = """
-        SELECT * FROM Rides
+        SELECT id, admin_netid, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides
         WHERE origin = %s AND destination = %s
     """
+
     conn = connect()
     values = [origin, destination]
 
