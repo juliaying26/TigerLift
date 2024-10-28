@@ -11,13 +11,12 @@ CREATE TABLE Rides (
     id SERIAL PRIMARY KEY,
     admin_netid VARCHAR(20),
     max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 10) NOT NULL,
-    available_spots INTEGER CHECK (available_spots >= 0) NOT NULL,
     origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
     destination INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
     arrival_time TIMESTAMP NOT NULL,
     status VARCHAR(20) CHECK (status IN ('open', 'full', 'completed')) NOT NULL,
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     current_riders VARCHAR(20)[] DEFAULT '{}'
 );
 
