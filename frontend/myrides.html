@@ -7,8 +7,26 @@
     <title>TigerLift</title>
   </head>
   <body>
+<<<<<<< HEAD
     {{ myrides }}
     <a href="/dashboard">Back to dashboard</a>
+=======
+    <form method="GET" action="/myrides">
+      <button type="submit" name="view_type" value="posted" 
+              {% if view_type == 'posted' or not view_type %} 
+                  style="font-weight: bold"
+              {% endif %}>
+          My Posted Rides
+      </button>
+      <button type="submit" name="view_type" value="requested"
+              {% if view_type == 'requested' %}
+                  style="font-weight: bold"
+              {% endif %}>
+          My Requested Rides
+      </button>
+  </form>
+  {% if view_type == 'posted' %}
+>>>>>>> 72fd431 (myrides -- my posted and my requested rides buttons)
     <h1>My rides</h1>
     <table border="1">
       <thead>
@@ -50,6 +68,11 @@
         {% endfor %}
       </tbody>
     </table>
-    <script src="script.js"></script>
+  {% else %}
+    <div>hi</div>
+    {{ myreqrides }}
+  {% endif %}
+    <script>
+    </script>
   </body>
 </html>

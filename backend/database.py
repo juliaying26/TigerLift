@@ -462,5 +462,33 @@ def search_rides(origin, destination, arrival_time=None):
 
     return rides
 
+def get_users_requested_rides(netid):
+    """
+    Get all of a user's REQUESTED rides from RideRequests database
+    """
+    
+    sql_command = """
+        SELECT ride_id FROM RideRequests WHERE netid = %s
+        """
+
+    values = (str(netid),)
+    req_rides = []
+    
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                req_rides = cursor.fetchall()
+                print("RideRequests retrieved successfully!")
+        except Exception as e:
+            print(f"Error retrieving req_rides: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    return req_rides
+
 if __name__ == "__main__":
     database_setup()
