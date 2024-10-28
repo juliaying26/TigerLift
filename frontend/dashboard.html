@@ -20,6 +20,7 @@
           <th>ID</th>
           <th>Admin Netid</th>
           <th>Max capacity</th>
+          <th>Available spots</th>
           <th>Origin</th>
           <th>Destination</th>
           <th>Arrival Time</th>
@@ -35,6 +36,7 @@
           <td>{{ ride[0] }}</td>
           <td>{{ ride[1] }}</td>
           <td>{{ ride[2] }}</td>
+          <td>{{ ride[2] - ride[9]|length }}</td>
           <td>{{ ride[3] }}</td>
           <td>{{ ride[4] }}</td>
           <td>{{ ride[5] }}</td>
