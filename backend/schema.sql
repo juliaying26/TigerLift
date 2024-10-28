@@ -23,7 +23,7 @@ CREATE TABLE Rides (
 
 CREATE TABLE RideRequests (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES Users(id),
+    netid VARCHAR(10),
     ride_id INTEGER REFERENCES Rides(id),
     status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'rejected')) NOT NULL,
     request_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -32,7 +32,7 @@ CREATE TABLE RideRequests (
 
 CREATE TABLE Notifications (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES Users(id),
+    netid VARCHAR(10),
     message TEXT NOT NULL,
     type VARCHAR(50) CHECK (type IN ('ride update', 'request made', 'request accepted', 'request rejected')) NOT NULL,
     notification_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -41,7 +41,7 @@ def database_setup():
 
         CREATE TABLE IF NOT EXISTS RideRequests (
             id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES Users(id),
+            netid VARCHAR(10),
             ride_id INTEGER REFERENCES Rides(id),
             status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'rejected')) NOT NULL,
             request_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -50,7 +50,7 @@ def database_setup():
 
         CREATE TABLE IF NOT EXISTS Notifications (
             id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES Users(id),
+            netid VARCHAR(10),
             message TEXT NOT NULL,
             type VARCHAR(50) CHECK (type IN ('ride update', 'request made', 'request accepted', 'request rejected')) NOT NULL,
             notification_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -175,7 +175,7 @@ def update_ride(ride_id, max_capacity=None, available_spots=None, origin=None, d
     else:
         print("Connection not established.")
 
-def delete_ride(user_id, ride_id):
+def delete_ride(netid, ride_id):
     """
     Delete a ride in the Rides database
     """
@@ -185,7 +185,7 @@ def delete_ride(user_id, ride_id):
         WHERE id = %s AND admin_netid = %s;
     """
 
-    values = (user_id, ride_id)
+    values = (netid, ride_id)
 
     conn = connect()
     
@@ -204,7 +204,7 @@ def delete_ride(user_id, ride_id):
         print("Connection not established.")
 
 
-def create_ride_request(user_id, ride_id):
+def create_ride_request(netid, ride_id):
     """"
     Adds a ride request in the RidesRequest database
     """
@@ -212,11 +212,11 @@ def create_ride_request(user_id, ride_id):
     status = 'pending'
     
     sql_command = f"""
-        INSERT INTO RideRequests (user_id, ride_id, status) VALUES (%s, 
+        INSERT INTO RideRequests (netid, ride_id, status) VALUES (%s, 
         %s, %s);
     """
 
-    values = (user_id, ride_id, status)     
+    values = (netid, ride_id, status)     
     
     conn = connect()
     
@@ -265,17 +265,17 @@ def update_ride_request(request_id, status):
         print("Connection not established.")
 
 
-def create_notification(user_id, message, type):
+def create_notification(netid, message, type):
     """
     Adds a notifiction in the Notifications database
     """
 
     sql_command = f"""
-        INSERT INTO Notifications (user_id, message, type) VALUES 
+        INSERT INTO Notifications (netid, message, type) VALUES 
         (%s, %s, %s);        
     """
     
-    values = (user_id, message, type)
+    values = (netid, message, type)
     
     conn = connect()
     
@@ -359,7 +359,7 @@ def delete_all_rides():
     else:
         print("Connection not established.")
 
-def get_users_rides(user_id):
+def get_users_rides(netid):
     """
     Get all of a user's rides from Rides database
     """
@@ -368,7 +368,7 @@ def get_users_rides(user_id):
             SELECT * FROM Rides
             WHERE admin_netid = %s;
     """
-    values = (user_id)
+    values = (netid)
     
     conn = connect()
     if conn:
