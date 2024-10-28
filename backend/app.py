@@ -101,6 +101,14 @@ def searchrides():
     response = make_response(html_code)
     return response
 
+@app.route("/requestride", methods=["GET"])
+def requestride():
+    user_info = _cas.authenticate()
+    rideid = request.args.get('rideid')
+    database.create_ride_request(str(user_info['netid']), rideid)
+    return redirect("/dashboard")
+
+
 if __name__ == "__main__":
     if not app._got_first_request:
         database.database_setup()
