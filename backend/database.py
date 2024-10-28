@@ -431,5 +431,35 @@ def get_all_locations():
 
     return locations
 
+def search_rides(origin, destination, arrival_time=None):
+    query = """
+        SELECT * FROM Rides
+        WHERE origin = %s AND destination = %s
+    """
+    conn = connect()
+    values = [origin, destination]
+
+    # if user also searched for arrival_time
+    if arrival_time:
+        # for now: searching for EARLIER arrival time than given
+        query += " AND arrival_time <= %s"
+        values.append(arrival_time)
+
+    if conn:
+        try: 
+            with conn.cursor() as cursor:
+                cursor.execute(query, values)
+                rides = cursor.fetchall()
+                cursor.close()
+                conn.close()
+        except Exception as e:
+            print(f"Error retrieving locations: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    return rides
+
 if __name__ == "__main__":
     database_setup()

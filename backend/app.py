@@ -72,6 +72,17 @@ def deleteallrides():
     database.delete_all_rides()
     return redirect("/dashboard")
 
+@app.route("/searchrides", methods=["GET"])
+def searchrides():
+    origin = request.args.get('origin')
+    destination = request.args.get('destination')
+    arrival_time = request.args.get('arrival_time')
+    rides = database.search_rides(origin, destination, arrival_time)
+    locations = database.get_all_locations()
+    html_code = render_template('search_results.html', rides=rides, locations=locations)
+    response = make_response(html_code)
+    return response
+
 if __name__ == "__main__":
     if not app._got_first_request:
         database.database_setup()
