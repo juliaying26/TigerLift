@@ -1,5 +1,6 @@
 import os
 import psycopg2
+import json
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -29,7 +30,6 @@ def database_setup():
             id SERIAL PRIMARY KEY,
             admin_netid VARCHAR(20),
             max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 10) NOT NULL,
-            available_spots INTEGER CHECK (available_spots >= 0) NOT NULL,
             origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
             destination INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
             arrival_time TIMESTAMP NOT NULL,
@@ -95,20 +95,21 @@ def create_user():
 
     # Ask Xinran/TA whether a users table is even needed??
 
-def create_ride(admin, max_capacity, available_spots, origin, destination, arrival_time):
+def create_ride(admin, max_capacity, origin, destination, arrival_time):
     """
     Adds a ride to the Rides database
     """
 
     status = 'open'
+    current_riders = []
 
     sql_command = f"""
-        INSERT INTO Rides (admin_netid, max_capacity, available_spots, 
+        INSERT INTO Rides (admin_netid, max_capacity, current_riders,
         origin, destination, arrival_time, status) VALUES (%s, %s, %s, 
         %s, %s, %s, %s);   
     """
 
-    values = (admin, max_capacity, available_spots, origin, destination, 
+    values = (admin, max_capacity, current_riders, origin, destination, 
               arrival_time, status)  
     
     conn = connect()
@@ -128,7 +129,7 @@ def create_ride(admin, max_capacity, available_spots, origin, destination, arriv
     else:
         print("Connection not established.")
 
-def update_ride(ride_id, max_capacity=None, available_spots=None, origin=None, destination=None, 
+def update_ride(ride_id, current_riders, max_capacity=None, origin=None, destination=None, 
                 arrival_time=None):
     """"
     Updates an existing ride in the Rides database
@@ -136,7 +137,7 @@ def update_ride(ride_id, max_capacity=None, available_spots=None, origin=None, d
 
     # NEED TO FIX TO DEAL WITH INJECTION ATTACKS!!!
 
-    if available_spots == max_capacity:
+    if len(current_riders) == max_capacity:
         status = 'full'
   
     sql_command = f"""
@@ -146,8 +147,6 @@ def update_ride(ride_id, max_capacity=None, available_spots=None, origin=None, d
 
     if max_capacity != None:
         sql_command += f""", max_capacity = {max_capacity}"""
-    if available_spots != None:
-        sql_command += f""", available_spots = {available_spots}"""
     if origin != None:
         sql_command += f""", origin = {origin}, """
     if destination != None:
@@ -387,7 +386,7 @@ def get_users_rides(netid):
     return rides
 
 def get_all_rides():
-    sql_command = "SELECT id, admin_netid, max_capacity, available_spots, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides"
+    sql_command = "SELECT id, admin_netid, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides"
     conn = connect()
 
     rides = []
