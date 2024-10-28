@@ -363,10 +363,39 @@ def get_users_rides(netid):
     Get all of a user's rides from Rides database
     """
 
-    sql_command = """
-            SELECT id, admin_netid, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides
-            WHERE admin_netid = %s;
+    sql_command = sql_command = """
+        SELECT 
+            Rides.id, 
+            Rides.admin_netid, 
+            Rides.max_capacity, 
+            Rides.origin, 
+            Rides.destination, 
+            Rides.arrival_time, 
+            Rides.status, 
+            Rides.creation_time, 
+            Rides.updated_at, 
+            Rides.current_riders, 
+            ARRAY_AGG(RideRequests.netid) AS netids 
+        FROM 
+            Rides 
+        LEFT JOIN 
+            RideRequests ON RideRequests.ride_id = Rides.id 
+        WHERE 
+            Rides.admin_netid = %s
+        GROUP BY 
+            Rides.id, 
+            Rides.admin_netid, 
+            Rides.max_capacity, 
+            Rides.origin, 
+            Rides.destination, 
+            Rides.arrival_time, 
+            Rides.status, 
+            Rides.creation_time, 
+            Rides.updated_at, 
+            Rides.current_riders;
     """
+
+
     values = (str(netid),)
     rides = []
     
@@ -522,6 +551,15 @@ def delete_ride_request(netid, ride_id):
             conn.close()
     else:
         print("Connection not established.")
+
+def get_requests_per_ride(ride_id):
+    """
+    Search RideRequests: all requests for given ride_id
+    """
+
+    sql_command = """
+        SELECT netid from RideRequests WHERE ride_id = %s
+    """
 
 
 if __name__ == "__main__":

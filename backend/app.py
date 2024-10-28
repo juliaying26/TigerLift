@@ -85,7 +85,6 @@ def cancelriderequest():
     database.delete_ride_request(str(user_info['netid']), rideid)
     return redirect("/myrides")
     
-
 @app.route("/addlocation", methods=["GET"])
 def addlocation():
     database.create_location(1, "Princeton")
