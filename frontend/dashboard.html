@@ -28,6 +28,7 @@
           <th>Creation Time</th>
           <th>Updated At</th>
           <th>Current Riders</th>
+          <th>Request</th>
         </tr>
       </thead>
       <tbody>
@@ -44,6 +45,7 @@
           <td>{{ ride[7] }}</td>
           <td>{{ ride[8] }}</td>
           <td>{{ ride[9] }}</td>
+          <td> <a href="/requestride?rideid={{ride[0]}}"> Request to Join </a> </td>
         </tr>
         {% endfor %}
       </tbody>
