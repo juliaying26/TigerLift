@@ -75,12 +75,13 @@ def deleteallrides():
 
 @app.route("/searchrides", methods=["GET"])
 def searchrides():
+    user_info = _cas.authenticate()
     origin = request.args.get('origin')
     destination = request.args.get('destination')
     arrival_time = request.args.get('arrival_time')
     rides = database.search_rides(origin, destination, arrival_time)
     locations = database.get_all_locations()
-    html_code = render_template('search_results.html', rides=rides, locations=locations)
+    html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations)
     response = make_response(html_code)
     return response
 
