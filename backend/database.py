@@ -36,6 +36,7 @@ def database_setup():
             status VARCHAR(20) CHECK (status IN ('open', 'full', 'completed')) NOT NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            current_riders VARCHAR(20)[] DEFAULT '{}'
         );
 
         CREATE TABLE IF NOT EXISTS RideRequests (
@@ -386,7 +387,7 @@ def get_users_rides(user_id):
     return rides
 
 def get_all_rides():
-    sql_command = "SELECT id, admin_netid, max_capacity, available_spots, origin, destination, arrival_time, status, creation_time, updated_at FROM Rides"
+    sql_command = "SELECT id, admin_netid, max_capacity, available_spots, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides"
     conn = connect()
 
     rides = []
