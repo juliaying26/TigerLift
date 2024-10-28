@@ -41,6 +41,16 @@ def dashboard():
     response = make_response(html_code)
     return response
 
+@app.route('/myrides', methods=['GET'])
+def myrides():
+    user_info = _cas.authenticate()
+    print("NETID IS " , user_info['netid'])
+    myrides = database.get_users_rides(user_info['netid'])
+    print(myrides) # for debug
+    html_code = render_template('myrides.html', myrides=myrides)
+    response = make_response(html_code)
+    return response
+
 @app.route("/logout", methods=["GET"])
 def logout():
     _cas.logout()

@@ -364,22 +364,23 @@ def get_users_rides(netid):
     """
 
     sql_command = """
-            SELECT * FROM Rides
+            SELECT id, admin_netid, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides
             WHERE admin_netid = %s;
     """
-    values = (netid)
+    values = (str(netid))
+    rides = []
     
     conn = connect()
     if conn:
-            try:
-                with conn.cursor() as cursor:
-                    cursor.execute(sql_command, values)
-                    rides = cursor.fetchall()
-                    print("Rides retrieved successfully!")
-            except Exception as e:
-                print(f"Error retrieving rides: {e}")
-            finally:
-                conn.close()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                rides = cursor.fetchall()
+                print("Rides retrieved successfully!")
+        except Exception as e:
+            print(f"Error retrieving rides: {e}")
+        finally:
+            conn.close()
     else:
         print("Connection not established.")
 
