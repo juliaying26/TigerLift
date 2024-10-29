@@ -14,7 +14,7 @@ _cas = CASClient()
 @app.route('/index', methods=['GET'])
 def index():
     if(_cas.is_logged_in()):
-        redirect("/dashboard")
+        return redirect("/dashboard")
     html_code = render_template('index.html')
     response = make_response(html_code)
     return response
@@ -71,6 +71,8 @@ def addride():
     database.create_ride(user_info['netid'], capacity, origin, destination, arrival_time)
     return redirect("/dashboard")
 
+# WHAT HAPPENS TO THE RIDE REQUESTS WHEN A RIDE IS DELETED?
+# DO THEY GET REJECTED? OR DO THE RIDE REQUESTS GET DELETED?
 @app.route("/deleteride", methods=["GET"])
 def deleteride():
     user_info = _cas.authenticate()
@@ -120,6 +122,15 @@ def requestride():
     database.create_ride_request(str(user_info['netid']), rideid)
     return redirect("/dashboard")
 
+@app.route("/acceptriderequest", methods=["GET"])
+def acceptriderequest():
+    database.accept_ride_request(request.args.get('requester_id'), request.args.get('rideid'))
+    return redirect("/myrides")
+
+@app.route("/rejectriderequest", methods=["GET"])
+def rejectriderequest():
+    database.reject_ride_request(request.args.get('requester_id'), request.args.get('rideid'))
+    return redirect("/myrides")
 
 if __name__ == "__main__":
     if not app._got_first_request:

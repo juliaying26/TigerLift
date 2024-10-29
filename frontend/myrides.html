@@ -55,17 +55,28 @@
           <td>{{ ride[6] }}</td>
           <td>{{ ride[7] }}</td>
           <td>{{ ride[8] }}</td>
-          <td>{{ ride[9] }}</td>
+          <td>
+            {% for user in ride[9] %}
+            {{ user }}
+            <!-- SHOULD REMOVE FROM RIDE ACTUALLY REJECT RIDE REQUEST OR MOVE IT BACK INTO PENDING -->
+            <a href="">Remove from ride</a>
+            {% endfor %}
+          </td>
           <td>
             <a href="{{ url_for('deleteride', rideid=ride[0]) }}"
               >Delete ride</a>
           </td>
           <td>
-            {% for user in ride[10] %}
-            {{ user }}
-            <a href="">Accept</a>
-            <a href="">Reject</a>
-            {% endfor %}
+            <!-- if available spots == max capac -->
+            {% if ride[9]|length == ride[2] %}
+              This ride is full!
+            {% else %}
+              {% for user in ride[10] %}
+              {{ user }}
+              <a href="{{ url_for('acceptriderequest', rideid=ride[0], requester_id=user) }}">Accept</a>
+              <a href="{{ url_for('rejectriderequest', rideid=ride[0], requester_id=user) }}">Reject</a>
+              {% endfor %}
+            {% endif %}
           </td>
         </tr>
         {% endfor %}

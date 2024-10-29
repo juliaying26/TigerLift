@@ -29,6 +29,7 @@
           <th>Status</th>
           <th>Creation Time</th>
           <th>Updated At</th>
+          <!-- actual dashboard will not have current riders. for debugging purposes -->
           <th>Current Riders</th>
           <th>Request</th>
         </tr>
@@ -47,7 +48,9 @@
           <td>{{ ride[7] }}</td>
           <td>{{ ride[8] }}</td>
           <td>{{ ride[9] }}</td>
-          <td> <a href="/requestride?rideid={{ride[0]}}"> Request to Join </a> </td>
+          <td>
+            <a href="/requestride?rideid={{ride[0]}}"> Request to Join </a>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -75,8 +78,8 @@
         {% endfor %}
       </tbody>
     </table>
-    <a href="/addlocation">Add a new location</a>
-    <a href="/deletelocations">Delete all locations</a>
+    <!-- <a href="/addlocation">Add a new location</a>
+    <a href="/deletelocations">Delete all locations</a> -->
 
     {% include 'searchform.html' %}
 
