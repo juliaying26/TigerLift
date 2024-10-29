@@ -215,6 +215,8 @@ def create_ride_request(netid, ride_id):
         %s, %s);
     """
 
+    # IS THERE A WAY TO CHECK IF RIDE REQUEST ALREADY EXISTS TO MAKE SURE WE DON'T DUPLICATE
+
     values = (netid, ride_id, status)     
     
     conn = connect()
