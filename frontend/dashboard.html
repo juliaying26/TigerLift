@@ -16,6 +16,7 @@
     <br /><br />
     <a href="\myrides">My Rides</a>
     <br /><br />
+    <h3>Available Rides</h3>
     <table border="1">
       <thead>
         <tr>
@@ -58,15 +59,12 @@
 
     {% include 'addride.html' %}
 
-    <pre>{{ locations | tojson }}</pre>
-
+    <h3>Predefined Locations</h3>
     <table border="1">
       <thead>
         <tr>
           <th>ID</th>
-          <th>Column1</th>
-          <th>Column2</th>
-          <th>Actions</th>
+          <th>Location</th>
         </tr>
       </thead>
       <tbody>
