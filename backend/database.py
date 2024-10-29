@@ -204,7 +204,7 @@ def create_ride_request(netid, full_name, mail, ride_id):
     status = 'pending'
     
     sql_command = f"""
-        INSERT INTO RideRequests (netid, fullname, mail, ride_id, status) VALUES (%s, %s, %s, 
+        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status) VALUES (%s, %s, %s, 
         %s, %s);
     """
 
@@ -499,6 +499,7 @@ def get_users_requested_rides(netid):
         """
 
     values = (str(netid),)
+    print("netid is", values)
     req_rides = []
     
     conn = connect()
@@ -507,6 +508,7 @@ def get_users_requested_rides(netid):
             with conn.cursor() as cursor:
                 cursor.execute(sql_command, values)
                 req_rides = cursor.fetchall()
+                print("riderequests are", req_rides)
                 print("RideRequests retrieved successfully!")
         except Exception as e:
             print(f"Error retrieving ride requests: {e}")
