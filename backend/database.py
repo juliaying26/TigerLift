@@ -356,7 +356,7 @@ def get_users_rides(netid):
     Get all of a user's rides from Rides database
     """
 
-    sql_command = sql_command = """
+    sql_command = """
         SELECT 
             Rides.id, 
             Rides.admin_netid, 
@@ -368,11 +368,16 @@ def get_users_rides(netid):
             Rides.creation_time, 
             Rides.updated_at, 
             Rides.current_riders, 
-            ARRAY_AGG(RideRequests.netid) AS netids 
+            COALESCE(ARRAY_AGG(
+                CASE 
+                    WHEN RideRequests.netid IS NULL THEN NULL 
+                    ELSE ARRAY[RideRequests.netid, RideRequests.full_name, RideRequests.mail]
+                END
+            ) FILTER (WHERE RideRequests.netid IS NOT NULL), ARRAY[]::text[][]) AS riderequesters
         FROM 
             Rides 
         LEFT JOIN 
-            RideRequests ON RideRequests.ride_id = Rides.id 
+            RideRequests ON RideRequests.ride_id = Rides.id AND RideRequests.status = 'pending'
         WHERE 
             Rides.admin_netid = %s
         GROUP BY 
@@ -561,7 +566,7 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
 
     update_rides_sql_command = """
         UPDATE Rides
-        SET current_riders = array_append(current_riders, ARRAY[%s, %s, %s])
+        SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]])
         WHERE id = %s;
     """
 
