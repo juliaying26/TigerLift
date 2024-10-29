@@ -119,12 +119,12 @@ def searchrides():
 def requestride():
     user_info = _cas.authenticate()
     rideid = request.args.get('rideid')
-    database.create_ride_request(str(user_info['netid']), rideid)
+    database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
     return redirect("/dashboard")
 
 @app.route("/acceptriderequest", methods=["GET"])
 def acceptriderequest():
-    database.accept_ride_request(request.args.get('requester_id'), request.args.get('rideid'))
+    database.accept_ride_request(request.args.get('requester_id'), request.args.get('full_name'), request.args.get('mail'), request.args.get('rideid'))
     return redirect("/myrides")
 
 @app.route("/rejectriderequest", methods=["GET"])

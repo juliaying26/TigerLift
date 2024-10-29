@@ -73,8 +73,8 @@
             {% else %}
               {% for user in ride[10] %}
               {{ user }}
-              <a href="{{ url_for('acceptriderequest', rideid=ride[0], requester_id=user) }}">Accept</a>
-              <a href="{{ url_for('rejectriderequest', rideid=ride[0], requester_id=user) }}">Reject</a>
+              <a href="{{ url_for('acceptriderequest', rideid=ride[0], requester_id=user[0], name=user[1], mail=user[2]) }}">Accept</a>
+              <a href="{{ url_for('rejectriderequest', rideid=ride[0], requester_id=user[0], name=user[1], mail=user[2]) }}">Reject</a>
               {% endfor %}
             {% endif %}
           </td>
