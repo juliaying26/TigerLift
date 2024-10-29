@@ -20,9 +20,11 @@ CREATE TABLE Rides (
     current_riders TEXT[][]
 );
 
-CREATE TABLE RideRequests (
+CREATE TABLE IF NOT EXISTS RideRequests (
     id SERIAL PRIMARY KEY,
     netid VARCHAR(10),
+    full_name TEXT,
+    mail VARCHAR(30),
     ride_id INTEGER REFERENCES Rides(id),
     status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'rejected')) NOT NULL,
     request_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

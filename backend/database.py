@@ -42,6 +42,8 @@ def database_setup():
         CREATE TABLE IF NOT EXISTS RideRequests (
             id SERIAL PRIMARY KEY,
             netid VARCHAR(10),
+            full_name TEXT,
+            mail VARCHAR(30),
             ride_id INTEGER REFERENCES Rides(id),
             status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'rejected')) NOT NULL,
             request_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -203,7 +205,7 @@ def delete_ride(netid, ride_id):
         print("Connection not established.")
 
 
-def create_ride_request(netid, ride_id):
+def create_ride_request(netid, full_name, mail, ride_id):
     """"
     Adds a ride request in the RidesRequest database
     """
