@@ -26,8 +26,8 @@ def login():
     print(user_info)
     rides = database.get_all_rides()
     locations = database.get_all_locations()
-    print(rides)
-    print(locations)
+    # print(rides)
+    # print(locations)
     return redirect(url_for('dashboard', user_info=user_info, rides=rides, locations=locations))
     
 @app.route('/dashboard', methods=['GET'])
@@ -35,9 +35,10 @@ def dashboard():
     user_info = _cas.authenticate()
     rides = database.get_all_rides()
     locations = database.get_all_locations()
+    ridereqs = database.get_users_requested_rides(user_info['netid'])
     print(rides)
-    print(locations)
-    html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations)
+    print(ridereqs)
+    html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations, ridereqs=ridereqs)
     response = make_response(html_code)
     return response
 
