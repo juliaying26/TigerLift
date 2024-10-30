@@ -55,16 +55,15 @@
             
             {% else %}
               
-              {% if ridereqs[1]==ride[0]: %}
-                <p> {{ ridereqs[2] }} </p>
+              {% if ridereqs[0][1]==ride[0]: %}
+                <p> {{ ridereqs[0][2] }} </p>
 
               {% else %}
-                <a href="/requestride?rideid={{ride[0]}}" onclick="event.preventDefault(); this.innerHTML='Pending'; this.style.textDecoration='none'; this.style.color='black';">Request to Join</a>
+                <a href="/requestride?rideid={{ride[0]}}" onclick="event.preventDefault(); this.innerHTML='pending'; this.style.textDecoration='none'; this.style.color='black';">Request to Join</a>
             
               {% endif %}
             {% endif %}
           </td>
-          <td> {{ ridereqs }}</td>
         </tr>
         {% endfor %}
       </tbody>
