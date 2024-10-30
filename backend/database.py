@@ -626,5 +626,33 @@ def reject_ride_request(user_netid, ride_id):
     else:
         print("Connection not established.")
 
+    
+def get_all_my_ride_requests(netid):
+    sql_command = """
+            SELECT netid, ride_id, status FROM RideRequests
+            WHERE netid = %s;
+    """
+    requests = []
+    values = (netid,)
+    
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                # cursor.execute(sql_command, values)
+                cursor.execute(sql_command, values)
+                requests = cursor.fetchall()
+                print("Ride requests retrieved successfully!")
+        except Exception as e:
+            print(f"Error retrieving requests: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    print("DB.py: ", requests)
+    return requests
+
+
 if __name__ == "__main__":
     database_setup()

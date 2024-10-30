@@ -35,7 +35,7 @@ def dashboard():
     user_info = _cas.authenticate()
     rides = database.get_all_rides()
     locations = database.get_all_locations()
-    ridereqs = database.get_users_requested_rides(user_info['netid'])
+    ridereqs = database.get_all_my_ride_requests(user_info['netid'])
     print(rides)
     print(ridereqs)
     html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations, ridereqs=ridereqs)

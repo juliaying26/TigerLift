@@ -52,8 +52,16 @@
           <td>
             {% if ride[1] == user_info['netid']: %}
               <p> Cannot join your own ride </p>
+            
             {% else %}
+              
+              {% if ridereqs[1]==ride[0]: %}
+                <p> {{ ridereqs[2] }} </p>
+
+              {% else %}
                 <a href="/requestride?rideid={{ride[0]}}" onclick="event.preventDefault(); this.innerHTML='Pending'; this.style.textDecoration='none'; this.style.color='black';">Request to Join</a>
+            
+              {% endif %}
             {% endif %}
           </td>
           <td> {{ ridereqs }}</td>
