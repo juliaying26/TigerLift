@@ -6,3 +6,4 @@ Julia Ying, Grace Kim, Ritika Bhatnagar, Aasha Jain
 
 - Create .env with the `DATABASE_URL="EXTERNAL DATABASE URL FROM RENDER"`
 - `cd backend`, activate your COS333 virtual environment, and `pip install -r requirements.txt`
+- To run the application, make sure you are in `backend` and run `python app.py`

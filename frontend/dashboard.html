@@ -50,8 +50,13 @@
           <td>{{ ride[8] }}</td>
           <td>{{ ride[9] }}</td>
           <td>
-            <a href="/requestride?rideid={{ride[0]}}"> Request to Join </a>
+            {% if ride[1] == user_info['netid']: %}
+              <p> Cannot join your own ride </p>
+            {% else %}
+                <a href="/requestride?rideid={{ride[0]}}" onclick="event.preventDefault(); this.innerHTML='Pending'; this.style.textDecoration='none'; this.style.color='black';">Request to Join</a>
+            {% endif %}
           </td>
+          <td> {{ ridereqs }}</td>
         </tr>
         {% endfor %}
       </tbody>
