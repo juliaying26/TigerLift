@@ -169,15 +169,22 @@ def update_ride(ride_id, current_riders, max_capacity=None, origin=None, destina
 
 def delete_ride(netid, ride_id):
     """
-    Delete a ride in the Rides database
+    Delete a ride in the Rides database and any associated Ride Requests
     """
 
-    sql_command = """ 
+    ride_sql_command = """ 
         DELETE FROM Rides
         WHERE admin_netid = %s AND id = %s;
     """
 
-    values = (netid, ride_id)
+    ride_values = (netid, ride_id)
+
+    ride_request_sql_command = """
+        DELETE FROM RideRequests
+        WHERE ride_id = %s;
+    """
+
+    ride_request_values = (ride_id,)
 
     conn = connect()
     
@@ -185,7 +192,8 @@ def delete_ride(netid, ride_id):
     if conn:
         try:
             with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
+                cursor.execute(ride_request_sql_command, ride_request_values)
+                cursor.execute(ride_sql_command, ride_values)
                 conn.commit()
                 print("Ride deleted successfully!")
         except Exception as e:
@@ -490,17 +498,16 @@ def search_rides(origin, destination, arrival_time=None):
 
 def get_users_requested_rides(netid):
     """
-    Get all of a user's REQUESTED rides from RideRequests database
+    Get all of a user's REQUESTED rides from RideRequests database and its associated status
     """
     
     sql_command = """
-        SELECT id, admin_netid, max_capacity, origin, destination, 
-            arrival_time, status, creation_time, updated_at, 
-            current_riders 
-        FROM Rides 
-        WHERE id IN (
-            SELECT ride_id FROM RideRequests WHERE netid = %s
-        );
+        SELECT Rides.id, admin_netid, max_capacity, origin, destination, 
+            arrival_time, Rides.status as ride_status, creation_time, updated_at, 
+            current_riders, RideRequests.status as ride_request_status
+        FROM Rides
+        JOIN RideRequests ON Rides.id = RideRequests.ride_id
+        WHERE RideRequests.netid = %s;
         """
 
     values = (str(netid),)
