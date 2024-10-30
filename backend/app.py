@@ -36,9 +36,12 @@ def dashboard():
     rides = database.get_all_rides()
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
-    print(rides)
-    print(ridereqs)
-    html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations, ridereqs=ridereqs)
+
+    ridereqs_map = {}
+    for ridereq in ridereqs:
+        ridereqs_map[ridereq[1]] = ridereq[2]
+
+    html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations, ridereqs=ridereqs_map)
     response = make_response(html_code)
     return response
 
