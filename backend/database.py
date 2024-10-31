@@ -35,7 +35,6 @@ def database_setup():
             origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
             destination INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
             arrival_time TIMESTAMP NOT NULL,
-            status VARCHAR(20) CHECK (status IN ('open', 'full', 'completed')) NOT NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             current_riders TEXT[][]
