@@ -136,6 +136,12 @@ def rejectriderequest():
     database.reject_ride_request(request.args.get('requester_id'), request.args.get('rideid'))
     return redirect("/myrides")
 
+
+@app.route("/removerider", methods=["GET"])
+def removerider():
+    database.remove_rider(request.args.get('requester_id'), request.args.get('full_name'), request.args.get('mail'), request.args.get('rideid'))
+    return redirect("/myrides")
+
 if __name__ == "__main__":
     if not app._got_first_request:
         database.database_setup()

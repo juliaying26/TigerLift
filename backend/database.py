@@ -653,6 +653,71 @@ def get_all_my_ride_requests(netid):
     print("DB.py: ", requests)
     return requests
 
+def remove_rider(requester_id, full_name, mail, ride_id):
+    """
+    Rejects a ride request and moves it back into 'Manage Rides' as a pending ride request
+    """
+
+    print("INTO remove_rider function now!")
+    print("Requester id is ", requester_id)
+    print("Ride id is ", ride_id)
+    print("Mail is", mail)
+    print("Full name is", full_name)
+
+    sql_command_ride_requests = """
+        UPDATE RideRequests
+        SET status = 'pending', response_time = CURRENT_TIMESTAMP
+        WHERE netid = %s AND ride_id = %s AND status = 'accepted';
+        """
+    values_ride_requests = (requester_id, ride_id)
+
+    conn = connect()
+    
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command_ride_requests, values_ride_requests)
+                conn.commit()
+                print("RideRequest removed into PENDING successfully!")
+        except Exception as e:
+            print(f"Error removing ride request: {e}")
+
+        try:
+            with conn.cursor() as cursor:
+
+                cursor.execute("SELECT current_riders FROM Rides WHERE id = %s;", (ride_id,))
+                result = cursor.fetchone()
+
+                if result is None:
+                    print(f"No record found for ride_id {ride_id}")
+                    return
+
+                current_riders = result[0]  # This should be a 2D array (list of lists)
+
+                # Remove the matching sub-array from current_riders
+                print("Original current_riders:", current_riders)
+                current_riders = [rider for rider in current_riders if not (
+                    rider[0] == requester_id and rider[1] == full_name and rider[2] == mail
+                )]
+                print("Modified current_riders:", current_riders)
+
+                # Step 3: Update the table with the modified current_riders
+                cursor.execute(
+                    "UPDATE Rides SET current_riders = %s WHERE id = %s;",
+                    (current_riders, ride_id)
+                )
+                conn.commit()
+                print("Ride's current_riders updated successfully!")
+        except Exception as e:
+            print(f"Error updating current_riders: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+
+
 
 if __name__ == "__main__":
     database_setup()

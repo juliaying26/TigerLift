@@ -59,7 +59,7 @@
             {% for user in ride[9] %}
             {{ user }}
             <!-- SHOULD REMOVE FROM RIDE ACTUALLY REJECT RIDE REQUEST OR MOVE IT BACK INTO PENDING -->
-            <a href="">Remove from ride</a>
+            <a href="{{ url_for('removerider', requester_id=user[0], full_name=user[1], mail=user[2] , rideid = ride[0]) }}">Remove from ride</a>
             {% endfor %}
           </td>
           <td>
