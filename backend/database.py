@@ -212,7 +212,7 @@ def create_ride_request(netid, full_name, mail, ride_id):
     status = 'pending'
     
     sql_command = f"""
-        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status) VALUES (%s, %s, %s, 
+        INSERT IGNORE INTO RideRequests (netid, full_name, mail, ride_id, status) VALUES (%s, %s, %s, 
         %s, %s);
     """
 
