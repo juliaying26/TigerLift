@@ -10,6 +10,8 @@ CREATE TABLE Users (
 CREATE TABLE Rides (
     id SERIAL PRIMARY KEY,
     admin_netid VARCHAR(20),
+    admin_name VARCHAR(50),
+    admin_email VARCHAR(50),
     max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 10) NOT NULL,
     origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
     destination INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
