@@ -27,7 +27,6 @@
           <th>Origin</th>
           <th>Destination</th>
           <th>Arrival Time</th>
-          <th>Status</th>
           <th>Creation Time</th>
           <th>Updated At</th>
           <!-- actual dashboard will not have current riders. for debugging purposes -->
@@ -41,19 +40,18 @@
           <td>{{ ride[0] }}</td>
           <td>{{ ride[1] }} {{ ride[2] }} {{ ride[3] }}</td>
           <td>{{ ride[4] }}</td>
-          <td>{{ ride[4] - ride[11]|length }}</td>
+          <td>{{ ride[4] - ride[10]|length }}</td>
           <td>{{ ride[5] }}</td>
           <td>{{ ride[6] }}</td>
           <td>{{ ride[7] }}</td>
           <td>{{ ride[8] }}</td>
           <td>{{ ride[9] }}</td>
           <td>{{ ride[10] }}</td>
-          <td>{{ ride[11] }}</td>
           <td>
             {% if ride[1] == user_info['netid']: %}
               <p>Cannot join your own ride</p>
             {% else %}
-              {% if ride[4] - ride[11]|length == 0 %}
+              {% if ride[4] - ride[10]|length == 0 %}
                 <p> ride is full </p>
               {% else %}
                 {% if ridereqs and ride[0] in ridereqs: %}

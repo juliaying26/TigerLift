@@ -94,17 +94,16 @@ def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, dest
     Adds a ride to the Rides database
     """
 
-    status = 'open'
     current_riders = []
 
     sql_command = f"""
         INSERT INTO Rides (admin_netid, admin_name, admin_email, max_capacity, current_riders,
-        origin, destination, arrival_time, status) VALUES (%s, %s, %s, %s, %s, 
+        origin, destination, arrival_time) VALUES (%s, %s, %s, %s, 
         %s, %s, %s, %s);   
     """
 
     values = (admin_netid, admin_name, admin_email, max_capacity, current_riders, origin, destination, 
-              arrival_time, status)  
+              arrival_time)  
     
     conn = connect()
     
@@ -130,9 +129,6 @@ def update_ride(ride_id, current_riders, max_capacity=None, origin=None, destina
     """
 
     # NEED TO FIX TO DEAL WITH INJECTION ATTACKS!!!
-
-    if len(current_riders) == max_capacity:
-        status = 'full'
   
     sql_command = f"""
         UPDATE Rides
@@ -147,10 +143,8 @@ def update_ride(ride_id, current_riders, max_capacity=None, origin=None, destina
         sql_command += f""", destination = {destination}"""
     if arrival_time != None:
         sql_command += f""", arrival_time = {arrival_time}"""
-    if status == 'full':
-        sql_command += f""", status = {status}"""
 
-    sql_command += f""" WHERE id = {ride_id} AND status != 'completed';"""
+    sql_command += f""" WHERE id = {ride_id};"""
 
     conn = connect()
     
@@ -375,7 +369,6 @@ def get_users_rides(netid):
             Rides.origin, 
             Rides.destination, 
             Rides.arrival_time, 
-            Rides.status, 
             Rides.creation_time, 
             Rides.updated_at, 
             Rides.current_riders, 
@@ -400,7 +393,6 @@ def get_users_rides(netid):
             Rides.origin, 
             Rides.destination, 
             Rides.arrival_time, 
-            Rides.status, 
             Rides.creation_time, 
             Rides.updated_at, 
             Rides.current_riders;
@@ -426,7 +418,7 @@ def get_users_rides(netid):
     return rides
 
 def get_all_rides():
-    sql_command = "SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides"
+    sql_command = "SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides"
     conn = connect()
 
     rides = []
@@ -473,7 +465,7 @@ def get_all_locations():
 
 def search_rides(origin, destination, arrival_time=None):
     query = """
-        SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides
+        SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides
         WHERE origin = %s AND destination = %s
     """
 
@@ -509,7 +501,7 @@ def get_users_requested_rides(netid):
     
     sql_command = """
         SELECT Rides.id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, 
-            arrival_time, Rides.status as ride_status, creation_time, updated_at, 
+            arrival_time, creation_time, updated_at, 
             current_riders, RideRequests.status as ride_request_status
         FROM Rides
         JOIN RideRequests ON Rides.id = RideRequests.ride_id
