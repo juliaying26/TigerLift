@@ -51,15 +51,18 @@
           <td>{{ ride[11] }}</td>
           <td>
             {% if ride[1] == user_info['netid']: %}
-            <p>Cannot join your own ride</p>
-
-            {% else %} {% if ridereqs and ride[0] in ridereqs: %}
-            <p>{{ ridereqs[ride[0]] }}</p>
-
+              <p>Cannot join your own ride</p>
             {% else %}
-            <a href="/requestride?rideid={{ride[0]}}">Request to Join</a>
-
-            {% endif %} {% endif %}
+              {% if ride[4] - ride[11]|length == 0 %}
+                <p> {{ ridereqs[ride[0]] }} </p>
+              {% else %}
+                {% if ridereqs and ride[0] in ridereqs: %}
+                  <p> {{ ridereqs[ride[0]] }} </p>
+                {% else %}
+                  <a href="/requestride?rideid={{ride[0]}}">Request to Join</a>
+                {% endif %}
+              {% endif %}
+            {% endif %}
           </td>
         </tr>
         {% endfor %}

@@ -446,6 +446,7 @@ def get_all_rides():
     else:
         print("Connection not established.")
 
+    print("Rides: ", rides)
     return rides
 
 
