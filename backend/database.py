@@ -29,6 +29,8 @@ def database_setup():
         CREATE TABLE IF NOT EXISTS Rides (
             id SERIAL PRIMARY KEY,
             admin_netid VARCHAR(20),
+            admin_name VARCHAR(50),
+            admin_email VARCHAR(50),
             max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 10) NOT NULL,
             origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
             destination INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
@@ -88,7 +90,7 @@ def connect():
         print(f"Error connecting to the database: {e}")
         return None
 
-def create_ride(admin, max_capacity, origin, destination, arrival_time):
+def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time):
     """
     Adds a ride to the Rides database
     """
@@ -97,12 +99,12 @@ def create_ride(admin, max_capacity, origin, destination, arrival_time):
     current_riders = []
 
     sql_command = f"""
-        INSERT INTO Rides (admin_netid, max_capacity, current_riders,
-        origin, destination, arrival_time, status) VALUES (%s, %s, %s, 
+        INSERT INTO Rides (admin_netid, admin_name, admin_email, max_capacity, current_riders,
+        origin, destination, arrival_time, status) VALUES (%s, %s, %s, %s, %s, 
         %s, %s, %s, %s);   
     """
 
-    values = (admin, max_capacity, current_riders, origin, destination, 
+    values = (admin_netid, admin_name, admin_email, max_capacity, current_riders, origin, destination, 
               arrival_time, status)  
     
     conn = connect()
@@ -368,6 +370,8 @@ def get_users_rides(netid):
         SELECT 
             Rides.id, 
             Rides.admin_netid, 
+            Rides.admin_name,
+            Rides.admin_email,
             Rides.max_capacity, 
             Rides.origin, 
             Rides.destination, 
@@ -391,6 +395,8 @@ def get_users_rides(netid):
         GROUP BY 
             Rides.id, 
             Rides.admin_netid, 
+            Rides.admin_name,
+            Rides.admin_email,
             Rides.max_capacity, 
             Rides.origin, 
             Rides.destination, 
@@ -421,7 +427,7 @@ def get_users_rides(netid):
     return rides
 
 def get_all_rides():
-    sql_command = "SELECT id, admin_netid, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides"
+    sql_command = "SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides"
     conn = connect()
 
     rides = []
@@ -467,7 +473,7 @@ def get_all_locations():
 
 def search_rides(origin, destination, arrival_time=None):
     query = """
-        SELECT id, admin_netid, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides
+        SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, status, creation_time, updated_at, current_riders FROM Rides
         WHERE origin = %s AND destination = %s
     """
 
@@ -502,7 +508,7 @@ def get_users_requested_rides(netid):
     """
     
     sql_command = """
-        SELECT Rides.id, admin_netid, max_capacity, origin, destination, 
+        SELECT Rides.id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, 
             arrival_time, Rides.status as ride_status, creation_time, updated_at, 
             current_riders, RideRequests.status as ride_request_status
         FROM Rides

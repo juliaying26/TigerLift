@@ -21,7 +21,7 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Admin Netid</th>
+          <th>Admin Info</th>
           <th>Max capacity</th>
           <th>Available spots</th>
           <th>Origin</th>
@@ -39,30 +39,27 @@
         {% for ride in rides %}
         <tr>
           <td>{{ ride[0] }}</td>
-          <td>{{ ride[1] }}</td>
-          <td>{{ ride[2] }}</td>
-          <td>{{ ride[2] - ride[9]|length }}</td>
-          <td>{{ ride[3] }}</td>
+          <td>{{ ride[1] }} {{ ride[2] }} {{ ride[3] }}</td>
           <td>{{ ride[4] }}</td>
+          <td>{{ ride[4] - ride[11]|length }}</td>
           <td>{{ ride[5] }}</td>
           <td>{{ ride[6] }}</td>
           <td>{{ ride[7] }}</td>
           <td>{{ ride[8] }}</td>
           <td>{{ ride[9] }}</td>
+          <td>{{ ride[10] }}</td>
+          <td>{{ ride[11] }}</td>
           <td>
             {% if ride[1] == user_info['netid']: %}
-              <p> Cannot join your own ride </p>
-            
-            {% else %}
-              
-              {% if ridereqs and ride[0] in ridereqs: %}
-                <p> {{ ridereqs[ride[0]] }} </p>
+            <p>Cannot join your own ride</p>
 
-              {% else %}
-                <a href="/requestride?rideid={{ride[0]}}" this.innerHTML='pending'; this.style.textDecoration='none'; this.style.color='black';">Request to Join</a>
-            
-              {% endif %}
-            {% endif %}
+            {% else %} {% if ridereqs and ride[0] in ridereqs: %}
+            <p>{{ ridereqs[ride[0]] }}</p>
+
+            {% else %}
+            <a href="/requestride?rideid={{ride[0]}}">Request to Join</a>
+
+            {% endif %} {% endif %}
           </td>
         </tr>
         {% endfor %}

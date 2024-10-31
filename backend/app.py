@@ -19,15 +19,12 @@ def index():
     response = make_response(html_code)
     return response
 
-# We need a CAS login route here that redirects to home page (these other pages should be separate file?)
 @app.route('/login', methods=['GET'])
 def login():
     user_info = _cas.authenticate()
     print(user_info)
     rides = database.get_all_rides()
     locations = database.get_all_locations()
-    # print(rides)
-    # print(locations)
     return redirect(url_for('dashboard', user_info=user_info, rides=rides, locations=locations))
     
 @app.route('/dashboard', methods=['GET'])
@@ -72,11 +69,9 @@ def addride():
     origin = request.args.get('origin')
     destination = request.args.get('destination')
     arrival_time = request.args.get('arrival_time')
-    database.create_ride(user_info['netid'], capacity, origin, destination, arrival_time)
+    database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, destination, arrival_time)
     return redirect("/dashboard")
 
-# WHAT HAPPENS TO THE RIDE REQUESTS WHEN A RIDE IS DELETED?
-# DO THEY GET REJECTED? OR DO THE RIDE REQUESTS GET DELETED?
 @app.route("/deleteride", methods=["GET"])
 def deleteride():
     user_info = _cas.authenticate()

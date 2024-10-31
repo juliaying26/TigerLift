@@ -46,20 +46,20 @@
         {% for ride in myrides %}
         <tr>
           <td>{{ ride[0] }}</td>
-          <td>{{ ride[1] }}</td>
-          <td>{{ ride[2] }}</td>
-          <td>{{ ride[2] - ride[9]|length }}</td>
-          <td>{{ ride[3] }}</td>
+          <td>{{ ride[1] }} {{ ride[2] }} {{ ride[3] }}</td>
           <td>{{ ride[4] }}</td>
+          <td>{{ ride[4] - ride[11]|length }}</td>
           <td>{{ ride[5] }}</td>
           <td>{{ ride[6] }}</td>
           <td>{{ ride[7] }}</td>
           <td>{{ ride[8] }}</td>
+          <td>{{ ride[9] }}</td>
+          <td>{{ ride[10] }}</td>
           <td>
-            {% for user in ride[9] %}
+            {% for user in ride[11] %}
             {{ user }}
-            <!-- SHOULD REMOVE FROM RIDE ACTUALLY REJECT RIDE REQUEST OR MOVE IT BACK INTO PENDING -->
-            <a href="{{ url_for('removerider', requester_id=user[0], full_name=user[1], mail=user[2] , rideid = ride[0]) }}">Remove from ride</a>
+            <!-- SHOULD MOVE IT BACK INTO PENDING -->
+            <a href="{{ url_for('removerider', requester_id=user[0], full_name=user[1], mail=user[2] , rideid=ride[0]) }}">Remove from ride</a>
             {% endfor %}
           </td>
           <td>
@@ -68,13 +68,13 @@
           </td>
           <td>
             <!-- if available spots == max capac -->
-            {% if ride[9]|length == ride[2] %}
+            {% if ride[11]|length == ride[4] %}
               This ride is full!
             {% else %}
-              {% for user in ride[10] %}
+              {% for user in ride[12] %}
               {{ user }}
               <a href="{{ url_for('acceptriderequest', rideid=ride[0], requester_id=user[0], full_name=user[1], mail=user[2]) }}">Accept</a>
-              <a href="{{ url_for('rejectriderequest', rideid=ride[0], requester_id=user[0], full_name=user[1], mail=user[2]) }}">Reject</a>
+              <a href="{{ url_for('rejectriderequest', rideid=ride[0], requester_id=user[0]) }}">Reject</a>
               {% endfor %}
             {% endif %}
           </td>
@@ -106,22 +106,22 @@
       {% for ride in myreqrides %}
       <tr>
         <td>{{ ride[0] }}</td>
-        <td>{{ ride[1] }}</td>
-        <td>{{ ride[2] }}</td>
-        <td>{{ ride[2] - ride[9]|length }}</td>
-        <td>{{ ride[3] }}</td>
+        <td>{{ ride[1] }} {{ ride[2] }} {{ ride[3] }}</td>
         <td>{{ ride[4] }}</td>
+        <td>{{ ride[4] - ride[11]|length }}</td>
         <td>{{ ride[5] }}</td>
         <td>{{ ride[6] }}</td>
         <td>{{ ride[7] }}</td>
         <td>{{ ride[8] }}</td>
         <td>{{ ride[9] }}</td>
+        <td>{{ ride[10] }}</td>
+        <td>{{ ride[11] }}</td>
         <td>
           <a href="{{ url_for('cancelriderequest', rideid=ride[0]) }}"
             >Cancel request</a
           >
         </td>
-        <td>{{ ride[10] }}</td>
+        <td>{{ ride[12] }}</td>
       </tr>
       {% endfor %}
     </tbody>
