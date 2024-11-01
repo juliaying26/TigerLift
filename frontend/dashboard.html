@@ -16,7 +16,16 @@
     <br /><br />
     <a href="\myrides">My Rides</a>
     <br /><br />
+    {% if in_search %}
+    <h3>Searched Rides</h3>
+    <p>From: {{ origin }}</p>
+    <p>To: {{ destination }}</p>
+    {% if arrival_time %}
+    <p>Arrival Time before: {{ arrival_time }}</p>
+    <a href="\dashboard">Show all available rides</a><br /><br />
+    {% endif %} {% else %}
     <h3>Available Rides</h3>
+    {% endif %}
     <table border="1">
       <thead>
         <tr>
@@ -49,18 +58,14 @@
           <td>{{ ride[10] }}</td>
           <td>
             {% if ride[1] == user_info['netid']: %}
-              <p>Cannot join your own ride</p>
+            <p>Cannot join your own ride</p>
+            {% else %} {% if ride[4] - ride[10]|length == 0 %}
+            <p>ride is full</p>
+            {% else %} {% if ridereqs and ride[0] in ridereqs: %}
+            <p>{{ ridereqs[ride[0]] }}</p>
             {% else %}
-              {% if ride[4] - ride[10]|length == 0 %}
-                <p> ride is full </p>
-              {% else %}
-                {% if ridereqs and ride[0] in ridereqs: %}
-                  <p> {{ ridereqs[ride[0]] }} </p>
-                {% else %}
-                  <a href="/requestride?rideid={{ride[0]}}">Request to Join</a>
-                {% endif %}
-              {% endif %}
-            {% endif %}
+            <a href="/requestride?rideid={{ride[0]}}">Request to Join</a>
+            {% endif %} {% endif %} {% endif %}
           </td>
         </tr>
         {% endfor %}

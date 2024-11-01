@@ -38,7 +38,7 @@ def dashboard():
     for ridereq in ridereqs:
         ridereqs_map[ridereq[1]] = ridereq[2]
 
-    html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations, ridereqs=ridereqs_map)
+    html_code = render_template('dashboard.html', in_search=False, user_info=user_info, rides=rides, locations=locations, ridereqs=ridereqs_map)
     response = make_response(html_code)
     return response
 
@@ -110,7 +110,8 @@ def searchrides():
     arrival_time = request.args.get('arrival_time')
     rides = database.search_rides(origin, destination, arrival_time)
     locations = database.get_all_locations()
-    html_code = render_template('dashboard.html', user_info=user_info, rides=rides, locations=locations)
+    html_code = render_template('dashboard.html', in_search=True, origin=origin, destination=destination, arrival_time=arrival_time,
+                                user_info=user_info, rides=rides, locations=locations)
     response = make_response(html_code)
     return response
 
