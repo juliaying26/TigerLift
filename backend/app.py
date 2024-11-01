@@ -66,8 +66,8 @@ def logout():
 def addride():
     user_info = _cas.authenticate()
     capacity = request.args.get('max_capacity')
-    origin = request.args.get('origin')
-    destination = request.args.get('destination')
+    origin = database.location_to_id(request.args.get('origin'))
+    destination = database.location_to_id(request.args.get('destination'))
     arrival_time = request.args.get('arrival_time')
     database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, destination, arrival_time)
     return redirect("/dashboard")
@@ -105,8 +105,8 @@ def deleteallrides():
 @app.route("/searchrides", methods=["GET"])
 def searchrides():
     user_info = _cas.authenticate()
-    origin = request.args.get('origin')
-    destination = request.args.get('destination')
+    origin = database.location_to_id(request.args.get('origin'))
+    destination = database.location_to_id(request.args.get('destination'))
     arrival_time = request.args.get('arrival_time')
     rides = database.search_rides(origin, destination, arrival_time)
     locations = database.get_all_locations()

@@ -715,6 +715,33 @@ def remove_rider(requester_id, full_name, mail, ride_id):
         print("Connection not established.")
 
 
+def location_to_id(location):    
+    sql_command = "SELECT id FROM PredefinedLocations WHERE name = %s"
+    values = (location,)
+    id_result = None
+    print(location)
+
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                result = cursor.fetchone()
+                if result:
+                    id_result = result[0]
+                    print("id retrieved successfully:", id_result)
+                else:
+                    print("No matching location found.")
+        except Exception as e:
+            print(f"Error retrieving requests: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    print("ID corresponding to num is", id_result)
+    return int(id_result)
+
 
 
 if __name__ == "__main__":
