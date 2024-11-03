@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, make_response, redirect, url_for, request, session
+from flask import Flask, render_template, make_response, redirect, url_for, request, session, jsonify
 import database
 from casclient import CASClient
 from dotenv import load_dotenv
@@ -9,15 +9,20 @@ app = Flask(__name__, template_folder='../frontend')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
 _cas = CASClient()
 
+FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
+FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
+
 # Welcome page route
 @app.route('/', methods=['GET'])
 @app.route('/index', methods=['GET'])
 def index():
     if(_cas.is_logged_in()):
-        return redirect("/dashboard")
-    html_code = render_template('index.html')
-    response = make_response(html_code)
-    return response
+        return redirect(f"{FRONTEND_URL}/dashboard")
+    return redirect(f"{FRONTEND_URL}/login")
+
+@app.route('/api/isloggedin', methods=['GET'])
+def isloggedin():
+    return jsonify({'is_logged_in': _cas.is_logged_in()})
 
 @app.route('/login', methods=['GET'])
 def login():
@@ -25,9 +30,9 @@ def login():
     print(user_info)
     rides = database.get_all_rides()
     locations = database.get_all_locations()
-    return redirect(url_for('dashboard', user_info=user_info, rides=rides, locations=locations))
+    return redirect(f"{FRONTEND_URL}/dashboard")
     
-@app.route('/dashboard', methods=['GET'])
+@app.route('/api/dashboard', methods=['GET'])
 def dashboard():
     user_info = _cas.authenticate()
     rides = database.get_all_rides()
@@ -37,10 +42,13 @@ def dashboard():
     ridereqs_map = {}
     for ridereq in ridereqs:
         ridereqs_map[ridereq[1]] = ridereq[2]
-
-    html_code = render_template('dashboard.html', in_search=False, user_info=user_info, rides=rides, locations=locations, ridereqs=ridereqs_map)
-    response = make_response(html_code)
-    return response
+    
+    return jsonify({
+        'user_info': user_info,
+        'rides': rides,
+        'locations': locations,
+        'ridereqs': ridereqs_map
+    })
 
 @app.route('/myrides', methods=['GET'])
 def myrides():
@@ -59,6 +67,7 @@ def myrides():
 
 @app.route("/logout", methods=["GET"])
 def logout():
+    print("called log out")
     _cas.logout()
     return redirect("/")
 
