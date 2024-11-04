@@ -41,6 +41,9 @@ export default function Dashboard() {
       >
         Log out
       </a>
+      <br />
+      <br />
+      <a href="/myrides">My Rides</a>
 
       {/* <AddRideForm
         locations={dashboardData.locations}
