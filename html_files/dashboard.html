@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>TigerLift</title>
+  </head>
+  <body>
+    <h1>
+      Dashboard - logged in as {{ user_info['netid'] }}, {{
+      user_info['displayname'] }}, {{ user_info['year'] }}, {{ user_info['mail']
+      }}
+    </h1>
+    <a href="\logout">Log out</a>
+    <br /><br />
+    <a href="\myrides">My Rides</a>
+    <br /><br />
+    {% if in_search %}
+    <h3>Searched Rides</h3>
+    <p>From: {{ origin }}</p>
+    <p>To: {{ destination }}</p>
+    {% if arrival_time %}
+    <p>Arrival Time before: {{ arrival_time }}</p>
+    <a href="\dashboard">Show all available rides</a><br /><br />
+    {% endif %} {% else %}
+    <h3>Available Rides</h3>
+    {% endif %}
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Admin Info</th>
+          <th>Max capacity</th>
+          <th>Available spots</th>
+          <th>Origin</th>
+          <th>Destination</th>
+          <th>Arrival Time</th>
+          <th>Creation Time</th>
+          <th>Updated At</th>
+          <!-- actual dashboard will not have current riders. for debugging purposes -->
+          <th>Current Riders</th>
+          <th>Request</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ride in rides %}
+        <tr>
+          <td>{{ ride[0] }}</td>
+          <td>{{ ride[1] }} {{ ride[2] }} {{ ride[3] }}</td>
+          <td>{{ ride[4] }}</td>
+          <td>{{ ride[4] - ride[10]|length }}</td>
+          <td>{{ ride[5] }}</td>
+          <td>{{ ride[6] }}</td>
+          <td>{{ ride[7] }}</td>
+          <td>{{ ride[8] }}</td>
+          <td>{{ ride[9] }}</td>
+          <td>{{ ride[10] }}</td>
+          <td>
+            {% if ride[1] == user_info['netid']: %}
+            <p>Cannot join your own ride</p>
+            {% else %} {% if ride[4] - ride[10]|length == 0 %}
+            <p>ride is full</p>
+            {% else %} {% if ridereqs and ride[0] in ridereqs: %}
+            <p>{{ ridereqs[ride[0]] }}</p>
+            {% else %}
+            <a href="/requestride?rideid={{ride[0]}}">Request to Join</a>
+            {% endif %} {% endif %} {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% include 'addride.html' %}
+
+    <h3>Predefined Locations</h3>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for location in locations %}
+        <tr>
+          <td>{{ location[0] }}</td>
+          <td>{{ location[1] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <!-- <a href="/addlocation">Add a new location</a>
+    <a href="/deletelocations">Delete all locations</a> -->
+
+    {% include 'searchform.html' %}
+
+    <script src="script.js"></script>
+  </body>
+</html>
