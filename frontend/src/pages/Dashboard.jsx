@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 // import RidesTable from "./RidesTable";
 // import AddRideForm from "./AddRideForm";
 
@@ -36,14 +37,14 @@ export default function Dashboard() {
         </h1>
       </div>
       <a
-        href="/logout"
+        href="/api/logout"
         className="bg-theme_dark_1 text-white px-4 py-2 rounded"
       >
         Log out
       </a>
       <br />
       <br />
-      <a href="/myrides">My Rides</a>
+      <Link to="/myrides">My Rides</Link>
 
       {/* <AddRideForm
         locations={dashboardData.locations}

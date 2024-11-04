@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import MyRides from "./pages/MyRides";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -13,7 +14,6 @@ function App() {
       .then((data) => {
         if (data.is_logged_in !== false) {
           setUser(data);
-          navigate("/dashboard");
         }
       })
       .finally(() => setLoading(false));
@@ -24,12 +24,17 @@ function App() {
   return (
     <div className="container mx-auto p-4">
       {user ? (
-        <Dashboard />
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/myrides" element={<MyRides />} />
+        </Routes>
       ) : (
         <div className="text-center">
           <h1 className="text-2xl mb-4">Welcome to TigerLift</h1>
+
           <a
-            href="/login"
+            href="/api/login"
             className="bg-theme_dark_2 text-white px-4 py-2 rounded"
           >
             Login with CAS

@@ -12,28 +12,23 @@ _cas = CASClient()
 FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
 
-# Welcome page route
-@app.route('/', methods=['GET'])
-@app.route('/index', methods=['GET'])
-def index():
-    if(_cas.is_logged_in()):
-        return redirect(f"{FRONTEND_URL}/dashboard")
-    return redirect(f"{FRONTEND_URL}/login")
-
 @app.route('/api/isloggedin', methods=['GET'])
 def isloggedin():
     return jsonify({'is_logged_in': _cas.is_logged_in()})
 
-@app.route('/login', methods=['GET'])
+@app.route('/api/login', methods=['GET'])
 def login():
-    user_info = _cas.authenticate()
-    print(user_info)
-    rides = database.get_all_rides()
-    locations = database.get_all_locations()
+    user_info = _cas.authenticate() # This will redirect to CAS login page if not logged in
     return redirect(f"{FRONTEND_URL}/dashboard")
-    
+
+@app.route("/api/logout", methods=["GET"])
+def logout():
+    print("called log out")
+    _cas.logout()
+    return redirect(f"{FRONTEND_URL}/")
+
 @app.route('/api/dashboard', methods=['GET'])
-def dashboard():
+def api_dashboard():
     user_info = _cas.authenticate()
     rides = database.get_all_rides()
     locations = database.get_all_locations()
@@ -50,26 +45,25 @@ def dashboard():
         'ridereqs': ridereqs_map
     })
 
-@app.route('/myrides', methods=['GET'])
-def myrides():
+@app.route('/api/mypostedrides', methods=['GET'])
+def api_my_posted_rides():
     user_info = _cas.authenticate()
-    view_type = request.args.get('view_type', 'posted')
-    myrides = []
-    myreqrides = []
-    if view_type == "posted":
-        myrides = database.get_users_rides(user_info['netid'])
-    else:
-        myreqrides = database.get_users_requested_rides(user_info['netid'])
-        print("MY REQUESTED RIDES ARE" , myreqrides)
+    myrides = database.get_users_rides(user_info['netid'])
+    return jsonify({
+        'myrides': myrides,
+    })
     html_code = render_template('myrides.html', view_type=view_type, myrides=myrides, myreqrides=myreqrides)
     response = make_response(html_code)
     return response
 
-@app.route("/logout", methods=["GET"])
-def logout():
-    print("called log out")
-    _cas.logout()
-    return redirect("/")
+@app.route('/api/myrequestedrides', methods=['GET'])
+def api_my_requested_rides():
+    user_info = _cas.authenticate()
+    myreqrides = database.get_users_requested_rides(user_info['netid'])
+    return jsonify({
+        'myreqrides': myreqrides
+    })
+
 
 @app.route("/addride", methods=["GET"])
 def addride():

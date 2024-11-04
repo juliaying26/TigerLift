@@ -7,8 +7,6 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": "http://localhost:3100", // our Flask port
-      "/login": "http://localhost:3100",
-      "/logout": "http://localhost:3100",
     },
   },
 });
