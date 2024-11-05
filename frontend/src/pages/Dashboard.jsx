@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar"
 // import RidesTable from "./RidesTable";
 // import AddRideForm from "./AddRideForm";
 
@@ -32,6 +33,9 @@ export default function Dashboard() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
+
+        <Navbar />
+
         <h1 className="text-2xl">
           Welcome, {dashboardData.user_info?.displayname}
         </h1>

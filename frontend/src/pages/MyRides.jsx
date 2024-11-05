@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Navbar from "../components/Navbar"
 
 export default function MyRides() {
   const [myRidesData, setMyRidesData] = useState([]);
@@ -35,6 +36,7 @@ export default function MyRides() {
 
   return (
     <div>
+      <Navbar />
       <button onClick={() => setViewType("posted")}>My Posted Rides</button>
       <button onClick={() => setViewType("requested")}>
         My Requested Rides

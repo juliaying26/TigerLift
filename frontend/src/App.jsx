@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import MyRides from "./pages/MyRides";
+import Navbar from "./components/Navbar"
 
 function App() {
   const [user, setUser] = useState(null);
