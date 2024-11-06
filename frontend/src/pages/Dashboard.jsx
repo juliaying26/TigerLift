@@ -25,6 +25,8 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -57,7 +59,16 @@ export default function Dashboard() {
         <Input label="Starting Point"></Input>
         <Input label="Destination"></Input>
         <Input label="Time"></Input>
+        <br />
+        <a
+        href="/api/dashboard"
+        className="bg-theme_dark_1 text-white px-4 py-2 rounded"
+      >
+        Submit
+      </a>
       </div>
+
+      
       
 
       {/* <AddRideForm
