@@ -742,6 +742,31 @@ def location_to_id(location):
     print("ID corresponding to num is", id_result)
     return int(id_result)
 
+def id_to_location(id):
+    sql_command = "SELECT name FROM PredefinedLocations WHERE id = %s"
+    values = (id,)
+    location_result=None
+
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                result = cursor.fetchone()
+                if result:
+                    location_result = result[0]
+                    print("location retrieved successfully:", location_result)
+                else:
+                    print("No matching location found.")
+        except Exception as e:
+            print(f"Error retrieving requests: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    print("ID corresponding to num is", location_result)
+    return int(location_result)
 
 
 if __name__ == "__main__":
