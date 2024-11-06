@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"; // Added React for consistency
 import Navbar from "../components/Navbar";
 import RideCard from "../components/RideCard";
-import MyDateTimePicker from "../components/MyDateTimePicker";
+import MyDateTimePicker from "../components/DateTimePicker";
 
 export default function MyRides({ netid }) {
   const [myRidesData, setMyRidesData] = useState([]);
