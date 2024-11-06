@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import MyRides from "./pages/MyRides";
-import Navbar from "./components/Navbar"
+import Navbar from "./components/Navbar";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -27,8 +27,24 @@ function App() {
       {user ? (
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/myrides" element={<MyRides netid={user.netid} />} />
+          <Route
+            path="/dashboard"
+            element={
+              <div>
+                <Navbar />
+                <Dashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/myrides"
+            element={
+              <div>
+                <Navbar />
+                <MyRides netid={user.netid} />
+              </div>
+            }
+          />
         </Routes>
       ) : (
         <div className="text-center">

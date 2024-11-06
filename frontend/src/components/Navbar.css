@@ -5,6 +5,7 @@
   top: 0;
   left: 0;
   width: 100%;
+  height: 64px;
   z-index: 1000;
   display: flex;
   justify-content: space-between;
@@ -22,9 +23,9 @@
 }
 
 .nav-links {
-  display: flex;                   /* Horizontal layout for nav links */
+  display: flex; /* Horizontal layout for nav links */
   list-style: none;
-  gap: 1.5rem;                     /* Spacing between links */
+  gap: 1.5rem; /* Spacing between links */
 }
 
 .nav-links a {
@@ -46,10 +47,10 @@
 .dropdown-content {
   display: none;
   position: absolute;
-  top: 100%;                      /* Position below the dropdown link */
+  top: 100%; /* Position below the dropdown link */
   left: 0;
   background-color: #333;
-  flex-direction: column;         /* Vertical list of dropdown items */
+  flex-direction: column; /* Vertical list of dropdown items */
   min-width: 150px;
 }
 
@@ -89,7 +90,7 @@
     gap: 0;
     width: 100%;
     position: absolute;
-    top: 100%;                   /* Positions below the navbar on mobile */
+    top: 100%; /* Positions below the navbar on mobile */
     left: 0;
     background-color: #333;
   }
