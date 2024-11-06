@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { DatePicker, TimePicker } from 'antd';
-import 'antd/dist/antd.css';
+import React, { useState } from "react";
+import { DatePicker, TimePicker } from "antd";
 
 export default function MyDateTimePicker() {
   const [date, setDate] = useState(null);
@@ -8,12 +7,12 @@ export default function MyDateTimePicker() {
 
   const handleDateChange = (value) => {
     setDate(value);
-    console.log("Selected Date:", value ? value.format('YYYY-MM-DD') : null);
+    console.log("Selected Date:", value ? value.format("YYYY-MM-DD") : null);
   };
 
   const handleTimeChange = (value) => {
     setTime(value);
-    console.log("Selected Time:", value ? value.format('HH:mm:ss') : null);
+    console.log("Selected Time:", value ? value.format("HH:mm:ss") : null);
   };
 
   return (
@@ -21,12 +20,9 @@ export default function MyDateTimePicker() {
       <DatePicker
         onChange={handleDateChange}
         placeholder="Select date"
-        style={{ marginRight: '8px' }}
+        style={{ marginRight: "8px" }}
       />
-      <TimePicker
-        onChange={handleTimeChange}
-        placeholder="Select time"
-      />
+      <TimePicker onChange={handleTimeChange} placeholder="Select time" />
     </div>
   );
 }
