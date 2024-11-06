@@ -28,7 +28,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/myrides" element={<MyRides />} />
+          <Route path="/myrides" element={<MyRides netid={user.netid} />} />
         </Routes>
       ) : (
         <div className="text-center">
