@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Input from "../components/Input";
 // import RidesTable from "./RidesTable";
 // import AddRideForm from "./AddRideForm";
 
@@ -24,6 +25,8 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -46,6 +49,27 @@ export default function Dashboard() {
       <br />
       <br />
       <Link to="/myrides">My Rides</Link>
+
+      <br />
+      <br />
+
+      <div>
+        <p> Create a new ride: </p>
+        <Input label="Maximum Capacity"></Input>
+        <Input label="Starting Point"></Input>
+        <Input label="Destination"></Input>
+        <Input label="Time"></Input>
+        <br />
+        <a
+        href="/api/dashboard"
+        className="bg-theme_dark_1 text-white px-4 py-2 rounded"
+      >
+        Submit
+      </a>
+      </div>
+
+      
+      
 
       {/* <AddRideForm
         locations={dashboardData.locations}
