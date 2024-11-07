@@ -54,7 +54,7 @@ function App() {
             <br />
             <a
               href="/api/login"
-              className="text-lg bg-theme_dark_2 text-white px-4 py-2 rounded"
+              className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded"
             >
               Login with CAS
             </a>
