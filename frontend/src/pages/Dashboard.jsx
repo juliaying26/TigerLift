@@ -62,7 +62,6 @@ export default function Dashboard() {
     }
   }
 
-  
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -75,7 +74,7 @@ export default function Dashboard() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="pt-16">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl">
           Welcome, {dashboardData.user_info?.displayname}
@@ -83,12 +82,13 @@ export default function Dashboard() {
       </div>
       <a
         href="/api/logout"
-        className="bg-theme_dark_1 text-white px-4 py-2 rounded"
+        className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
       >
         Log out
       </a>
       <br />
       <br />
+
       <Link to="/myrides">My Rides</Link>
 
       {loading ? (
@@ -125,7 +125,12 @@ export default function Dashboard() {
         <p className="text-center">No rides available in this category.</p>
       )}
 
-
+      <a
+        href="/myrides"
+        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+      >
+        My Rides
+      </a>
       <br />
       <br />
 
@@ -137,15 +142,12 @@ export default function Dashboard() {
         <DateTimePicker> </DateTimePicker>
         <br />
         <a
-        href="/api/dashboard"
-        className="bg-theme_dark_1 text-white px-4 py-2 rounded"
-      >
-        Submit
-      </a>
+          //href="/api/dashboard"
+          className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+        >
+          Submit
+        </a>
       </div>
-
-      
-      
 
       {/* <AddRideForm
         locations={dashboardData.locations}
