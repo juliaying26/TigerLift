@@ -147,8 +147,20 @@ export default function MyRides({ netid }) {
   return (
     <div className="pt-16 flex flex-col gap-6">
       <div className="flex gap-2">
-        <Button onClick={() => setViewType("posted")}>My Posted Rides</Button>
-        <Button onClick={() => setViewType("requested")}>
+        <Button
+          className={`${
+            viewType == "posted" ? "bg-theme_dark_1" : "bg-theme_medium_1"
+          } text-white font-medium`}
+          onClick={() => setViewType("posted")}
+        >
+          My Posted Rides
+        </Button>
+        <Button
+          className={`${
+            viewType == "requested" ? "bg-theme_dark_1" : "bg-theme_medium_1"
+          } text-white font-medium`}
+          onClick={() => setViewType("requested")}
+        >
           My Requested Rides
         </Button>
       </div>
