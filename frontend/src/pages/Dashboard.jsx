@@ -26,8 +26,6 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  
-
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -35,7 +33,7 @@ export default function Dashboard() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="pt-16">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl">
           Welcome, {dashboardData.user_info?.displayname}
@@ -66,15 +64,12 @@ export default function Dashboard() {
         <DateTimePicker> </DateTimePicker>
         <br />
         <a
-        //href="/api/dashboard"
-        className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-      >
-        Submit
-      </a>
+          //href="/api/dashboard"
+          className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+        >
+          Submit
+        </a>
       </div>
-
-      
-      
 
       {/* <AddRideForm
         locations={dashboardData.locations}
