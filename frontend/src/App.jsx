@@ -47,15 +47,18 @@ function App() {
           />
         </Routes>
       ) : (
-        <div className="text-center">
-          <h1 className="text-2xl mb-4">Welcome to TigerLift</h1>
-
-          <a
-            href="/api/login"
-            className="bg-theme_dark_2 text-white px-4 py-2 rounded"
-          >
-            Login with CAS
-          </a>
+        <div className="text-center h-screen flex items-center justify-center">
+          <div className="bg-white py-20 w-1/2 rounded">
+            <h1 className="text-4xl mb-4 font-serif">Welcome to TigerLift!</h1>
+            <br />
+            <br />
+            <a
+              href="/api/login"
+              className="text-lg bg-theme_dark_2 text-white px-4 py-2 rounded"
+            >
+              Login with CAS
+            </a>
+          </div>
         </div>
       )}
     </div>
