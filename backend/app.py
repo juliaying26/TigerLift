@@ -52,9 +52,6 @@ def api_my_posted_rides():
     return jsonify({
         'myrides': myrides,
     })
-    html_code = render_template('myrides.html', view_type=view_type, myrides=myrides, myreqrides=myreqrides)
-    response = make_response(html_code)
-    return response
 
 @app.route('/api/myrequestedrides', methods=['GET'])
 def api_my_requested_rides():
@@ -125,21 +122,42 @@ def requestride():
     database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
     return redirect("/dashboard")
 
-@app.route("/acceptriderequest", methods=["GET"])
+@app.route("/api/acceptriderequest", methods=["POST"])
 def acceptriderequest():
-    database.accept_ride_request(request.args.get('requester_id'), request.args.get('full_name'), request.args.get('mail'), request.args.get('rideid'))
-    return redirect("/myrides")
+    data = request.get_json()
+    requester_id = data.get('requester_id')
+    full_name = data.get('full_name')
+    mail = data.get('mail')
+    rideid = data.get('rideid')
+    try:
+        database.accept_ride_request(requester_id, full_name, mail, rideid)
+        return jsonify({'success': True, 'message': 'Ride request accepted'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to accept ride request'}), 400
 
-@app.route("/rejectriderequest", methods=["GET"])
+@app.route("/api/rejectriderequest", methods=["POST"])
 def rejectriderequest():
-    database.reject_ride_request(request.args.get('requester_id'), request.args.get('rideid'))
-    return redirect("/myrides")
+    data = request.get_json()
+    requester_id = data.get('requester_id')
+    rideid = data.get('rideid')
+    try:
+        database.reject_ride_request(requester_id, rideid)
+        return jsonify({'success': True, 'message': 'Ride request rejected'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to reject ride request'}), 400
 
-
-@app.route("/removerider", methods=["GET"])
+@app.route("/api/removerider", methods=["POST"])
 def removerider():
-    database.remove_rider(request.args.get('requester_id'), request.args.get('full_name'), request.args.get('mail'), request.args.get('rideid'))
-    return redirect("/myrides")
+    data = request.get_json()
+    requester_id = data.get('requester_id')
+    full_name = data.get('full_name')
+    mail = data.get('mail')
+    rideid = data.get('rideid')
+    try:
+        database.remove_rider(requester_id, full_name, mail, rideid)
+        return jsonify({'success': True, 'message': 'Ride request back to pending'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to remove ride request'}), 400
 
 if __name__ == "__main__":
     if not app._got_first_request:
