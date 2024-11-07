@@ -65,7 +65,7 @@ export default function Dashboard() {
         href="/api/dashboard"
         className="bg-theme_dark_1 text-white px-4 py-2 rounded"
       >
-        Submit
+        Submit 
       </a>
       </div>
 
