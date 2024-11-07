@@ -43,14 +43,18 @@ export default function Dashboard() {
       </div>
       <a
         href="/api/logout"
-        className="bg-theme_dark_1 text-white px-4 py-2 rounded"
+        className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
       >
         Log out
       </a>
       <br />
       <br />
-      <Link to="/myrides">My Rides</Link>
-
+      <a
+        href="/myrides"
+        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+      >
+        My Rides
+      </a>
       <br />
       <br />
 
@@ -63,7 +67,7 @@ export default function Dashboard() {
         <br />
         <a
         //href="/api/dashboard"
-        className="bg-theme_dark_1 text-white px-4 py-2 rounded"
+        className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
       >
         Submit
       </a>
