@@ -23,7 +23,7 @@ function App() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="mx-auto">
       {user ? (
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
