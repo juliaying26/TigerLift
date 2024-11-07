@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
+import DateTimePicker from "../components/DateTimePicker";
 // import RidesTable from "./RidesTable";
 // import AddRideForm from "./AddRideForm";
 
@@ -58,7 +59,7 @@ export default function Dashboard() {
         <Input label="Maximum Capacity"></Input>
         <Input label="Starting Point"></Input>
         <Input label="Destination"></Input>
-        <Input label="Time"></Input>
+        <DateTimePicker> </DateTimePicker>
         <br />
         <a
         href="/api/dashboard"

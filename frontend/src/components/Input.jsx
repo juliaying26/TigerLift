@@ -20,7 +20,7 @@ export default function Input({ label }) {
         onChange= {handleChange}
         />
 
-        <p> User input: {inputValue} </p>
+        <p> User input from field above (testing purposes): {inputValue} </p>
 
     </div>
 
