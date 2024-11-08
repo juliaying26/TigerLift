@@ -221,9 +221,9 @@ def create_ride_request(netid, full_name, mail, ride_id):
             with conn.cursor() as cursor:
                 cursor.execute(sql_command, values)
                 conn.commit()
-                print("Notification addded successfully!")
+                print("Ride request addded successfully!")
         except Exception as e:
-            print(f"Error adding notification: {e}")
+            print(f"Error adding ride request: {e}")
         finally:
             conn.close()
     else:

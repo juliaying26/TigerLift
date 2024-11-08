@@ -3,13 +3,10 @@ import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
 import DateTimePicker from "../components/DateTimePicker";
-import RideCard from "../components/RideCard.jsx"
-import Pill from "../components/Pill.jsx"
-// import RidesTable from "./RidesTable";
-// import AddRideForm from "./AddRideForm";
+import RideCard from "../components/RideCard.jsx";
+import Pill from "../components/Pill.jsx";
 
 export default function Dashboard() {
-  
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
     rides: [],
@@ -27,40 +24,43 @@ export default function Dashboard() {
       setDashboardData(data);
 
       const formattedRides = Array.isArray(data.rides)
-      ? data.rides.map((rideArray) => ({
-          id: rideArray[0],
-          admin_netid: rideArray[1],
-          admin_name: rideArray[2],
-          admin_email: rideArray[3],
-          max_capacity: rideArray[4],
-          origin: rideArray[5],
-          destination: rideArray[6],
-          arrival_time: rideArray[7],
-          creation_time: rideArray[8],
-          updated_at: rideArray[9],
-          current_riders: rideArray[10],
-          requested_riders: rideArray[11] || false,
-        }))
-      : [];
+        ? data.rides.map((rideArray) => ({
+            id: rideArray[0],
+            admin_netid: rideArray[1],
+            admin_name: rideArray[2],
+            admin_email: rideArray[3],
+            max_capacity: rideArray[4],
+            origin: rideArray[5],
+            destination: rideArray[6],
+            arrival_time: rideArray[7],
+            creation_time: rideArray[8],
+            updated_at: rideArray[9],
+            current_riders: rideArray[10],
+            requested_riders: rideArray[11] || false,
+          }))
+        : [];
 
-      setRidesData(formattedRides)
-
+      setRidesData(formattedRides);
     } catch (error) {
       console.error("Error:", error);
     }
     setLoading(false);
   };
 
-  const handleRideRequest = async (ride) => {
+  const handleRideRequest = async (rideid) => {
     try {
-      console.log(ride.id)
-      const response = await fetch("/requestride/?rideid=${ride.id}");
-      const data = await response.json();
-      console.log("ride requested sucessfully")
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
+      await fetch("/api/requestride", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rideid: rideid,
+        }),
+      });
+      await fetchDashboardData();
+    } catch (error) {}
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -77,21 +77,28 @@ export default function Dashboard() {
       </div>
       <a
         href="/api/logout"
-        className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+        className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1 float-right"
       >
         Log out
       </a>
       <br />
       <br />
 
-      <Link to="/myrides">My Rides</Link>
+      <Link
+        to="/myrides"
+        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+      >
+        My Rides
+      </Link>
+      <br />
+      <br />
 
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : ridesData.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          
           {ridesData.map((ride) => (
+            // make sure that you can't request a ride on your own ride pleaseeee
             <RideCard
               key={ride.id}
               buttonText={
@@ -100,8 +107,19 @@ export default function Dashboard() {
                   : dashboardData.ridereqs[ride.id]
                   ? "Pending"
                   : "Request a Ride"
+                dashboardData.ridereqs[ride.id]
+                  ? dashboardData.ridereqs[ride.id]
+                  : "Request a Ride"
               }
-              buttonOnClick={() => handleRideRequest(ride)}
+              buttonOnClick={
+                dashboardData.ridereqs[ride.id]
+                  ? () => {}
+                  : () => handleRideRequest(ride.id)
+
+              }
+              buttonClassName={`${
+                dashboardData.ridereqs[ride.id] && "cursor-auto"
+              } bg-theme_dark_1 text-white font-medium`}
             >
               <div>Origin: {ride.origin}</div>
               <div>Destination: {ride.destination}</div>
@@ -124,15 +142,6 @@ export default function Dashboard() {
         <p className="text-center">No rides available in this category.</p>
       )}
 
-      <a
-        href="/myrides"
-        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-      >
-        My Rides
-      </a>
-      <br />
-      <br />
-
       <div>
         <p> Create a new ride: </p>
         <Input label="Maximum Capacity"></Input>
@@ -147,17 +156,6 @@ export default function Dashboard() {
           Submit
         </a>
       </div>
-
-      {/* <AddRideForm
-        locations={dashboardData.locations}
-        onSubmit={fetchDashboardData}
-      />
-      <RidesTable
-        rides={dashboardData.rides}
-        ridereqs={dashboardData.ridereqs}
-        userId={dashboardData.user_info?.netid}
-        onAction={fetchDashboardData}
-      /> */}
     </div>
   );
 }

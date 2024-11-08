@@ -61,7 +61,6 @@ def api_my_requested_rides():
         'myreqrides': myreqrides
     })
 
-
 @app.route("/addride", methods=["GET"])
 def addride():
     user_info = _cas.authenticate()
@@ -79,12 +78,16 @@ def deleteride():
     database.delete_ride(str(user_info['netid']), rideid)
     return redirect("/myrides")
 
-@app.route("/cancelriderequest", methods=["GET"])
+@app.route("/api/cancelriderequest", methods=["POST"])
 def cancelriderequest():
     user_info = _cas.authenticate()
-    rideid = request.args.get('rideid')
-    database.delete_ride_request(str(user_info['netid']), rideid)
-    return redirect("/myrides")
+    data = request.get_json()
+    rideid = data.get('rideid')
+    try:
+        database.delete_ride_request(str(user_info['netid']), rideid)
+        return jsonify({'success': True, 'message': 'Ride request canceled'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to cancel ride request'}), 400
     
 @app.route("/addlocation", methods=["GET"])
 def addlocation():
@@ -115,12 +118,16 @@ def searchrides():
     response = make_response(html_code)
     return response
 
-@app.route("/requestride", methods=["GET"])
+@app.route("/api/requestride", methods=["POST"])
 def requestride():
     user_info = _cas.authenticate()
-    rideid = request.args.get('rideid')
-    database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
-    return redirect("/dashboard")
+    data = request.get_json()
+    rideid = data.get('rideid')
+    try:
+        database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
+        return jsonify({'success': True, 'message': 'Ride request created'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to create ride request'}), 400
 
 @app.route("/api/acceptriderequest", methods=["POST"])
 def acceptriderequest():
