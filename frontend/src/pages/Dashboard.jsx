@@ -107,9 +107,6 @@ export default function Dashboard() {
                   : dashboardData.ridereqs[ride.id]
                   ? "Pending"
                   : "Request a Ride"
-                dashboardData.ridereqs[ride.id]
-                  ? dashboardData.ridereqs[ride.id]
-                  : "Request a Ride"
               }
               buttonOnClick={
                 dashboardData.ridereqs[ride.id]
