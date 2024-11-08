@@ -109,13 +109,15 @@ export default function Dashboard() {
                   : "Request a Ride"
               }
               buttonOnClick={
-                dashboardData.ridereqs[ride.id]
+                dashboardData.ridereqs[ride.id] ||
+                ride.admin_netid === dashboardData.user_info.netid
                   ? () => {}
                   : () => handleRideRequest(ride.id)
-
               }
               buttonClassName={`${
-                dashboardData.ridereqs[ride.id] && "cursor-auto"
+                (dashboardData.ridereqs[ride.id] ||
+                  ride.admin_netid === dashboardData.user_info.netid) &&
+                "cursor-auto"
               } bg-theme_dark_1 text-white font-medium`}
             >
               <div>Origin: {ride.origin}</div>
