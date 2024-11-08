@@ -66,11 +66,6 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-    
-  useEffect(() => {
-    console.log(dashboardData.ridereqs);
-  }, [dashboardData]);
-
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -100,7 +95,11 @@ export default function Dashboard() {
             <RideCard
               key={ride.id}
               buttonText={
-                dashboardData.ridereqs[ride.id] ? "Pending" : "Request a Ride"
+                ride.admin_netid === dashboardData.user_info.netid
+                  ? "Cannot join your own ride"
+                  : dashboardData.ridereqs[ride.id]
+                  ? "Pending"
+                  : "Request a Ride"
               }
               buttonOnClick={() => handleRideRequest(ride)}
             >
