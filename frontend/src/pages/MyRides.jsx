@@ -6,9 +6,11 @@ import Modal from "../components/Modal";
 import Button from "../components/Button";
 import Pill from "../components/Pill";
 import IconButton from "../components/IconButton";
+import { useNavigate } from "react-router-dom";
 
 export default function MyRides({ netid }) {
   // myRidesData = array of dictionaries
+  const navigate = useNavigate();
   const [myRidesData, setMyRidesData] = useState([]);
   const [viewType, setViewType] = useState("posted");
   const [loading, setLoading] = useState(true);
@@ -143,10 +145,26 @@ export default function MyRides({ netid }) {
     } catch (error) {}
   };
 
+  const handleCancelRideRequest = async (rideid) => {
+    try {
+      await fetch("/api/cancelriderequest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rideid: rideid,
+        }),
+      });
+      await fetchMyRidesData();
+    } catch (error) {}
+  };
+
   console.log("my rides data is", myRidesData);
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex gap-2">
+        <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
           className={`${
             viewType == "posted" ? "bg-theme_dark_1" : "bg-theme_medium_1"
@@ -174,7 +192,12 @@ export default function MyRides({ netid }) {
               buttonText={
                 viewType === "posted" ? "Manage Ride" : "Cancel Request"
               }
-              buttonOnClick={() => handleManageRideClick(ride)}
+              buttonOnClick={
+                viewType === "posted"
+                  ? () => handleManageRideClick(ride)
+                  : () => handleCancelRideRequest(ride.id)
+              }
+              buttonClassName="bg-theme_medium_1 text-white font-medium"
             >
               <div>Origin: {ride.origin}</div>
               <div>Destination: {ride.destination}</div>
