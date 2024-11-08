@@ -66,10 +66,6 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-  useEffect(() => {
-    console.log(dashboardData.ridereqs);
-  }, [dashboardData]);
-
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -106,6 +102,11 @@ export default function Dashboard() {
             <RideCard
               key={ride.id}
               buttonText={
+                ride.admin_netid === dashboardData.user_info.netid
+                  ? "Cannot join your own ride"
+                  : dashboardData.ridereqs[ride.id]
+                  ? "Pending"
+                  : "Request a Ride"
                 dashboardData.ridereqs[ride.id]
                   ? dashboardData.ridereqs[ride.id]
                   : "Request a Ride"
@@ -114,6 +115,7 @@ export default function Dashboard() {
                 dashboardData.ridereqs[ride.id]
                   ? () => {}
                   : () => handleRideRequest(ride.id)
+
               }
               buttonClassName={`${
                 dashboardData.ridereqs[ride.id] && "cursor-auto"
