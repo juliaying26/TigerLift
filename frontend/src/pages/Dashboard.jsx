@@ -1,12 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
 import DateTimePicker from "../components/DateTimePicker";
 import RideCard from "../components/RideCard.jsx";
 import Pill from "../components/Pill.jsx";
+import Button from "../components/Button.jsx"
+import Modal from "../components/Modal.jsx"
+import { useNavigate } from "react-router-dom";
+
 
 export default function Dashboard() {
+
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
     rides: [],
@@ -14,8 +20,72 @@ export default function Dashboard() {
     ridereqs: {},
   });
   const [loading, setLoading] = useState(true);
-
   const [ridesData, setRidesData] = useState([]);
+  const [createRideModal, setCreateRideModal] = useState(false);
+  const [searchRideModal, setSearchRideModal] = useState(false);
+
+  const capacityRef = useRef();
+  const originRef = useRef();
+  const destRef = useRef();
+
+  const [formData, setFormData] = useState({
+    capacity: '',
+    origin: '',
+    dest: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+
+  };
+
+  const createRide = async() => {
+
+    console.log("IN CREATE RIDE!!")
+
+    // NOT WORKING, HOW TO ACCESS VALUES???
+
+    const rideDetails = {
+      capacity: formData.capacity,
+      origin: formData.origin,
+      dest: formData.dest,
+    };
+
+    console.log(rideDetails)
+
+    const queryParams = new URLSearchParams(rideDetails).toString();
+    const url = "/api/addride?${queryParams}"
+    
+    try {
+      await fetch(url)
+      const data = await response.json()
+      await fetchDashboardData();
+    } catch (error) {}
+
+    setLoading(false)
+    handleCloseRideModal()
+  };
+
+  const handleOpenRideModal = async() => {
+    setCreateRideModal(true)
+  }
+
+  const handleCloseRideModal = async() => {
+    setCreateRideModal(false)
+  }
+
+  const handleOpenSearchRideModal = async() => {
+    setSearchRideModal(true)
+  }
+
+  const handleCloseSearchRideModal = async() => {
+    setSearchRideModal(false)
+  }
 
   const fetchDashboardData = async () => {
     try {
@@ -90,6 +160,21 @@ export default function Dashboard() {
       >
         My Rides
       </Link>
+
+      <Button
+        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+        onClick={() => handleOpenRideModal()}
+      >
+        Create a Ride
+      </Button>
+
+      <Button
+        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+        onClick={() => handleOpenSearchRideModal()}
+      >
+        Search
+      </Button>
+      
       <br />
       <br />
 
@@ -98,7 +183,6 @@ export default function Dashboard() {
       ) : ridesData.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {ridesData.map((ride) => (
-            // make sure that you can't request a ride on your own ride pleaseeee
             <RideCard
               key={ride.id}
               buttonText={
@@ -141,20 +225,74 @@ export default function Dashboard() {
         <p className="text-center">No rides available in this category.</p>
       )}
 
-      <div>
-        <p> Create a new ride: </p>
-        <Input label="Maximum Capacity"></Input>
-        <Input label="Starting Point"></Input>
-        <Input label="Destination"></Input>
-        <DateTimePicker> </DateTimePicker>
-        <br />
-        <a
-          //href="/api/dashboard"
-          className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+    {createRideModal && ( <Modal
+          isOpen={createRideModal}
+          onClose={handleCloseRideModal}
+          title={"Create a Ride"}
         >
-          Submit
-        </a>
-      </div>
+        <div>
+            <Input
+              name="capacity"
+              value={formData.capacity}
+              onChange={handleInputChange}
+              label="Maximum Capacity"
+            />
+            <Input
+              name="origin"
+              value={formData.origin}
+              onChange={handleInputChange}
+              label="Starting Point"
+            />
+            <Input
+              name="dest"
+              value={formData.dest}
+              onChange={handleInputChange}
+              label="Destination"
+            />
+            <DateTimePicker />
+            <br />
+
+            <Button
+              className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+              onClick={createRide}
+            >
+              Submit
+            </Button>
+
+        </div>
+      </Modal>
+    )}
+      {searchRideModal && ( <Modal
+              isOpen={searchRideModal}
+              onClose={handleCloseSearchRideModal}
+              title={"Search"}
+            >
+            <div>
+                <Input
+                  name="origin"
+                  value={formData.origin}
+                  onChange={handleInputChange}
+                  label="Starting Point"
+                />
+                <Input
+                  name="dest"
+                  value={formData.dest}
+                  onChange={handleInputChange}
+                  label="Destination"
+                />
+                <br />
+
+                <Button
+                  className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+                  // onClick={searchRide} FININSH UP
+                >
+                  Search
+                </Button>
+
+            </div>
+          </Modal>
+      )}
+    
     </div>
   );
 }
