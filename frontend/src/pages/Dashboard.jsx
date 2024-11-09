@@ -8,6 +8,7 @@ import Pill from "../components/Pill.jsx";
 import Button from "../components/Button.jsx"
 import Modal from "../components/Modal.jsx"
 import { useNavigate } from "react-router-dom";
+import dayjs from 'dayjs';
 
 
 export default function Dashboard() {
@@ -24,51 +25,73 @@ export default function Dashboard() {
   const [createRideModal, setCreateRideModal] = useState(false);
   const [searchRideModal, setSearchRideModal] = useState(false);
 
-  const capacityRef = useRef();
-  const originRef = useRef();
-  const destRef = useRef();
+  const [capacity, setCapacity] = useState();
+  const [origin, setOrigin] = useState()
+  const [dest, setDest] = useState()
+  const [date, setDate] = useState()
+  const [time, setTime] = useState()
 
-  const [formData, setFormData] = useState({
-    capacity: '',
-    origin: '',
-    dest: ''
-  });
+  const searchRide = async() => {
+    console.log("in search ride")
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    // const searchDetails = {
+    //   origin: origin,
+    //   destination: dest,
+    // };
 
+    // const queryParams = new URLSearchParams(searchDetails).toString();
 
-  };
+    try {
+      // console.log(queryParams)
+      const response = await fetch(`/searchrides?origin=${origin}
+        &destination=${dest}`)
+      
+      console.log(response)
+
+      // const data = await response.json();
+      // setDashboardData(data);
+      console.log("end of search ride")
+
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
+
+    handleCloseSearchRideModal()
+  }
 
   const createRide = async() => {
 
-    console.log("IN CREATE RIDE!!")
+    console.log("IN CREATE RIDE!!");
 
-    // NOT WORKING, HOW TO ACCESS VALUES???
+    const datePart = date.format('YYYY-MM-DD');
+    const timePart = time.format('HH:mm:ss');
+    const arrival_time = `${datePart} ${timePart}`;
 
     const rideDetails = {
-      capacity: formData.capacity,
-      origin: formData.origin,
-      dest: formData.dest,
+      max_capacity: capacity,
+      origin: origin,
+      destination: dest,
+      arrival_time: arrival_time
     };
 
-    console.log(rideDetails)
-
     const queryParams = new URLSearchParams(rideDetails).toString();
-    const url = "/api/addride?${queryParams}"
     
     try {
-      await fetch(url)
-      const data = await response.json()
-      await fetchDashboardData();
-    } catch (error) {}
+      const response = await fetch(`/addride?${queryParams}`, {
+        method: 'GET',
+      });
+    
+      if (response.ok) {
+        console.log("HERE");
+      } else {
+        console.error("Request failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
 
     setLoading(false)
-    handleCloseRideModal()
+    // handleCloseRideModal()
   };
 
   const handleOpenRideModal = async() => {
@@ -232,24 +255,26 @@ export default function Dashboard() {
         >
         <div>
             <Input
-              name="capacity"
-              value={formData.capacity}
-              onChange={handleInputChange}
               label="Maximum Capacity"
+              inputValue={capacity}
+              setInputValue={setCapacity}
             />
             <Input
-              name="origin"
-              value={formData.origin}
-              onChange={handleInputChange}
               label="Starting Point"
+              inputValue={origin}
+              setInputValue={setOrigin}
             />
             <Input
-              name="dest"
-              value={formData.dest}
-              onChange={handleInputChange}
               label="Destination"
+              inputValue={dest}
+              setInputValue={setDest}
             />
-            <DateTimePicker />
+            <DateTimePicker
+              date={date}
+              setDate={setDate}
+              time={time}
+              setTime={setTime}
+            />
             <br />
 
             <Button
@@ -269,22 +294,20 @@ export default function Dashboard() {
             >
             <div>
                 <Input
-                  name="origin"
-                  value={formData.origin}
-                  onChange={handleInputChange}
                   label="Starting Point"
+                  inputValue={origin}
+                  setInputValue={setOrigin}
                 />
                 <Input
-                  name="dest"
-                  value={formData.dest}
-                  onChange={handleInputChange}
                   label="Destination"
+                  inputValue={dest}
+                  setInputValue={setDest}
                 />
                 <br />
 
                 <Button
                   className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-                  // onClick={searchRide} FININSH UP
+                  onClick={searchRide} FININSH UP
                 >
                   Search
                 </Button>

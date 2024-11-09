@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { DatePicker, TimePicker } from "antd";
 
-export default function MyDateTimePicker() {
-  const [date, setDate] = useState(null);
-  const [time, setTime] = useState(null);
+export default function MyDateTimePicker({date, setDate, time, setTime}) {
+  // const [date, setDate] = useState(null);
+  // const [time, setTime] = useState(null);
 
   const handleDateChange = (value) => {
     setDate(value);
