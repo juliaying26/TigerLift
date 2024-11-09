@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 
-export default function Input({ label }) {
-    const [inputValue, setInputValue] = useState('');
+export default function Input({ label, inputValue, setInputValue }) {
+   
+    // const [inputValue, setInputValue] = useState('');
 
     const handleChange = (e) => {
         setInputValue(e.target.value);
