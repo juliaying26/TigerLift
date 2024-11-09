@@ -14,12 +14,14 @@ import dayjs from 'dayjs';
 export default function Dashboard() {
 
   const navigate = useNavigate();
+
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
     rides: [],
     locations: [],
     ridereqs: {},
   });
+
   const [loading, setLoading] = useState(true);
   const [ridesData, setRidesData] = useState([]);
   const [createRideModal, setCreateRideModal] = useState(false);
@@ -30,6 +32,9 @@ export default function Dashboard() {
   const [dest, setDest] = useState()
   const [date, setDate] = useState()
   const [time, setTime] = useState()
+
+  const [searchDate, setSearchDate] = useState()
+  const [searchTime, setSearchTime] = useState()
 
   const searchRide = async() => {
     console.log("in search ride")
@@ -42,14 +47,28 @@ export default function Dashboard() {
     // const queryParams = new URLSearchParams(searchDetails).toString();
 
     try {
-      // console.log(queryParams)
+      
+      // const datePart = searchDate.format('YYYY-MM-DD');
+      // const timePart = searchTime.format('HH:mm:ss');
+      // const searchTime = `${datePart} ${timePart}`;
+
       const response = await fetch(`/searchrides?origin=${origin}
-        &destination=${dest}`)
+        &destination=${dest}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
       console.log(response)
 
-      // const data = await response.json();
-      // setDashboardData(data);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch rides: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data)
+      // setRidesData(data);
       console.log("end of search ride")
 
     } catch (error) {
@@ -75,11 +94,9 @@ export default function Dashboard() {
     };
 
     const queryParams = new URLSearchParams(rideDetails).toString();
-    
+
     try {
-      const response = await fetch(`/addride?${queryParams}`, {
-        method: 'GET',
-      });
+      fetch(`/addride?${queryParams}`, {method: 'GET',});
     
       if (response.ok) {
         console.log("HERE");
@@ -91,7 +108,7 @@ export default function Dashboard() {
     }
 
     setLoading(false)
-    // handleCloseRideModal()
+    handleCloseRideModal()
   };
 
   const handleOpenRideModal = async() => {
@@ -168,12 +185,7 @@ export default function Dashboard() {
           Welcome, {dashboardData.user_info?.displayname}
         </h1>
       </div>
-      <a
-        href="/api/logout"
-        className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1 float-right"
-      >
-        Log out
-      </a>
+  
       <br />
       <br />
 
@@ -303,6 +315,16 @@ export default function Dashboard() {
                   inputValue={dest}
                   setInputValue={setDest}
                 />
+
+                <br />
+
+                <DateTimePicker
+                  date={searchDate}
+                  setDate={setSearchDate}
+                  time={searchTime}
+                  setTime={setSearchTime}
+                />  
+
                 <br />
 
                 <Button
