@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "npm install && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --host 0.0.0.0 --port 3000"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
