@@ -3,6 +3,9 @@ import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import MyRides from "./pages/MyRides";
 import Navbar from "./components/Navbar";
+import Button from "./components/Button";
+
+const apiURL = import.meta.env.VITE_API_URL;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,6 +22,14 @@ function App() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleLogin = async () => {
+    try {
+      await fetch(`${apiURL}/api/login`, {
+        method: "GET",
+      });
+    } catch (error) {}
+  };
 
   if (loading) return <div>Loading...</div>;
 
@@ -52,12 +63,12 @@ function App() {
             <h1 className="text-4xl mb-4 font-serif">Welcome to TigerLift!</h1>
             <br />
             <br />
-            <a
-              href="/api/login"
+            <Button
+              onClick={handleLogin}
               className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
             >
               Login with CAS
-            </a>
+            </Button>
           </div>
         </div>
       )}
