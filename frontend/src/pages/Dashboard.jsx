@@ -7,6 +7,7 @@ import RideCard from "../components/RideCard.jsx";
 import Pill from "../components/Pill.jsx";
 import Button from "../components/Button.jsx"
 import Modal from "../components/Modal.jsx"
+import Dropdown from "../components/Dropdown.jsx"
 import { useNavigate } from "react-router-dom";
 import dayjs from 'dayjs';
 
@@ -36,8 +37,10 @@ export default function Dashboard() {
   const [searchDate, setSearchDate] = useState()
   const [searchTime, setSearchTime] = useState()
 
+  const [locations, setLocations] = useState([])
+
   const searchRide = async() => {
-    console.log("in search ride")
+    console.log(dashboardData)
 
     // const searchDetails = {
     //   origin: origin,
@@ -52,7 +55,7 @@ export default function Dashboard() {
       // const timePart = searchTime.format('HH:mm:ss');
       // const searchTime = `${datePart} ${timePart}`;
 
-      const response = await fetch(`/searchrides?origin=${origin}
+      const response = await fetch(`/api/searchrides?origin=${origin}
         &destination=${dest}`, {
         method: 'GET',
         headers: {
@@ -66,8 +69,8 @@ export default function Dashboard() {
         throw new Error(`Failed to fetch rides: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log(data)
+      // const data = await response.json();
+      // console.log(data)
       // setRidesData(data);
       console.log("end of search ride")
 
@@ -131,6 +134,7 @@ export default function Dashboard() {
     try {
       const response = await fetch("/api/dashboard");
       const data = await response.json();
+      // console.log(data.locations)
       setDashboardData(data);
 
       const formattedRides = Array.isArray(data.rides)
@@ -151,6 +155,17 @@ export default function Dashboard() {
         : [];
 
       setRidesData(formattedRides);
+      const tempLocations = [];
+      for (const loc of data.locations) {
+        let dict = {value: loc[1], label: loc[1]}
+        tempLocations.push(dict);
+      }
+      setLocations(tempLocations);
+
+      console.log(locations)
+
+      
+
     } catch (error) {
       console.error("Error:", error);
     }
@@ -271,16 +286,23 @@ export default function Dashboard() {
               inputValue={capacity}
               setInputValue={setCapacity}
             />
-            <Input
-              label="Starting Point"
+            
+            <Dropdown
               inputValue={origin}
               setInputValue={setOrigin}
-            />
-            <Input
-              label="Destination"
+              options={locations}
+              isClearable
+              placeholder="Select starting point">
+            </Dropdown>
+
+            <Dropdown
               inputValue={dest}
               setInputValue={setDest}
-            />
+              options={locations}
+              isClearable
+              placeholder="Select destination">
+            </Dropdown>
+
             <DateTimePicker
               date={date}
               setDate={setDate}
@@ -305,16 +327,21 @@ export default function Dashboard() {
               title={"Search"}
             >
             <div>
-                <Input
-                  label="Starting Point"
+                <Dropdown
                   inputValue={origin}
                   setInputValue={setOrigin}
-                />
-                <Input
-                  label="Destination"
+                  options={locations}
+                  isClearable
+                  placeholder="Select starting point">
+                </Dropdown>
+
+                <Dropdown
                   inputValue={dest}
                   setInputValue={setDest}
-                />
+                  options={locations}
+                  isClearable
+                  placeholder="Select destination">
+                </Dropdown>
 
                 <br />
 
@@ -329,7 +356,7 @@ export default function Dashboard() {
 
                 <Button
                   className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-                  onClick={searchRide} FININSH UP
+                  onClick={searchRide}
                 >
                   Search
                 </Button>
