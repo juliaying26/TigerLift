@@ -42,13 +42,38 @@ def api_dashboard():
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
+    # mapping for location
+    location_map = {location[0]: location[1] for location in locations}
+    
+    # mapping for rides array 
+    updated_rides = []
+    for ride in rides:
+        updated_ride = {
+            'id': ride[0],
+            'admin_netid': ride[1],
+            'admin_name': ride[2],
+            'admin_email': ride[3],
+            'max_capacity': ride[4],
+            'origin': ride[5],
+            'origin_name': location_map.get(ride[5], 'Unknown'),
+            'destination': ride[6],
+            'destination_name': location_map.get(ride[6], 'Unknown'),
+            'arrival_time': ride[7],
+            'creation_time': ride[8],
+            'updated_at': ride[9],
+            'current_riders': ride[10]
+        }
+        updated_rides.append(updated_ride)
+    
+    ridereqs = database.get_all_my_ride_requests(user_info['netid'])
+
     ridereqs_map = {}
     for ridereq in ridereqs:
         ridereqs_map[ridereq[1]] = ridereq[2]
-    
+
     return jsonify({
         'user_info': user_info,
-        'rides': rides,
+        'rides': updated_rides,
         'locations': locations,
         'ridereqs': ridereqs_map
     })
@@ -57,16 +82,68 @@ def api_dashboard():
 def api_my_posted_rides():
     user_info = _cas.authenticate()
     myrides = database.get_users_rides(user_info['netid'])
+    locations = database.get_all_locations()
+
+    # mapping for location
+    location_map = {location[0]: location[1] for location in locations}
+    
+    # mapping for rides array 
+    updated_rides = []
+    for ride in myrides:
+        updated_ride = {
+            'id': ride[0],
+            'admin_netid': ride[1],
+            'admin_name': ride[2],
+            'admin_email': ride[3],
+            'max_capacity': ride[4],
+            'origin': ride[5],
+            'origin_name': location_map.get(ride[5], 'Unknown'),
+            'destination': ride[6],
+            'destination_name': location_map.get(ride[6], 'Unknown'),
+            'arrival_time': ride[7],
+            'creation_time': ride[8],
+            'updated_at': ride[9],
+            'current_riders': ride[10],
+        }
+        updated_rides.append(updated_ride)
+    
     return jsonify({
-        'myrides': myrides,
+        'myrides': updated_rides,
     })
 
 @app.route('/api/myrequestedrides', methods=['GET'])
 def api_my_requested_rides():
     user_info = _cas.authenticate()
     myreqrides = database.get_users_requested_rides(user_info['netid'])
+
+    locations = database.get_all_locations()
+    # mapping for location --- want to save this as a global variable later?
+    location_map = {location[0]: location[1] for location in locations}
+    
+    # mapping for rides array 
+    updated_rides = []
+    print(myreqrides)
+    for ride in myreqrides:
+        updated_ride = {
+            'id': ride[0],
+            'admin_netid': ride[1],
+            'admin_name': ride[2],
+            'admin_email': ride[3],
+            'max_capacity': ride[4],
+            'origin': ride[5],
+            'origin_name': location_map.get(ride[5], 'Unknown'),
+            'destination': ride[6],
+            'destination_name': location_map.get(ride[6], 'Unknown'),
+            'arrival_time': ride[7],
+            'creation_time': ride[8],
+            'updated_at': ride[9],
+            'current_riders': ride[10],
+            'requested_riders': ride[11]
+        }
+        updated_rides.append(updated_ride)
+
     return jsonify({
-        'myreqrides': myreqrides
+        'myreqrides': updated_rides
     })
 
 @app.route("/api/addride", methods=["POST"])

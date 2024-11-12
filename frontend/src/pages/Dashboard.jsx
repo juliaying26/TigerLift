@@ -137,24 +137,26 @@ export default function Dashboard() {
       // console.log(data.locations)
       setDashboardData(data);
 
-      const formattedRides = Array.isArray(data.rides)
-        ? data.rides.map((rideArray) => ({
-            id: rideArray[0],
-            admin_netid: rideArray[1],
-            admin_name: rideArray[2],
-            admin_email: rideArray[3],
-            max_capacity: rideArray[4],
-            origin: rideArray[5],
-            destination: rideArray[6],
-            arrival_time: rideArray[7],
-            creation_time: rideArray[8],
-            updated_at: rideArray[9],
-            current_riders: rideArray[10],
-            requested_riders: rideArray[11] || false,
-          }))
-        : [];
+      // we don't need this anymore because we're doing the mapping in app.py
+      //  -- however keeping this in case it becomes an issue later
+      // const formattedRides = Array.isArray(data.rides)
+      //   ? data.rides.map((rideArray) => ({
+      //       id: rideArray[0],
+      //       admin_netid: rideArray[1],
+      //       admin_name: rideArray[2],
+      //       admin_email: rideArray[3],
+      //       max_capacity: rideArray[4],
+      //       origin: rideArray[5],
+      //       destination: rideArray[6],
+      //       arrival_time: rideArray[7],
+      //       creation_time: rideArray[8],
+      //       updated_at: rideArray[9],
+      //       current_riders: rideArray[10],
+      //       requested_riders: rideArray[11] || false,
+      //     }))
+      //   : [];
 
-      setRidesData(formattedRides);
+      setRidesData(data.rides);
       const tempLocations = [];
       for (const loc of data.locations) {
         let dict = {value: loc[1], label: loc[1]}
@@ -252,8 +254,8 @@ export default function Dashboard() {
                 "cursor-auto"
               } bg-theme_dark_1 text-white font-medium`}
             >
-              <div>Origin: {ride.origin}</div>
-              <div>Destination: {ride.destination}</div>
+              <div>Origin: {ride.origin_name}</div>
+              <div>Destination: {ride.destination_name}</div>
               <div>Arrival Time: {ride.arrival_time}</div>
               <div>Admin Name: {ride.admin_name}</div>
               <div>Admin Email: {ride.admin_email}</div>

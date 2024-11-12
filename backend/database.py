@@ -437,7 +437,6 @@ def get_all_rides():
     else:
         print("Connection not established.")
 
-    print("Rides: ", rides)
     return rides
 
 
@@ -637,7 +636,6 @@ def get_all_my_ride_requests(netid):
     if conn:
         try:
             with conn.cursor() as cursor:
-                # cursor.execute(sql_command, values)
                 cursor.execute(sql_command, values)
                 requests = cursor.fetchall()
                 print("Ride requests retrieved successfully!")
@@ -648,7 +646,6 @@ def get_all_my_ride_requests(netid):
     else:
         print("Connection not established.")
 
-    print("DB.py: ", requests)
     return requests
 
 def remove_rider(requester_id, full_name, mail, ride_id):
