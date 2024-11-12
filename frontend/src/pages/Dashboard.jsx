@@ -206,7 +206,7 @@ export default function Dashboard() {
 
       <Link
         to="/myrides"
-        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+        className="inline-block bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
       >
         My Rides
       </Link>
