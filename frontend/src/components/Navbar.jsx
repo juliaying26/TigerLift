@@ -3,11 +3,18 @@
 import React, { useState, useRef } from "react";
 import Select from 'react-select'
 import { Link } from "react-router-dom";
+import ProfilePopup from "../components/ProfilePopUp.jsx"
 
 export default function Navbar() {
 
+    const [profileClicked, setProfileClicked] = useState(false)
+
+    const handleProfileClick = async() => {
+      setProfileClicked(!profileClicked)
+    }
+
     return (
-        <nav className="bg-theme_medium_1 shadow-md">
+        <nav className="bg-theme_medium_1">
             <div className="mx-auto w-full">
                 <div className="relative flex h-20 items-center justify-between">
               
@@ -34,6 +41,7 @@ export default function Navbar() {
                   type="button"
                   className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                   aria-label="My Profile"
+                  onClick={handleProfileClick}
                 >
                   <svg
                     className="h-8 w-8"
@@ -41,7 +49,7 @@ export default function Navbar() {
                     viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-hidden="true"
-                  >
+                  >4
                     <path
                       fillRule="evenodd"
                       d="M12 12c2.28 0 4-1.72 4-4s-1.72-4-4-4-4 1.72-4 4 1.72 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
@@ -49,6 +57,17 @@ export default function Navbar() {
                     />
                   </svg>
                 </button>
+
+                {profileClicked && ( 
+                    <div> 
+                      <ProfilePopup
+                        isOpen={profileClicked}
+                        onClose={handleProfileClick}>
+
+                      </ProfilePopup>
+                    </div>
+                  )}
+
               </div>
             </div>
           </div>
