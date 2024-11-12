@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, request, jsonify, send_from_directory, url_for
+from flask import Flask, redirect, request, jsonify, send_from_directory, url_for, abort
 import database
 from casclient import CASClient
 from dotenv import load_dotenv
@@ -15,6 +15,9 @@ FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react_app(path):
+    if path.startswith('api/'):
+        return abort(404)
+    
     if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     else:
@@ -27,13 +30,13 @@ def isloggedin():
 @app.route('/api/login', methods=['GET'])
 def login():
     user_info = _cas.authenticate() # This will redirect to CAS login page if not logged in
-    return redirect(url_for('serve_react_app', path='dashboard'))
+    return redirect(f"{FRONTEND_URL}/dashboard")
 
 @app.route("/api/logout", methods=["GET"])
 def logout():
     print("called log out")
     _cas.logout()
-    return redirect(url_for('serve_react_app', path='/'))
+    return redirect("/")
 
 @app.route('/api/dashboard', methods=['GET'])
 def api_dashboard():
