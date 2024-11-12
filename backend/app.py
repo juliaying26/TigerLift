@@ -1,16 +1,24 @@
 import os
-from flask import Flask, render_template, make_response, redirect, url_for, request, session, jsonify
+from flask import Flask, redirect, request, jsonify, send_from_directory, url_for
 import database
 from casclient import CASClient
 from dotenv import load_dotenv
 load_dotenv() # load vars in .env file
 
-app = Flask(__name__, template_folder='../frontend')
+app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
 _cas = CASClient()
 
 FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react_app(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/isloggedin', methods=['GET'])
 def isloggedin():
@@ -19,13 +27,13 @@ def isloggedin():
 @app.route('/api/login', methods=['GET'])
 def login():
     user_info = _cas.authenticate() # This will redirect to CAS login page if not logged in
-    return redirect(f"{FRONTEND_URL}/dashboard")
+    return redirect(url_for('serve_react_app', path='dashboard'))
 
 @app.route("/api/logout", methods=["GET"])
 def logout():
     print("called log out")
     _cas.logout()
-    return redirect(f"{FRONTEND_URL}/")
+    return redirect(url_for('serve_react_app', path='/'))
 
 @app.route('/api/dashboard', methods=['GET'])
 def api_dashboard():
