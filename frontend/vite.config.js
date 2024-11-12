@@ -11,11 +11,4 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
-  preview: {
-    proxy: {
-      "/api": {
-        target: "https://tigerlift.onrender.com/",
-      },
-    },
-  },
 }));
