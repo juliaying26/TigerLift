@@ -89,20 +89,22 @@ export default function Dashboard() {
     const timePart = time.format('HH:mm:ss');
     const arrival_time = `${datePart} ${timePart}`;
 
-    const rideDetails = {
-      max_capacity: capacity,
-      origin: origin,
-      destination: dest,
-      arrival_time: arrival_time
-    };
-
-    const queryParams = new URLSearchParams(rideDetails).toString();
-
     try {
-      fetch(`/addride?${queryParams}`, {method: 'GET',});
+      const response = await fetch("/api/addride", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          capacity: capacity,
+          origin: origin["label"],
+          destination: dest["label"],
+          arrival_time: arrival_time,
+        }),
+      });
     
       if (response.ok) {
-        console.log("HERE");
+        console.log("Successful!");
       } else {
         console.error("Request failed:", response.status);
       }
@@ -163,8 +165,6 @@ export default function Dashboard() {
       setLocations(tempLocations);
 
       console.log(locations)
-
-      
 
     } catch (error) {
       console.error("Error:", error);

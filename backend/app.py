@@ -61,15 +61,19 @@ def api_my_requested_rides():
         'myreqrides': myreqrides
     })
 
-@app.route("/addride", methods=["GET"])
+@app.route("/api/addride", methods=["POST"])
 def addride():
     user_info = _cas.authenticate()
-    capacity = request.args.get('max_capacity')
-    origin = database.location_to_id(request.args.get('origin'))
-    destination = database.location_to_id(request.args.get('destination'))
-    arrival_time = request.args.get('arrival_time')
-    database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, destination, arrival_time)
-    return redirect("/dashboard")
+    data = request.get_json()
+    capacity = data.get('capacity')
+    origin = database.location_to_id(data.get('origin'))
+    dest = database.location_to_id(data.get('destination'))
+    arrival_time = data.get('arrival_time')
+    try:
+        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, dest, arrival_time)
+        return jsonify({'success': True, 'message': 'Ride request accepted'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to accept ride request'}), 400
 
 @app.route("/deleteride", methods=["GET"])
 def deleteride():
@@ -105,18 +109,19 @@ def deleteallrides():
     database.delete_all_rides()
     return redirect("/dashboard")
 
-@app.route("/searchrides", methods=["GET"])
+@app.route("/api/searchrides", methods=["GET"])
 def searchrides():
+
     user_info = _cas.authenticate()
     origin = database.location_to_id(request.args.get('origin'))
     destination = database.location_to_id(request.args.get('destination'))
-    arrival_time = request.args.get('arrival_time')
+    arrival_time = request.args.get('arrival_time', '')
     rides = database.search_rides(origin, destination, arrival_time)
-    locations = database.get_all_locations()
-    html_code = render_template('dashboard.html', in_search=True, origin=origin, destination=destination, arrival_time=arrival_time,
-                                user_info=user_info, rides=rides, locations=locations)
-    response = make_response(html_code)
-    return response
+    # locations = database.get_all_locations() ?? Why is this here
+
+    response = jsonify(rides)
+    response.headers['Content-Type'] = 'application/json'
+    return response, 200
 
 @app.route("/api/requestride", methods=["POST"])
 def requestride():
