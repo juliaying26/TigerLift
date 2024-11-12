@@ -199,7 +199,7 @@ export default function MyRides({ netid }) {
                   ? () => handleManageRideClick(ride)
                   : () => handleCancelRideRequest(ride.id)
               }
-              buttonClassName="bg-theme_medium_1 text-white font-medium"
+              buttonClassName="bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
             >
               <div>Origin: {ride.origin_name}</div>
               <div>Destination: {ride.destination_name}</div>
