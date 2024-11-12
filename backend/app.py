@@ -74,6 +74,7 @@ def api_dashboard():
 def api_my_posted_rides():
     user_info = _cas.authenticate()
     myrides = database.get_users_rides(user_info['netid'])
+    print(myrides)
     locations = database.get_all_locations()
 
     # mapping for location
@@ -96,6 +97,7 @@ def api_my_posted_rides():
             'creation_time': ride[8],
             'updated_at': ride[9],
             'current_riders': ride[10],
+            'requested_riders':ride[11]
         }
         updated_rides.append(updated_ride)
     

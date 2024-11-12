@@ -210,10 +210,19 @@ export default function MyRides({ netid }) {
                 Capacity: {ride.current_riders?.length || 0}/{ride.max_capacity}
               </div>
               <p>
-                <strong>Current Riders:</strong>
-                {ride.current_riders.map((rider) => (
-                  <Pill>{rider[0] + " " + rider[1] + " " + rider[2]}</Pill>
-                ))}
+                {Array.isArray(ride.current_riders) && ride.current_riders.length > 0 ? (
+                  <p>
+                    <strong>Current Riders:</strong>
+                    {ride.current_riders.map((rider) => (
+                      <Pill>{rider[0] + " " + rider[1] + " " + rider[2]}</Pill>
+                    ))}
+                  </p>
+                ):(
+                  <p>
+                    <strong>Current Riders:</strong>
+                    <Pill>{<p> No current riders. </p>}</Pill>
+                  </p>
+                )}
               </p>
             </RideCard>
           ))}
@@ -249,28 +258,26 @@ export default function MyRides({ netid }) {
                 {selectedRide.max_capacity}
               </p>
               <p>
-                <strong>Current Riders:</strong>
-                 {selectedRide.current_riders.map((rider) => {
-                    const [netid, fullName, email] = rider;
-                    return (
-                      <Pill>
-                        <div className="flex items-center justify-between">
-                          <div>{rider[0] + " " + rider[1] + " " + rider[2]}</div>
-                          <IconButton
-                            type="xmark"
-                            onClick={() =>
-                              handleRemoveRider(
-                                netid,
-                                fullName,
-                                email,
-                                selectedRide.id
-                              )
-                            }
-                          />
-                        </div>
-                      </Pill>                    
-                    );
-                  })}    
+                {Array.isArray(selectedRide.current_riders) && selectedRide.current_riders.length > 0 ? (
+                    selectedRide.current_riders.map((rider, index) => {
+                      const [netid, fullName, email] = rider;
+                      return (
+                        <Pill key={index}>
+                          <div className="flex items-center justify-between">
+                            <div>{`${netid} ${fullName} ${email}`}</div>
+                            <IconButton
+                              type="xmark"
+                              onClick={() =>
+                                handleRemoveRider(netid, fullName, email, selectedRide.id)
+                              }
+                            />
+                          </div>
+                        </Pill>
+                      );
+                    })
+                  ) : (
+                    <p>No current riders.</p>
+                  )}
                 </p> 
             
               <div className="flex flex-col gap-2">
