@@ -83,8 +83,6 @@ export default function Dashboard() {
 
   const createRide = async() => {
 
-    console.log("IN CREATE RIDE!!");
-
     const datePart = date.format('YYYY-MM-DD');
     const timePart = time.format('HH:mm:ss');
     const arrival_time = `${datePart} ${timePart}`;
@@ -111,7 +109,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
-
+    await fetchDashboardData();
     setLoading(false)
     handleCloseRideModal()
   };
