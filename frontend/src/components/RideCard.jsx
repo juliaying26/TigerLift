@@ -1,14 +1,22 @@
 import React from "react";
-import Button from './Button';
+import Button from "./Button";
 
-// pass in props as children instead :D
-export default function RideCard({ children, buttonText, buttonOnClick }) {
-    return (
-        <div id="ridecard" className="flex flex-col p-4 bg-white rounded-lg">
-            <div>
-                {children}
-                <div className="float-right"><Button onClick={buttonOnClick}>{buttonText}</Button></div>
-            </div>
+export default function RideCard({
+  children,
+  buttonText,
+  buttonOnClick,
+  buttonClassName,
+}) {
+  return (
+    <div id="ridecard" className="flex flex-col p-4 bg-white rounded-lg">
+      <div className="flex flex-col gap-2">
+        <div>{children}</div>
+        <div className="self-end">
+          <Button onClick={buttonOnClick} className={buttonClassName}>
+            {buttonText}
+          </Button>
         </div>
-    );
-};
+      </div>
+    </div>
+  );
+}

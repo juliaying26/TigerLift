@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 export default function Navbar() {
 
     return (
-        <nav className="bg-theme_medium_1">
+        <nav className="bg-theme_medium_1 shadow-md">
             <div className="mx-auto w-full">
                 <div className="relative flex h-20 items-center justify-between">
               

@@ -34,13 +34,38 @@ def api_dashboard():
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
+    # mapping for location
+    location_map = {location[0]: location[1] for location in locations}
+    
+    # mapping for rides array 
+    updated_rides = []
+    for ride in rides:
+        updated_ride = {
+            'id': ride[0],
+            'admin_netid': ride[1],
+            'admin_name': ride[2],
+            'admin_email': ride[3],
+            'max_capacity': ride[4],
+            'origin': ride[5],
+            'origin_name': location_map.get(ride[5], 'Unknown'),
+            'destination': ride[6],
+            'destination_name': location_map.get(ride[6], 'Unknown'),
+            'arrival_time': ride[7],
+            'creation_time': ride[8],
+            'updated_at': ride[9],
+            'current_riders': ride[10]
+        }
+        updated_rides.append(updated_ride)
+    
+    ridereqs = database.get_all_my_ride_requests(user_info['netid'])
+
     ridereqs_map = {}
     for ridereq in ridereqs:
         ridereqs_map[ridereq[1]] = ridereq[2]
-    
+
     return jsonify({
         'user_info': user_info,
-        'rides': rides,
+        'rides': updated_rides,
         'locations': locations,
         'ridereqs': ridereqs_map
     })
@@ -49,31 +74,83 @@ def api_dashboard():
 def api_my_posted_rides():
     user_info = _cas.authenticate()
     myrides = database.get_users_rides(user_info['netid'])
+    locations = database.get_all_locations()
+
+    # mapping for location
+    location_map = {location[0]: location[1] for location in locations}
+    
+    # mapping for rides array 
+    updated_rides = []
+    for ride in myrides:
+        updated_ride = {
+            'id': ride[0],
+            'admin_netid': ride[1],
+            'admin_name': ride[2],
+            'admin_email': ride[3],
+            'max_capacity': ride[4],
+            'origin': ride[5],
+            'origin_name': location_map.get(ride[5], 'Unknown'),
+            'destination': ride[6],
+            'destination_name': location_map.get(ride[6], 'Unknown'),
+            'arrival_time': ride[7],
+            'creation_time': ride[8],
+            'updated_at': ride[9],
+            'current_riders': ride[10],
+        }
+        updated_rides.append(updated_ride)
+    
     return jsonify({
-        'myrides': myrides,
+        'myrides': updated_rides,
     })
-    html_code = render_template('myrides.html', view_type=view_type, myrides=myrides, myreqrides=myreqrides)
-    response = make_response(html_code)
-    return response
 
 @app.route('/api/myrequestedrides', methods=['GET'])
 def api_my_requested_rides():
     user_info = _cas.authenticate()
     myreqrides = database.get_users_requested_rides(user_info['netid'])
+
+    locations = database.get_all_locations()
+    # mapping for location --- want to save this as a global variable later?
+    location_map = {location[0]: location[1] for location in locations}
+    
+    # mapping for rides array 
+    updated_rides = []
+    print(myreqrides)
+    for ride in myreqrides:
+        updated_ride = {
+            'id': ride[0],
+            'admin_netid': ride[1],
+            'admin_name': ride[2],
+            'admin_email': ride[3],
+            'max_capacity': ride[4],
+            'origin': ride[5],
+            'origin_name': location_map.get(ride[5], 'Unknown'),
+            'destination': ride[6],
+            'destination_name': location_map.get(ride[6], 'Unknown'),
+            'arrival_time': ride[7],
+            'creation_time': ride[8],
+            'updated_at': ride[9],
+            'current_riders': ride[10],
+            'requested_riders': ride[11]
+        }
+        updated_rides.append(updated_ride)
+
     return jsonify({
-        'myreqrides': myreqrides
+        'myreqrides': updated_rides
     })
 
-
-@app.route("/addride", methods=["GET"])
+@app.route("/api/addride", methods=["POST"])
 def addride():
     user_info = _cas.authenticate()
-    capacity = request.args.get('max_capacity')
-    origin = database.location_to_id(request.args.get('origin'))
-    destination = database.location_to_id(request.args.get('destination'))
-    arrival_time = request.args.get('arrival_time')
-    database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, destination, arrival_time)
-    return redirect("/dashboard")
+    data = request.get_json()
+    capacity = data.get('capacity')
+    origin = database.location_to_id(data.get('origin'))
+    dest = database.location_to_id(data.get('destination'))
+    arrival_time = data.get('arrival_time')
+    try:
+        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, dest, arrival_time)
+        return jsonify({'success': True, 'message': 'Ride request accepted'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to accept ride request'}), 400
 
 @app.route("/deleteride", methods=["GET"])
 def deleteride():
@@ -82,12 +159,16 @@ def deleteride():
     database.delete_ride(str(user_info['netid']), rideid)
     return redirect("/myrides")
 
-@app.route("/cancelriderequest", methods=["GET"])
+@app.route("/api/cancelriderequest", methods=["POST"])
 def cancelriderequest():
     user_info = _cas.authenticate()
-    rideid = request.args.get('rideid')
-    database.delete_ride_request(str(user_info['netid']), rideid)
-    return redirect("/myrides")
+    data = request.get_json()
+    rideid = data.get('rideid')
+    try:
+        database.delete_ride_request(str(user_info['netid']), rideid)
+        return jsonify({'success': True, 'message': 'Ride request canceled'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to cancel ride request'}), 400
     
 @app.route("/addlocation", methods=["GET"])
 def addlocation():
@@ -105,41 +186,67 @@ def deleteallrides():
     database.delete_all_rides()
     return redirect("/dashboard")
 
-@app.route("/searchrides", methods=["GET"])
+@app.route("/api/searchrides", methods=["GET"])
 def searchrides():
+
     user_info = _cas.authenticate()
     origin = database.location_to_id(request.args.get('origin'))
     destination = database.location_to_id(request.args.get('destination'))
-    arrival_time = request.args.get('arrival_time')
+    arrival_time = request.args.get('arrival_time', '')
     rides = database.search_rides(origin, destination, arrival_time)
-    locations = database.get_all_locations()
-    html_code = render_template('dashboard.html', in_search=True, origin=origin, destination=destination, arrival_time=arrival_time,
-                                user_info=user_info, rides=rides, locations=locations)
-    response = make_response(html_code)
-    return response
+    # locations = database.get_all_locations() ?? Why is this here
 
-@app.route("/requestride", methods=["GET"])
+    response = jsonify(rides)
+    response.headers['Content-Type'] = 'application/json'
+    return response, 200
+
+@app.route("/api/requestride", methods=["POST"])
 def requestride():
     user_info = _cas.authenticate()
-    rideid = request.args.get('rideid')
-    database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
-    return redirect("/dashboard")
+    data = request.get_json()
+    rideid = data.get('rideid')
+    try:
+        database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
+        return jsonify({'success': True, 'message': 'Ride request created'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to create ride request'}), 400
 
-@app.route("/acceptriderequest", methods=["GET"])
+@app.route("/api/acceptriderequest", methods=["POST"])
 def acceptriderequest():
-    database.accept_ride_request(request.args.get('requester_id'), request.args.get('full_name'), request.args.get('mail'), request.args.get('rideid'))
-    return redirect("/myrides")
+    data = request.get_json()
+    requester_id = data.get('requester_id')
+    full_name = data.get('full_name')
+    mail = data.get('mail')
+    rideid = data.get('rideid')
+    try:
+        database.accept_ride_request(requester_id, full_name, mail, rideid)
+        return jsonify({'success': True, 'message': 'Ride request accepted'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to accept ride request'}), 400
 
-@app.route("/rejectriderequest", methods=["GET"])
+@app.route("/api/rejectriderequest", methods=["POST"])
 def rejectriderequest():
-    database.reject_ride_request(request.args.get('requester_id'), request.args.get('rideid'))
-    return redirect("/myrides")
+    data = request.get_json()
+    requester_id = data.get('requester_id')
+    rideid = data.get('rideid')
+    try:
+        database.reject_ride_request(requester_id, rideid)
+        return jsonify({'success': True, 'message': 'Ride request rejected'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to reject ride request'}), 400
 
-
-@app.route("/removerider", methods=["GET"])
+@app.route("/api/removerider", methods=["POST"])
 def removerider():
-    database.remove_rider(request.args.get('requester_id'), request.args.get('full_name'), request.args.get('mail'), request.args.get('rideid'))
-    return redirect("/myrides")
+    data = request.get_json()
+    requester_id = data.get('requester_id')
+    full_name = data.get('full_name')
+    mail = data.get('mail')
+    rideid = data.get('rideid')
+    try:
+        database.remove_rider(requester_id, full_name, mail, rideid)
+        return jsonify({'success': True, 'message': 'Ride request back to pending'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to remove ride request'}), 400
 
 if __name__ == "__main__":
     if not app._got_first_request:

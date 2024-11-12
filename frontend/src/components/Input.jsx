@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 
-export default function Input({ label }) {
-    const [inputValue, setInputValue] = useState('');
+export default function Input({ label, inputValue, setInputValue }) {
+   
+    // const [inputValue, setInputValue] = useState('');
 
     const handleChange = (e) => {
         setInputValue(e.target.value);
@@ -20,7 +21,7 @@ export default function Input({ label }) {
         onChange= {handleChange}
         />
 
-        <p> User input: {inputValue} </p>
+        <p> User input from field above (testing purposes): {inputValue} </p>
 
     </div>
 

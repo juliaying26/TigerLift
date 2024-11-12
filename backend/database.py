@@ -221,9 +221,9 @@ def create_ride_request(netid, full_name, mail, ride_id):
             with conn.cursor() as cursor:
                 cursor.execute(sql_command, values)
                 conn.commit()
-                print("Notification addded successfully!")
+                print("Ride request addded successfully!")
         except Exception as e:
-            print(f"Error adding notification: {e}")
+            print(f"Error adding ride request: {e}")
         finally:
             conn.close()
     else:
@@ -437,7 +437,6 @@ def get_all_rides():
     else:
         print("Connection not established.")
 
-    print("Rides: ", rides)
     return rides
 
 
@@ -637,7 +636,6 @@ def get_all_my_ride_requests(netid):
     if conn:
         try:
             with conn.cursor() as cursor:
-                # cursor.execute(sql_command, values)
                 cursor.execute(sql_command, values)
                 requests = cursor.fetchall()
                 print("Ride requests retrieved successfully!")
@@ -648,7 +646,6 @@ def get_all_my_ride_requests(netid):
     else:
         print("Connection not established.")
 
-    print("DB.py: ", requests)
     return requests
 
 def remove_rider(requester_id, full_name, mail, ride_id):
