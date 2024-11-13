@@ -182,6 +182,9 @@ export default function Dashboard() {
   };
 
   const handleRideRequest = async (rideid) => {
+
+    console.log("IN HANDLE RIDE REQUEST")
+
     try {
       await fetch("/api/requestride", {
         method: "POST",
@@ -249,11 +252,14 @@ export default function Dashboard() {
                   ? "Cannot join your own ride"
                   : dashboardData.ridereqs[ride.id]
                   ? dashboardData.ridereqs[ride.id]
+                  : ride.current_riders.length === ride.max_capacity
+                  ? "Ride filled"
                   : "Request a Ride"
               }
               buttonOnClick={
                 dashboardData.ridereqs[ride.id] ||
-                ride.admin_netid === dashboardData.user_info.netid
+                ride.admin_netid === dashboardData.user_info.netid ||
+                ride.current_riders.length === ride.max_capacity
                   ? () => {}
                   : () => handleRideRequest(ride.id)
               }
