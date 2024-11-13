@@ -164,6 +164,9 @@ export default function Dashboard() {
       //     }))
       //   : [];
 
+      console.log(data.rides)
+
+      data.rides.sort((a, b) => new Date(b.arrival_time) - new Date(a.arrival_time));
       setRidesData(data.rides);
       const tempLocations = [];
       for (const loc of data.locations) {
@@ -171,8 +174,6 @@ export default function Dashboard() {
         tempLocations.push(dict);
       }
       setLocations(tempLocations);
-
-      console.log(locations)
 
     } catch (error) {
       console.error("Error:", error);
