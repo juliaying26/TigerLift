@@ -269,7 +269,7 @@ export default function Dashboard() {
               <div>Admin Name: {ride.admin_name}</div>
               <div>Admin Email: {ride.admin_email}</div>
               <div>
-                Capacity: {ride.current_riders.length}/{ride.max_capacity}
+                Seats Taken: {ride.current_riders.length}/{ride.max_capacity}
               </div>
               <p>
                 <strong>Current Riders:</strong>
