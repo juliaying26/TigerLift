@@ -24,13 +24,16 @@ class CASClient:
         return url
     
     def validate(self, ticket):
-        val_url = self.cas_url + 'p3/serviceValidate' + \
+        val_url = self.cas_url + 'serviceValidate' + \
         '?service=' + quote(self.stripTicket()) + \
         '&ticket=' + quote(ticket) + \
         '&format=json'
+
+        print(val_url)
     
         try:
             with urlopen(val_url) as response:
+                print(response)
                 res_obj = json.loads(response.read().decode('utf-8'))
 
                 print(res_obj)
