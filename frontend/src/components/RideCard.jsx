@@ -8,8 +8,8 @@ export default function RideCard({
   buttonClassName,
 }) {
   return (
-    <div id="ridecard" className="flex flex-col p-4 bg-white rounded-lg">
-      <div className="flex flex-col gap-2">
+    <div id="ridecard" className="p-6 bg-white rounded-lg h-full">
+      <div className="flex flex-col gap-2 justify-between h-full">
         <div>{children}</div>
         <div className="self-end">
           <Button onClick={buttonOnClick} className={buttonClassName}>

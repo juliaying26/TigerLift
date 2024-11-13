@@ -247,31 +247,42 @@ export default function MyRides({ netid }) {
               }
               buttonClassName="bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
             >
-              <div>Origin: {ride.origin_name}</div>
-              <div>Destination: {ride.destination_name}</div>
-              <div>Arrival Time: {ride.arrival_time}</div>
-              <div>Admin Name: {ride.admin_name}</div>
-              <div>Admin Email: {ride.admin_email}</div>
-              <div>
-                Seats Taken: {ride.current_riders?.length || 0}/
-                {ride.max_capacity}
+              <div className="flex flex-col gap-1">
+                <p>
+                  <strong>Origin:</strong> {ride.origin_name}
+                </p>
+                <p>
+                  <strong>Destination:</strong> {ride.destination_name}
+                </p>
+                <p>
+                  <strong>Arrival Time:</strong> {ride.arrival_time}
+                </p>
+                <p>
+                  <strong>Admin Name:</strong> {ride.admin_name}
+                </p>
+                <p>
+                  <strong>Admin Email:</strong> {ride.admin_email}
+                </p>
+                <p>
+                  <strong>Seats Taken:</strong> {ride.current_riders.length}/
+                  {ride.max_capacity}
+                </p>
+                <p>
+                  <strong>Current Riders:</strong>
+                  {Array.isArray(ride.current_riders) &&
+                  ride.current_riders.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {ride.current_riders.map((rider) => (
+                        <Pill>
+                          {rider[0] + " " + rider[1] + " " + rider[2]}
+                        </Pill>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>No current riders.</p>
+                  )}
+                </p>
               </div>
-              <p>
-                {Array.isArray(ride.current_riders) &&
-                ride.current_riders.length > 0 ? (
-                  <p>
-                    <strong>Current Riders:</strong>
-                    {ride.current_riders.map((rider) => (
-                      <Pill>{rider[0] + " " + rider[1] + " " + rider[2]}</Pill>
-                    ))}
-                  </p>
-                ) : (
-                  <p>
-                    <strong>Current Riders:</strong>
-                    <Pill>{<p> No current riders. </p>}</Pill>
-                  </p>
-                )}
-              </p>
             </RideCard>
           ))}
         </div>
@@ -285,7 +296,7 @@ export default function MyRides({ netid }) {
           onClose={handleCloseModal}
           title={"Manage this Ride"}
         >
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
             <p>
               <strong>Origin:</strong> {selectedRide.origin_name}
             </p>
@@ -307,29 +318,32 @@ export default function MyRides({ netid }) {
               {selectedRide.max_capacity}
             </p>
             <p>
+              <strong>Current Riders:</strong>
               {Array.isArray(modalCurrentRiders) &&
               modalCurrentRiders.length > 0 ? (
-                modalCurrentRiders.map((rider, index) => {
-                  const [netid, fullName, email] = rider;
-                  return (
-                    <Pill key={index}>
-                      <div className="flex items-center justify-between">
-                        <div>{`${netid} ${fullName} ${email}`}</div>
-                        <IconButton
-                          type="xmark"
-                          onClick={() =>
-                            handleRemoveRider(
-                              netid,
-                              fullName,
-                              email,
-                              selectedRide.id
-                            )
-                          }
-                        />
-                      </div>
-                    </Pill>
-                  );
-                })
+                <div className="flex flex-col gap-2">
+                  {modalCurrentRiders.map((rider, index) => {
+                    const [netid, fullName, email] = rider;
+                    return (
+                      <Pill key={index}>
+                        <div className="flex items-center justify-between">
+                          <div>{`${netid} ${fullName} ${email}`}</div>
+                          <IconButton
+                            type="xmark"
+                            onClick={() =>
+                              handleRemoveRider(
+                                netid,
+                                fullName,
+                                email,
+                                selectedRide.id
+                              )
+                            }
+                          />
+                        </div>
+                      </Pill>
+                    );
+                  })}
+                </div>
               ) : (
                 <p>No current riders.</p>
               )}

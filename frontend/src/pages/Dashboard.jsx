@@ -40,6 +40,10 @@ export default function Dashboard() {
   const max_capacity_option = 5;
   const capacity_options = [];
 
+  function capitalizeFirstLetter(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+  }
+
   for (let i = 1; i < max_capacity_option + 1; i++) {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
@@ -190,55 +194,54 @@ export default function Dashboard() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="p-6">
+    <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl">
           Welcome, {dashboardData.user_info?.displayname}
         </h1>
       </div>
 
-      <br />
-      <br />
+      <div className="flex justify-between">
+        <div className="flex gap-4">
+          <Link
+            to="/myrides"
+            className="inline-block bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+          >
+            My Rides
+          </Link>
+          <Button
+            className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+            onClick={() => handleOpenRideModal()}
+          >
+            Create a Ride
+          </Button>
+        </div>
+        <Button
+          className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+          onClick={() => handleOpenSearchRideModal()}
+        >
+          Search
+        </Button>
+      </div>
 
-      <Link
-        to="/myrides"
-        className="inline-block bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-      >
-        My Rides
-      </Link>
-
-      <Button
-        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-        onClick={() => handleOpenRideModal()}
-      >
-        Create a Ride
-      </Button>
-
-      <Button
-        className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-        onClick={() => handleOpenSearchRideModal()}
-      >
-        Search
-      </Button>
-
-      <br />
       <br />
 
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : ridesData.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {ridesData.map((ride) => (
             <RideCard
               key={ride.id}
               buttonText={
                 ride.admin_netid === dashboardData.user_info.netid
                   ? "Cannot join your own ride"
-                  : dashboardData.ridereqs[ride.id]
-                  ? dashboardData.ridereqs[ride.id]
+                  : dashboardData.ridereqs[ride.id] !== undefined &&
+                    dashboardData.ridereqs[ride.id] !== null
+                  ? capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
                   : ride.current_riders.length === ride.max_capacity
                   ? "Ride filled"
-                  : "Request a Ride"
+                  : "Request to Join"
               }
               buttonOnClick={
                 dashboardData.ridereqs[ride.id] ||
@@ -248,24 +251,30 @@ export default function Dashboard() {
                   : () => handleRideRequest(ride.id)
               }
               buttonClassName={`${
-                (dashboardData.ridereqs[ride.id] ||
-                  ride.admin_netid === dashboardData.user_info.netid) &&
-                "cursor-auto"
-              } bg-theme_dark_1 text-white font-medium`}
+                dashboardData.ridereqs[ride.id] ||
+                ride.admin_netid === dashboardData.user_info.netid
+                  ? "cursor-auto bg-theme_light text-theme_dark_1 font-semibold"
+                  : "bg-theme_dark_1 text-white font-semibold"
+              }`}
             >
-              <div>Origin: {ride.origin_name}</div>
-              <div>Destination: {ride.destination_name}</div>
-              <div>Arrival Time: {ride.arrival_time}</div>
-              <div>Admin Name: {ride.admin_name}</div>
-              <div>Admin Email: {ride.admin_email}</div>
-              <div>
-                Seats Taken: {ride.current_riders.length}/{ride.max_capacity}
-              </div>
               <p>
-                <strong>Current Riders:</strong>
-                {ride.current_riders.map((rider) => (
-                  <Pill>{rider[0] + " " + rider[1] + " " + rider[2]}</Pill>
-                ))}
+                <strong>Origin:</strong> {ride.origin_name}
+              </p>
+              <p>
+                <strong>Destination:</strong> {ride.destination_name}
+              </p>
+              <p>
+                <strong>Arrival Time:</strong> {ride.arrival_time}
+              </p>
+              <p>
+                <strong>Admin Name:</strong> {ride.admin_name}
+              </p>
+              <p>
+                <strong>Admin Email:</strong> {ride.admin_email}
+              </p>
+              <p>
+                <strong>Seats Taken:</strong> {ride.current_riders.length}/
+                {ride.max_capacity}
               </p>
             </RideCard>
           ))}
