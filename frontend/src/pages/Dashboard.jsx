@@ -239,7 +239,7 @@ export default function Dashboard() {
                 ride.admin_netid === dashboardData.user_info.netid
                   ? "Cannot join your own ride"
                   : dashboardData.ridereqs[ride.id]
-                  ? "Pending"
+                  ? dashboardData.ridereqs[ride.id]
                   : "Request a Ride"
               }
               buttonOnClick={
