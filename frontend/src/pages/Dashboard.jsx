@@ -39,6 +39,14 @@ export default function Dashboard() {
 
   const [locations, setLocations] = useState([])
 
+  const max_capacity_option = 5;
+  const capacity_options = [];
+
+  for (let i = 1; i < max_capacity_option + 1; i++) { 
+    let dict = {value: i, label: i};
+    capacity_options.push(dict);
+  }
+
   const searchRide = async() => {
     console.log(dashboardData)
 
@@ -94,7 +102,7 @@ export default function Dashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          capacity: capacity,
+          capacity: capacity["label"],
           origin: origin["label"],
           destination: dest["label"],
           arrival_time: arrival_time,
@@ -281,11 +289,14 @@ export default function Dashboard() {
           title={"Create a Ride"}
         >
         <div>
-            <Input
-              label="Maximum Capacity"
+            
+            <Dropdown
               inputValue={capacity}
               setInputValue={setCapacity}
-            />
+              options={capacity_options}
+              isClearable
+              placeholder="Select capacity">
+            </Dropdown>
             
             <Dropdown
               inputValue={origin}
