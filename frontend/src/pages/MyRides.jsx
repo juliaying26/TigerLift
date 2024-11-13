@@ -255,7 +255,15 @@ export default function MyRides({ netid }) {
                   <strong>Destination:</strong> {ride.destination_name}
                 </p>
                 <p>
-                  <strong>Arrival Time:</strong> {ride.arrival_time}
+                  <strong>Arrival Time:</strong>{" "}
+                  {new Date(ride.arrival_time).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
                 </p>
                 <p>
                   <strong>Admin Name:</strong> {ride.admin_name}
@@ -304,7 +312,15 @@ export default function MyRides({ netid }) {
               <strong>Destination:</strong> {selectedRide.destination_name}
             </p>
             <p>
-              <strong>Arrival Time:</strong> {selectedRide.arrival_time}
+              <strong>Arrival Time:</strong>{" "}
+              {new Date(selectedRide.arrival_time).toLocaleString("en-US", {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              })}
             </p>
             <p>
               <strong>Admin Name:</strong> {selectedRide.admin_name}
