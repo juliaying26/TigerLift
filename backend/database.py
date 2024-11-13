@@ -559,44 +559,62 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
     Accepts a ride request and updates current_riders in Rides
     """
 
-    update_ride_requests_sql_command = """
-        UPDATE RideRequests
-        SET status = 'accepted', response_time = CURRENT_TIMESTAMP
-        WHERE netid = %s AND ride_id = %s AND status != 'accepted';
-        """
-
-    ride_request_values = (user_netid, ride_id)
-
-    update_rides_sql_command = """
-        UPDATE Rides
-        SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]])
-        WHERE id = %s AND EXISTS (
-            SELECT 1
-            FROM RideRequests
-            WHERE RideRequests.ride_id = Rides.id
-            AND RideRequests.netid = %s
-            AND RideRequests.status != 'accepted'
-        );
+    # checks status of ride request
+    sql_command_check_status = """
+        SELECT status
+        FROM RideRequests
+        WHERE netid = %s AND ride_id = %s
     """
+    values_check_status = (user_netid, ride_id)
 
-    ride_values = (user_netid, full_name, mail, ride_id, user_netid)
-
+    request_status = None
     conn = connect()
-    
-    # if it was successful connection, execute SQL commands to database & commit
+
     if conn:
         try:
             with conn.cursor() as cursor:
-                cursor.execute(update_ride_requests_sql_command, ride_request_values)
-                cursor.execute(update_rides_sql_command, ride_values)
-                conn.commit()
-                print("RideRequest accepted successfully!")
+                cursor.execute(sql_command_check_status, values_check_status)
+                result = cursor.fetchone()
+                if result:
+                    request_status = result[0]
         except Exception as e:
-            print(f"Error accepting ride request: {e}")
+            print(f"Error checking ride request status: {e}")
         finally:
             conn.close()
-    else:
-        print("Connection not established.")
+
+    if request_status != 'accepted':
+        update_ride_requests_sql_command = """
+            UPDATE RideRequests
+            SET status = 'accepted', response_time = CURRENT_TIMESTAMP
+            WHERE netid = %s AND ride_id = %s;
+            """
+
+        ride_request_values = (user_netid, ride_id)
+
+        update_rides_sql_command = """
+            UPDATE Rides
+            SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]])
+            WHERE id = %s;
+        """
+
+        ride_values = (user_netid, full_name, mail, ride_id)
+
+        conn = connect()
+        
+        # if it was successful connection, execute SQL commands to database & commit
+        if conn:
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute(update_ride_requests_sql_command, ride_request_values)
+                    cursor.execute(update_rides_sql_command, ride_values)
+                    conn.commit()
+                    print("RideRequest accepted successfully!")
+            except Exception as e:
+                print(f"Error accepting ride request: {e}")
+            finally:
+                conn.close()
+        else:
+            print("Connection not established.")
 
 # SHOULD THIS AUTO DELETE AFTER A WHILE??? OR ACTUALLY DELETE THE REQUEST INSTEAD OF REJECTING?
 #  OR IS A USER WHO IS REJECTED THEREFORE BANNED FROM REQUESTING AGAIN
