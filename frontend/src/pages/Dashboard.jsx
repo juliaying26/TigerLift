@@ -93,9 +93,10 @@ export default function Dashboard() {
   };
 
   const createRide = async () => {
-    const datePart = date.format("YYYY-MM-DD");
-    const timePart = time.format("HH:mm:ss");
-    const arrival_time = `${datePart} ${timePart}`;
+    const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
+      "HH:mm:ss"
+    )}`;
+    const arrival_time_iso = new Date(arrival_time_string).toISOString();
 
     try {
       const response = await fetch("/api/addride", {
@@ -107,7 +108,7 @@ export default function Dashboard() {
           capacity: capacity["label"],
           origin: origin["label"],
           destination: dest["label"],
-          arrival_time: arrival_time,
+          arrival_time: arrival_time_iso,
         }),
       });
       if (!response.ok) {
@@ -116,9 +117,9 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+    handleCloseRideModal();
     await fetchDashboardData();
     setLoading(false);
-    handleCloseRideModal();
   };
 
   const handleOpenRideModal = async () => {
@@ -264,7 +265,15 @@ export default function Dashboard() {
                 <strong>Destination:</strong> {ride.destination_name}
               </p>
               <p>
-                <strong>Arrival Time:</strong> {ride.arrival_time}
+                <strong>Arrival Time:</strong>{" "}
+                {new Date(ride.arrival_time).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                })}
               </p>
               <p>
                 <strong>Admin Name:</strong> {ride.admin_name}
