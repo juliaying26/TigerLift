@@ -24,27 +24,34 @@ class CASClient:
         return url
     
     def validate(self, ticket):
-        val_url = self.cas_url + 'p3/serviceValidate' + \
+        val_url = self.cas_url + 'serviceValidate' + \
         '?service=' + quote(self.stripTicket()) + \
         '&ticket=' + quote(ticket) + \
         '&format=json'
+
+        print(val_url)
     
         try:
             with urlopen(val_url) as response:
+                print(response)
                 res_obj = json.loads(response.read().decode('utf-8'))
+
+                print(res_obj)
                 
                 if not res_obj or 'serviceResponse' not in res_obj:
                     return None
                     
                 service_response = res_obj['serviceResponse']
+
+                print(service_response)
                 
                 if 'authenticationSuccess' in service_response:
                     user_info = service_response['authenticationSuccess']
                     year = "Graduate"
                     
-                    if user_info['attributes']['pustatus'][0] == "undergraduate":
-                        split_dpt = user_info['attributes']['department'][0].split(" ")
-                        year = split_dpt[-1]
+                    # if user_info['attributes']['pustatus'][0] == "undergraduate":
+                    split_dpt = user_info['attributes']['department'][0].split(" ")
+                    year = split_dpt[-1]
                     return {
                         'netid': user_info['user'],
                         'displayname': user_info['attributes'].get('displayname', ['Student'])[0],
@@ -81,7 +88,10 @@ class CASClient:
             return self.getUserInfo()
         ticket = request.args.get('ticket')
         if ticket is not None:
+            print("before validate")
             user_info = self.validate(ticket)
+            print("after validate")
+            print(user_info)
             if user_info is not None:
                 # The user is authenticated, so store the user's
                 # username in the session.
@@ -93,6 +103,7 @@ class CASClient:
         
         login_url = self.cas_url + 'login' \
             + '?service=' + quote(self.stripTicket())
+        print(login_url)
         abort(redirect(login_url))
     
     def logout(self):
