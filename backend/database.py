@@ -570,10 +570,16 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
     update_rides_sql_command = """
         UPDATE Rides
         SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]])
-        WHERE id = %s AND status != 'accepted';
+        WHERE id = %s AND EXISTS (
+            SELECT 1
+            FROM RideRequests
+            WHERE RideRequests.ride_id = Rides.id
+            AND RideRequests.netid = %s
+            AND RideRequests.status != 'accepted'
+        );
     """
 
-    ride_values = (user_netid, full_name, mail, ride_id)
+    ride_values = (user_netid, full_name, mail, ride_id, user_netid)
 
     conn = connect()
     
