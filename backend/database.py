@@ -508,7 +508,6 @@ def get_users_requested_rides(netid):
         """
 
     values = (str(netid),)
-    print("netid is", values)
     req_rides = []
     
     conn = connect()
@@ -563,7 +562,7 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
     update_ride_requests_sql_command = """
         UPDATE RideRequests
         SET status = 'accepted', response_time = CURRENT_TIMESTAMP
-        WHERE netid = %s AND ride_id = %s;
+        WHERE netid = %s AND ride_id = %s AND status != 'accepted';
         """
 
     ride_request_values = (user_netid, ride_id)
@@ -571,7 +570,7 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
     update_rides_sql_command = """
         UPDATE Rides
         SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]])
-        WHERE id = %s;
+        WHERE id = %s AND status != 'accepted';
     """
 
     ride_values = (user_netid, full_name, mail, ride_id)
@@ -602,7 +601,7 @@ def reject_ride_request(user_netid, ride_id):
     sql_command = """
         UPDATE RideRequests
         SET status = 'rejected', response_time = CURRENT_TIMESTAMP
-        WHERE netid = %s AND ride_id = %s;
+        WHERE netid = %s AND ride_id = %s AND status != 'rejected';
         """
 
     values = (user_netid, ride_id)
