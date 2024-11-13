@@ -11,6 +11,8 @@ _cas = CASClient()
 
 FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
+print("flask env " + FLASK_ENV)
+print("frontend url " + FRONTEND_URL)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -25,11 +27,15 @@ def serve_react_app(path):
 
 @app.route('/api/isloggedin', methods=['GET'])
 def isloggedin():
+    print("IS LOGGED IN!!!!")
     return jsonify({'is_logged_in': _cas.is_logged_in()})
 
 @app.route('/api/login', methods=['GET'])
 def login():
     user_info = _cas.authenticate() # This will redirect to CAS login page if not logged in
+    print("user info")
+    print(user_info)
+    print("RIGHT BEFORE REDIRECT")
     return redirect(f"{FRONTEND_URL}/dashboard")
 
 @app.route("/api/logout", methods=["GET"])
