@@ -16,6 +16,7 @@ export default function MyRides({ netid }) {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRide, setSelectedRide] = useState(null);
+
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
@@ -34,6 +35,9 @@ export default function MyRides({ netid }) {
 
       const ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
       console.log(ride_data);
+      ride_data.sort(
+        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
+      );
       setMyRidesData(ride_data);
     } catch (error) {
       console.error("Error fetching rides:", error);
@@ -64,9 +68,8 @@ export default function MyRides({ netid }) {
 
   // if Delete clicked on Modal popup
   const handleDeleteRide = async (rideId) => {
-    // calls app.py deleteride function (but is currently not working...???)
     try {
-      await fetch("/api/deleteride", {
+      const response = await fetch("/api/deleteride", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,7 +80,12 @@ export default function MyRides({ netid }) {
       });
       handleCloseModal();
       await fetchMyRidesData();
-    } catch (error) {}
+      if (!response.ok) {
+        console.error("Request failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
   };
 
   // if Save clicked on Modal popup
@@ -120,7 +128,7 @@ export default function MyRides({ netid }) {
     console.log("Pending riders:", pending_riders);
 
     try {
-      await fetch("/api/batchupdateriderequest", {
+      const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -133,7 +141,12 @@ export default function MyRides({ netid }) {
       });
       handleCloseModal();
       await fetchMyRidesData();
-    } catch (error) {}
+      if (!response.ok) {
+        console.error("Request failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
   };
 
   // Accepts rider in modal
@@ -177,7 +190,7 @@ export default function MyRides({ netid }) {
 
   const handleCancelRideRequest = async (rideid) => {
     try {
-      await fetch("/api/cancelriderequest", {
+      const response = await fetch("/api/cancelriderequest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -187,7 +200,12 @@ export default function MyRides({ netid }) {
         }),
       });
       await fetchMyRidesData();
-    } catch (error) {}
+      if (!response.ok) {
+        console.error("Request failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
   };
 
   console.log("my rides data is", myRidesData);
