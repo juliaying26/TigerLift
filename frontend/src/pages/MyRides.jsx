@@ -253,7 +253,8 @@ export default function MyRides({ netid }) {
               <div>Admin Name: {ride.admin_name}</div>
               <div>Admin Email: {ride.admin_email}</div>
               <div>
-                Capacity: {ride.current_riders?.length || 0}/{ride.max_capacity}
+                Seats Taken: {ride.current_riders?.length || 0}/
+                {ride.max_capacity}
               </div>
               <p>
                 {Array.isArray(ride.current_riders) &&
@@ -301,7 +302,7 @@ export default function MyRides({ netid }) {
               <strong>Admin Email:</strong> {selectedRide.admin_email}
             </p>
             <p>
-              <strong>Capacity:</strong>{" "}
+              <strong>Seats Taken:</strong>{" "}
               {selectedRide.current_riders?.length || 0}/
               {selectedRide.max_capacity}
             </p>
