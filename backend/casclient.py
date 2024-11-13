@@ -32,11 +32,15 @@ class CASClient:
         try:
             with urlopen(val_url) as response:
                 res_obj = json.loads(response.read().decode('utf-8'))
+
+                print(res_obj)
                 
                 if not res_obj or 'serviceResponse' not in res_obj:
                     return None
                     
                 service_response = res_obj['serviceResponse']
+
+                print(service_response)
                 
                 if 'authenticationSuccess' in service_response:
                     user_info = service_response['authenticationSuccess']
