@@ -41,7 +41,7 @@ export default function MyRides({ netid }) {
       setLoading(false);
     }
   };
-
+ 
   useEffect(() => {
     fetchMyRidesData();
   }, [viewType]);
@@ -85,6 +85,7 @@ export default function MyRides({ netid }) {
     // POST for any states that were changed
     let accepting_riders = []
     let rejecting_riders = []
+    let pending_riders
 
     modalCurrentRiders.forEach(([requester_id, fullName, mail]) => {
       const rider = {
@@ -104,8 +105,20 @@ export default function MyRides({ netid }) {
       rejecting_riders.push(rider);
     })
 
-    console.log(accepting_riders)
-    console.log(rejecting_riders)
+    modalRequestedRiders.forEach(([requester_id, fullName, mail]) => {
+      const rider = {
+        "requester_id": requester_id,
+        "full_name": fullName,
+        "mail": mail,
+        "rideid": rideId
+      }
+      pending_riders.push(rider);
+    })
+
+    console.log("Accepting riders:" , accepting_riders)
+    console.log("Rejecting riders:" , rejecting_riders)
+    console.log("Pending riders:" , pending_riders)
+
     
     try {
       await fetch("/api/batchupdateriderequest", {
@@ -115,7 +128,8 @@ export default function MyRides({ netid }) {
         },
         body: JSON.stringify({
           "accepting_riders": accepting_riders,
-          "rejecting_riders": rejecting_riders
+          "rejecting_riders": rejecting_riders,
+          "pending_riders": pending_riders
         }),
       });
       handleCloseModal();
