@@ -49,9 +49,9 @@ class CASClient:
                     user_info = service_response['authenticationSuccess']
                     year = "Graduate"
                     
-                    if user_info['attributes']['pustatus'][0] == "undergraduate":
-                        split_dpt = user_info['attributes']['department'][0].split(" ")
-                        year = split_dpt[-1]
+                    # if user_info['attributes']['pustatus'][0] == "undergraduate":
+                    split_dpt = user_info['attributes']['department'][0].split(" ")
+                    year = split_dpt[-1]
                     return {
                         'netid': user_info['user'],
                         'displayname': user_info['attributes'].get('displayname', ['Student'])[0],
