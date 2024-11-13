@@ -17,6 +17,10 @@ export default function MyRides({ netid }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRide, setSelectedRide] = useState(null);
 
+  const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
+  const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
+  const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
+
   const fetchMyRidesData = async () => {
     setLoading(true);
 
@@ -30,27 +34,10 @@ export default function MyRides({ netid }) {
       const data = await response.json();
 
       const ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
-      // console.log(ride_data)
-
-      // const formattedRides = Array.isArray(ride_data)
-      //   ? ride_data.map((rideArray) => ({
-      //       id: rideArray[0],
-      //       admin_netid: rideArray[1],
-      //       admin_name: rideArray[2],
-      //       admin_email: rideArray[3],
-      //       max_capacity: rideArray[4],
-      //       origin: rideArray[5],
-      //       destination: rideArray[6],
-      //       arrival_time: rideArray[7],
-      //       creation_time: rideArray[8],
-      //       updated_at: rideArray[9],
-      //       current_riders: rideArray[10],
-      //       requested_riders: rideArray[11] || false,
-      //     }))
-      //   : [];
-
-      // console.log("Formattedrides are", formattedRides);
-      console.log(ride_data)
+      console.log(ride_data);
+      ride_data.sort(
+        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
+      );
       setMyRidesData(ride_data);
     } catch (error) {
       console.error("Error fetching rides:", error);
@@ -66,90 +53,144 @@ export default function MyRides({ netid }) {
   // states for modal
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);
+    setModalCurrentRiders(ride.current_riders || []);
+    setModalRequestedRiders(ride.requested_riders || []);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedRide(null);
+    setModalCurrentRiders([]);
+    setModalRequestedRiders([]);
+    setModalRejectedRiders([]);
   };
 
   // if Delete clicked on Modal popup
-  const handleDeleteRide = () => {
-    // calls app.py deleteride function (but is currently not working...???)
-    fetch(`/deleteride?rideid=${selectedRide.id}`, { method: "GET" })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to delete the ride");
-        }
-        console.log("Ride deleted!!");
-      })
-      .catch((error) => {
-        console.error("Error deleting ride:", error);
-      })
-      .finally(() => {
-        handleCloseModal();
+  const handleDeleteRide = async (rideId) => {
+    try {
+      const response = await fetch("/api/deleteride", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rideid: rideId,
+        }),
       });
+      handleCloseModal();
+      await fetchMyRidesData();
+      if (!response.ok) {
+        console.error("Request failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
   };
 
   // if Save clicked on Modal popup
-  const handleSaveRide = () => {};
+  const handleSaveRide = async (rideId) => {
+    // POST for any states that were changed
+    let accepting_riders = [];
+    let rejecting_riders = [];
+    let pending_riders = [];
 
+    modalCurrentRiders.forEach(([requester_id, fullName, mail]) => {
+      const rider = {
+        requester_id: requester_id,
+        full_name: fullName,
+        mail: mail,
+        rideid: rideId,
+      };
+      accepting_riders.push(rider);
+    });
+
+    modalRejectedRiders.forEach(([requester_id, fullName, mail]) => {
+      const rider = {
+        requester_id: requester_id,
+        rideid: rideId,
+      };
+      rejecting_riders.push(rider);
+    });
+
+    modalRequestedRiders.forEach(([requester_id, fullName, mail]) => {
+      const rider = {
+        requester_id: requester_id,
+        full_name: fullName,
+        mail: mail,
+        rideid: rideId,
+      };
+      pending_riders.push(rider);
+    });
+
+    console.log("Accepting riders:", accepting_riders);
+    console.log("Rejecting riders:", rejecting_riders);
+    console.log("Pending riders:", pending_riders);
+
+    try {
+      const response = await fetch("/api/batchupdateriderequest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accepting_riders: accepting_riders,
+          rejecting_riders: rejecting_riders,
+          pending_riders: pending_riders,
+        }),
+      });
+      handleCloseModal();
+      await fetchMyRidesData();
+      if (!response.ok) {
+        console.error("Request failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
+  };
+
+  // Accepts rider in modal
   const handleAcceptRider = async (netid, fullName, email, rideId) => {
-    try {
-      await fetch("/api/acceptriderequest", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          requester_id: netid,
-          full_name: fullName,
-          mail: email,
-          rideid: rideId,
-        }),
-      });
-      await fetchMyRidesData();
-    } catch (error) {}
+    setModalCurrentRiders((prevCurrentRiders) => [
+      ...prevCurrentRiders,
+      [netid, fullName, email],
+    ]);
+
+    setModalRequestedRiders((prevRequestedRiders) => {
+      // Remove requested rider from requested_riders
+      return prevRequestedRiders.filter(([n, name, mail]) => n !== netid);
+    });
   };
 
-  const handleRejectRider = async (netid, rideId) => {
-    try {
-      await fetch("/api/rejectriderequest", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          requester_id: netid,
-          rideid: rideId,
-        }),
-      });
-      await fetchMyRidesData();
-    } catch (error) {}
+  // Rejects rider in modal
+  const handleRejectRider = async (netid, fullName, email, rideId) => {
+    setModalRejectedRiders((prevRejectedRiders) => [
+      // add to rejected riders
+      ...prevRejectedRiders,
+      [netid, fullName, email],
+    ]);
+
+    setModalRequestedRiders((prevRequestedRiders) => {
+      // remove from requested riders
+      return prevRequestedRiders.filter(([n, name, mail]) => n !== netid);
+    });
   };
 
+  // removes rider from accepted back to pending
   const handleRemoveRider = async (netid, fullName, email, rideId) => {
-    try {
-      await fetch("/api/removerider", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          requester_id: netid,
-          full_name: fullName,
-          mail: email,
-          rideid: rideId,
-        }),
-      });
-      await fetchMyRidesData();
-    } catch (error) {}
+    setModalCurrentRiders((prevCurrentRiders) => {
+      return prevCurrentRiders.filter(([n, name, mail]) => n !== netid);
+    });
+
+    setModalRequestedRiders((prevRequestedRiders) => [
+      ...prevRequestedRiders,
+      [netid, fullName, email],
+    ]);
   };
 
   const handleCancelRideRequest = async (rideid) => {
     try {
-      await fetch("/api/cancelriderequest", {
+      const response = await fetch("/api/cancelriderequest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +200,12 @@ export default function MyRides({ netid }) {
         }),
       });
       await fetchMyRidesData();
-    } catch (error) {}
+      if (!response.ok) {
+        console.error("Request failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
   };
 
   console.log("my rides data is", myRidesData);
@@ -210,14 +256,15 @@ export default function MyRides({ netid }) {
                 Capacity: {ride.current_riders?.length || 0}/{ride.max_capacity}
               </div>
               <p>
-                {Array.isArray(ride.current_riders) && ride.current_riders.length > 0 ? (
+                {Array.isArray(ride.current_riders) &&
+                ride.current_riders.length > 0 ? (
                   <p>
                     <strong>Current Riders:</strong>
                     {ride.current_riders.map((rider) => (
                       <Pill>{rider[0] + " " + rider[1] + " " + rider[2]}</Pill>
                     ))}
                   </p>
-                ):(
+                ) : (
                   <p>
                     <strong>Current Riders:</strong>
                     <Pill>{<p> No current riders. </p>}</Pill>
@@ -238,100 +285,117 @@ export default function MyRides({ netid }) {
           title={"Manage this Ride"}
         >
           <div className="flex flex-col gap-4">
-             <p>
-                <strong>Origin:</strong> {selectedRide.origin_name}
-              </p>
+            <p>
+              <strong>Origin:</strong> {selectedRide.origin_name}
+            </p>
+            <p>
+              <strong>Destination:</strong> {selectedRide.destination_name}
+            </p>
+            <p>
+              <strong>Arrival Time:</strong> {selectedRide.arrival_time}
+            </p>
+            <p>
+              <strong>Admin Name:</strong> {selectedRide.admin_name}
+            </p>
+            <p>
+              <strong>Admin Email:</strong> {selectedRide.admin_email}
+            </p>
+            <p>
+              <strong>Capacity:</strong>{" "}
+              {selectedRide.current_riders?.length || 0}/
+              {selectedRide.max_capacity}
+            </p>
+            <p>
+              {Array.isArray(modalCurrentRiders) &&
+              modalCurrentRiders.length > 0 ? (
+                modalCurrentRiders.map((rider, index) => {
+                  const [netid, fullName, email] = rider;
+                  return (
+                    <Pill key={index}>
+                      <div className="flex items-center justify-between">
+                        <div>{`${netid} ${fullName} ${email}`}</div>
+                        <IconButton
+                          type="xmark"
+                          onClick={() =>
+                            handleRemoveRider(
+                              netid,
+                              fullName,
+                              email,
+                              selectedRide.id
+                            )
+                          }
+                        />
+                      </div>
+                    </Pill>
+                  );
+                })
+              ) : (
+                <p>No current riders.</p>
+              )}
+            </p>
+
+            <div className="flex flex-col gap-2">
               <p>
-                <strong>Destination:</strong> {selectedRide.destination_name}
+                <strong>Requests to Join:</strong>
               </p>
-              <p>
-                <strong>Arrival Time:</strong> {selectedRide.arrival_time}
-              </p>
-              <p>
-                <strong>Admin Name:</strong> {selectedRide.admin_name}
-              </p>
-              <p>
-                <strong>Admin Email:</strong> {selectedRide.admin_email}
-              </p>
-              <p>
-                <strong>Capacity:</strong> {selectedRide.current_riders?.length || 0}/
-                {selectedRide.max_capacity}
-              </p>
-              <p>
-                {Array.isArray(selectedRide.current_riders) && selectedRide.current_riders.length > 0 ? (
-                    selectedRide.current_riders.map((rider, index) => {
-                      const [netid, fullName, email] = rider;
-                      return (
-                        <Pill key={index}>
-                          <div className="flex items-center justify-between">
-                            <div>{`${netid} ${fullName} ${email}`}</div>
+              <div className="overflow-y-auto bg-neutral-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
+                {Array.isArray(modalRequestedRiders) &&
+                modalRequestedRiders.length > 0 ? (
+                  modalRequestedRiders.map((requested_rider, index) => {
+                    const [netid, fullName, email] = requested_rider;
+                    return (
+                      <Pill key={index}>
+                        <div className="p-1 flex justify-between items-center">
+                          <div>{`${netid} ${fullName} ${email}`}</div>
+                          <div className="flex items-center gap-2">
+                            <IconButton
+                              type="checkmark"
+                              onClick={() =>
+                                handleAcceptRider(
+                                  netid,
+                                  fullName,
+                                  email,
+                                  selectedRide.id
+                                )
+                              }
+                            />
                             <IconButton
                               type="xmark"
                               onClick={() =>
-                                handleRemoveRider(netid, fullName, email, selectedRide.id)
+                                handleRejectRider(
+                                  netid,
+                                  fullName,
+                                  email,
+                                  selectedRide.id
+                                )
                               }
                             />
                           </div>
-                        </Pill>
-                      );
-                    })
-                  ) : (
-                    <p>No current riders.</p>
-                  )}
-                </p> 
-            
-              <div className="flex flex-col gap-2">
-                <p>
-                  <strong>Requests to Join:</strong>
-                </p>
-                <div className="overflow-y-auto bg-neutral-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
-                  {Array.isArray(selectedRide.requested_riders) ? (
-                    selectedRide.requested_riders.map((requested_rider, index) => {
-                      const [netid, fullName, email] = requested_rider;
-                      return (
-                        <Pill key={index}>
-                          <div className="p-1 flex justify-between items-center">
-                            <div>{`${netid} ${fullName} ${email}`}</div>
-                            <div className="flex items-center gap-2">
-                              <IconButton
-                                type="checkmark"
-                                onClick={() =>
-                                  handleAcceptRider(
-                                    netid,
-                                    fullName,
-                                    email,
-                                    selectedRide.id
-                                  )
-                                }
-                              />
-                              <IconButton
-                                type="xmark"
-                                onClick={() =>
-                                  handleRejectRider(netid, selectedRide.id)
-                                }
-                              />
-                            </div>
-                          </div>
-                        </Pill>
-                      );
-                    })
-                  ) : (
-                    <p>No requests to join</p>
-                  )}
+                        </div>
+                      </Pill>
+                    );
+                  })
+                ) : (
+                  <p>No requests to join</p>
+                )}
               </div>
             </div>
-                <div className="flex justify-between">
-                  <Button onClick={handleDeleteRide} className="hover:bg-red-600 border border-gray-300">
-                    Delete this Ride
-                  </Button>
-                  <Button onClick={handleSaveRide} className="hover:bg-green-600 border border-gray-300">
-                    Save
-                  </Button>
-                </div>
-
+            <div className="flex justify-between">
+              <Button
+                onClick={() => handleDeleteRide(selectedRide.id)}
+                className="hover:bg-red-600 border border-gray-300"
+              >
+                Delete this Ride
+              </Button>
+              <Button
+                onClick={() => handleSaveRide(selectedRide.id)}
+                className="hover:bg-green-600 border border-gray-300"
+              >
+                Save
+              </Button>
             </div>
-          </Modal>
-
+          </div>
+        </Modal>
       )}
     </div>
   );
