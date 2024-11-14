@@ -21,6 +21,10 @@ export default function MyRides({ netid }) {
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
 
+  function capitalizeFirstLetter(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+  }
+
   const fetchMyRidesData = async () => {
     setLoading(true);
 
@@ -211,12 +215,12 @@ export default function MyRides({ netid }) {
   console.log("my rides data is", myRidesData);
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="flex gap-2">
+      <div className="flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
           className={`${
             viewType == "posted" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-medium`}
+          } text-white font-semibold px-4 py-2`}
           onClick={() => setViewType("posted")}
         >
           My Posted Rides
@@ -224,7 +228,7 @@ export default function MyRides({ netid }) {
         <Button
           className={`${
             viewType == "requested" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-medium`}
+          } text-white font-semibold px-4 py-2`}
           onClick={() => setViewType("requested")}
         >
           My Requested Rides
@@ -238,14 +242,29 @@ export default function MyRides({ netid }) {
             <RideCard
               key={ride.id}
               buttonText={
-                viewType === "posted" ? "Manage Ride" : "Cancel Request"
+                viewType === "posted"
+                  ? "Manage Ride"
+                  : ride.request_status !== "accepted" && "Cancel Request"
               }
               buttonOnClick={
                 viewType === "posted"
                   ? () => handleManageRideClick(ride)
+                  : ride.request_status === "accepted"
+                  ? () => {}
                   : () => handleCancelRideRequest(ride.id)
               }
-              buttonClassName="bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
+              buttonClassName={`${
+                ride.request_status === "accepted"
+                  ? "cursor-auto"
+                  : "bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
+              }`}
+              secondaryButtonText={
+                viewType === "requested" &&
+                capitalizeFirstLetter(ride.request_status)
+              }
+              secondaryButtonOnClick={() => {}}
+              secondaryButtonClassName="cursor-auto"
+              secondaryButtonStatus={ride.request_status}
             >
               <div>
                 <p className="text-xl text-center">

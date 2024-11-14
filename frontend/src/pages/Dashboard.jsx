@@ -221,7 +221,7 @@ export default function Dashboard() {
         <div className="flex gap-4">
           <Link
             to="/myrides"
-            className="inline-block bg-theme_dark_2 text-white px-4 py-2 rounded-md hover:text-theme_medium_1"
+            className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:text-theme_dark_2"
           >
             My Rides
           </Link>
@@ -283,9 +283,10 @@ export default function Dashboard() {
                   buttonClassName={`${
                     dashboardData.ridereqs[ride.id] ||
                     ride.admin_netid === dashboardData.user_info.netid
-                      ? "cursor-auto bg-theme_light text-theme_dark_1 font-semibold"
+                      ? "cursor-auto bg-theme_light_1 text-theme_dark_1 font-semibold"
                       : "bg-theme_dark_1 text-white font-semibold"
                   }`}
+                  buttonStatus={dashboardData.ridereqs[ride.id]}
                 >
                   <p className="text-xl text-center">
                     <strong>
