@@ -32,8 +32,8 @@ export default function Dashboard() {
   const [date, setDate] = useState();
   const [time, setTime] = useState();
 
-  const [searchDate, setSearchDate] = useState();
-  const [searchTime, setSearchTime] = useState();
+  const [endSearchDate, setEndSearchDate] = useState();
+  const [endSearchTime, setEndSearchTime] = useState();
 
   const [locations, setLocations] = useState([]);
 
@@ -48,12 +48,11 @@ export default function Dashboard() {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
-
   const searchRide = async () => {
     console.log(dashboardData);
 
     try {
-      const arrival_time_string = `${searchDate.format("YYYY-MM-DD")}T${searchTime.format(
+      const arrival_time_string = `${endSearchDate.format("YYYY-MM-DD")}T${endSearchTime.format(
         "HH:mm:ss"
       )}`;
       const arrival_time_iso = new Date(arrival_time_string).toISOString();
@@ -361,10 +360,10 @@ export default function Dashboard() {
             <br />
 
             <DateTimePicker
-              date={searchDate}
-              setDate={setSearchDate}
-              time={searchTime}
-              setTime={setSearchTime}
+              date={endSearchDate}
+              setDate={setEndSearchDate}
+              time={endSearchTime}
+              setTime={setEndSearchTime}
             />
 
             <br />
