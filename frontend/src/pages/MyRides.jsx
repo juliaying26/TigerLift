@@ -247,15 +247,14 @@ export default function MyRides({ netid }) {
               }
               buttonClassName="bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
             >
-              <div className="flex flex-col gap-1">
-                <p>
-                  <strong>Origin:</strong> {ride.origin_name}
+              <div>
+                <p className="text-xl text-center">
+                  <strong>
+                    {ride.origin_name} → {ride.destination_name}
+                  </strong>
                 </p>
-                <p>
-                  <strong>Destination:</strong> {ride.destination_name}
-                </p>
-                <p>
-                  <strong>Arrival Time:</strong>{" "}
+                <p className="text-center mb-2">
+                  Arrival by{" "}
                   {new Date(ride.arrival_time).toLocaleString("en-US", {
                     year: "numeric",
                     month: "numeric",
@@ -265,6 +264,7 @@ export default function MyRides({ netid }) {
                     hour12: true,
                   })}
                 </p>
+                <hr className="border-1 my-3 border-theme_medium_1" />
                 <p>
                   <strong>Admin Name:</strong> {ride.admin_name}
                 </p>
@@ -275,21 +275,23 @@ export default function MyRides({ netid }) {
                   <strong>Seats Taken:</strong> {ride.current_riders.length}/
                   {ride.max_capacity}
                 </p>
-                <p>
-                  <strong>Current Riders:</strong>
-                  {Array.isArray(ride.current_riders) &&
-                  ride.current_riders.length > 0 ? (
-                    <div className="flex flex-col gap-2">
-                      {ride.current_riders.map((rider) => (
-                        <Pill>
-                          {rider[0] + " " + rider[1] + " " + rider[2]}
-                        </Pill>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>No current riders.</p>
-                  )}
-                </p>
+                {viewType === "posted" && (
+                  <p>
+                    <strong>Current Riders:</strong>
+                    {Array.isArray(ride.current_riders) &&
+                    ride.current_riders.length > 0 ? (
+                      <div className="flex flex-col gap-2">
+                        {ride.current_riders.map((rider) => (
+                          <Pill>
+                            {rider[0] + " " + rider[1] + " " + rider[2]}
+                          </Pill>
+                        ))}
+                      </div>
+                    ) : (
+                      <p>No current riders.</p>
+                    )}
+                  </p>
+                )}
               </div>
             </RideCard>
           ))}
