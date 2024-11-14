@@ -37,8 +37,8 @@ def database_setup():
             arrival_time TIMESTAMP NOT NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            current_riders TEXT[][]
-            start_search_time TIMESTAMP NOT NULL,
+            current_riders TEXT[][],
+            start_search_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS RideRequests (
@@ -208,8 +208,8 @@ def create_ride_request(netid, full_name, mail, ride_id):
     status = 'pending'
     
     sql_command = f"""
-        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status) VALUES (%s, %s, %s, 
-        %s, %s);
+        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status, request_time) VALUES (%s, %s, %s, 
+        %s, %s, CURRENT_TIMESTAMP);
     """
 
     values = (netid, full_name, mail, ride_id, status)
@@ -598,7 +598,8 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
 
         update_rides_sql_command = """
             UPDATE Rides
-            SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]])
+            SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]]), 
+            updated_at = CURRENT_TIMESTAMP
             WHERE id = %s;
         """
 
