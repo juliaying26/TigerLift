@@ -8,7 +8,7 @@ import Pill from "../components/Pill";
 import IconButton from "../components/IconButton";
 import { useNavigate } from "react-router-dom";
 
-export default function MyRides({ netid }) {
+export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
   const [myRidesData, setMyRidesData] = useState([]);
@@ -37,8 +37,14 @@ export default function MyRides({ netid }) {
       }
       const data = await response.json();
 
-      const ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
+      let ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
       console.log(ride_data);
+      if (viewType === "requested") {
+        console.log("efjsefojio");
+        ride_data = ride_data.filter(
+          (entry) => new Date(entry.arrival_time) >= new Date()
+        );
+      }
       ride_data.sort(
         (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
       );
@@ -242,9 +248,10 @@ export default function MyRides({ netid }) {
             <RideCard
               key={ride.id}
               buttonText={
-                viewType === "posted"
+                new Date(ride.arrival_time) > new Date() &&
+                (viewType === "posted"
                   ? "Manage Ride"
-                  : ride.request_status !== "accepted" && "Cancel Request"
+                  : ride.request_status !== "accepted" && "Cancel Request")
               }
               buttonOnClick={
                 viewType === "posted"
@@ -254,7 +261,8 @@ export default function MyRides({ netid }) {
                   : () => handleCancelRideRequest(ride.id)
               }
               buttonClassName={`${
-                ride.request_status === "accepted"
+                ride.request_status === "accepted" ||
+                new Date(ride.arrival_time) <= new Date()
                   ? "cursor-auto"
                   : "bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
               }`}
@@ -296,7 +304,11 @@ export default function MyRides({ netid }) {
                 </p>
                 {viewType === "posted" && (
                   <p>
-                    <strong>Current Riders:</strong>
+                    <strong>
+                      {new Date(ride.arrival_time) > new Date()
+                        ? "Current Riders:"
+                        : "Rode with:"}
+                    </strong>
                     {Array.isArray(ride.current_riders) &&
                     ride.current_riders.length > 0 ? (
                       <div className="flex flex-col gap-2">
@@ -307,7 +319,11 @@ export default function MyRides({ netid }) {
                         ))}
                       </div>
                     ) : (
-                      <p>No current riders.</p>
+                      <p>
+                        {new Date(ride.arrival_time) > new Date()
+                          ? "No current riders."
+                          : "None."}
+                      </p>
                     )}
                   </p>
                 )}
@@ -316,7 +332,9 @@ export default function MyRides({ netid }) {
           ))}
         </div>
       ) : (
-        <p className="text-center">No rides available in this category.</p>
+        <p className="text-center">
+          {viewType === "posted" ? "No posted rides." : "No requested rides."}
+        </p>
       )}
 
       {isModalOpen && (
