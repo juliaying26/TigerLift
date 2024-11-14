@@ -312,6 +312,34 @@ def update_ride_request(request_id, status):
         print("Connection not established.")
 
 
+def update_capacity(rideid, new_capacity):
+    """
+    Updates the capacity of a ride
+    """
+
+    sql_command = f"""
+        UPDATE Rides
+        SET max_capacity = %s
+        WHERE id = %s;
+    """
+
+    values = (new_capacity, rideid)
+
+    conn = connect()
+
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride capacity updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride capacity: {e}")
+        finally:
+            conn.close()
+
+
 def create_notification(netid, message, type):
     """
     Adds a notifiction in the Notifications database
