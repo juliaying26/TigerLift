@@ -60,13 +60,12 @@ export default function Dashboard() {
       )}`;
       const start_search_time_iso = new Date(start_search_time_string).toISOString();
 
-      
       const arrival_time_string = `${endSearchDate.format("YYYY-MM-DD")}T${endSearchTime.format(
         "HH:mm:ss"
       )}`;
       const arrival_time_iso = new Date(arrival_time_string).toISOString();
 
-
+      
       console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
       console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 

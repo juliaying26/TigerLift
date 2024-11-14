@@ -217,6 +217,14 @@ def searchrides():
     arrival_time = request.args.get('arrival_time')
     start_search_time = request.args.get('start_search_time')
 
+    #if arrival_time is not null and start_search_time is not null:
+    #    rides = database.search_rides(origin, destination, arrival_time, start_search_time)
+    #elif arrival_time is not null and start_search_time is null:
+    #    rides = database.search_rides(origin, destination, arrival_time=arrival_time)
+    #elif arrival_time is null and start_search_time is not null:
+    #    rides = database.search_rides(origin, destination, start_search_time=start_search_time)
+
+
     rides = database.search_rides(origin, destination, arrival_time, start_search_time)
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
