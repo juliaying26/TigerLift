@@ -370,7 +370,7 @@ export default function Dashboard() {
 
             <br />
 
-            Start time: 
+            start time:
             <DateTimePicker
               date={startSearchDate}
               setDate={setStartSearchDate}
@@ -380,7 +380,7 @@ export default function Dashboard() {
 
             <br />
 
-            End time: 
+            end time:
             <DateTimePicker
               date={endSearchDate}
               setDate={setEndSearchDate}
