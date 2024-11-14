@@ -52,21 +52,16 @@ export default function Dashboard() {
   const searchRide = async () => {
     console.log(dashboardData);
 
-    // const searchDetails = {
-    //   origin: origin,
-    //   destination: dest,
-    // };
-
-    // const queryParams = new URLSearchParams(searchDetails).toString();
-
     try {
-      // const datePart = searchDate.format('YYYY-MM-DD');
-      // const timePart = searchTime.format('HH:mm:ss');
-      // const searchTime = `${datePart} ${timePart}`;
+      const arrival_time_string = `${searchDate.format("YYYY-MM-DD")}T${searchTime.format(
+        "HH:mm:ss"
+      )}`;
+      const arrival_time_iso = new Date(arrival_time_string).toISOString();
+
+      console.log("time iso: " + arrival_time_iso)
 
       const response = await fetch(
-        `/api/searchrides?origin=${origin}
-        &destination=${dest}`,
+        `/api/searchrides?origin=${origin.label}&destination=${dest.label}&arrival_time=${arrival_time_iso}`,
         {
           method: "GET",
           headers: {
@@ -74,17 +69,17 @@ export default function Dashboard() {
           },
         }
       );
-
-      console.log(response);
-
+      
       if (!response.ok) {
         throw new Error(`Failed to fetch rides: ${response.status}`);
       }
 
-      // const data = await response.json();
-      // console.log(data)
-      // setRidesData(data);
+      const data = await response.json();
+      console.log("DATA =", data)
+
+      setRidesData(data.rides);
       console.log("end of search ride");
+
     } catch (error) {
       console.error("Error during fetch:", error);
     }
