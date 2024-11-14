@@ -3,8 +3,43 @@ import psycopg2
 import json
 from dotenv import load_dotenv
 load_dotenv()
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
+
+def send_email_notification(netid, subject, message):
+    """
+    Sends email notifications
+
+    How to use: copy paste the following lines ---
+    mail = user_info['netid'] + "@princeton.edu" // because RN we can't get mail from CAS
+    database.send_email_notification(user_info['netid'], mail, 'INSERT SUBJECT HERE', 'INSERT MESSAGE HERE')
+    """
+
+    mail = netid + "@princeton.edu"
+    from_email = os.environ.get('EMAIL_ADDRESS')
+    from_password = os.environ.get('EMAIL_PASSWORD')
+
+    # Set up the email
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = mail
+    msg['Subject'] = subject
+
+    # Attach the message
+    msg.attach(MIMEText(message, 'plain'))
+
+    try:
+        # Connect to the SMTP server and send the email
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()  # Secure the connection
+            server.login(from_email, from_password)
+            server.send_message(msg)
+        print(f"Email sent to {mail} successfully!")
+    except Exception as e:
+        print(f"Error sending email to {mail}: {e}")
 
 def database_setup():
     """
@@ -222,6 +257,23 @@ def create_ride_request(netid, full_name, mail, ride_id):
                 cursor.execute(sql_command, values)
                 conn.commit()
                 print("Ride request addded successfully!")
+
+                try:
+                    # Retrieve the admin_id from the Rides table
+                    admin_query = "SELECT admin_netid FROM Rides WHERE id = %s;"
+                    cursor.execute(admin_query, (ride_id,))
+                    admin_netid_result = cursor.fetchone()
+                    
+                    if admin_netid_result:
+                        admin_id = admin_netid_result[0]
+                        print(f"Admin ID for ride {ride_id} is {admin_id}")
+
+                    # Send email notification
+                    send_email_notification(admin_id, 'You have a new Ride Request!', 'Please check the new request to join your ride at tigerlift.onrender.com')
+
+                except Exception as e:
+                    print(f"Error: Ride {ride_id} not found")
+
         except Exception as e:
             print(f"Error adding ride request: {e}")
         finally:
