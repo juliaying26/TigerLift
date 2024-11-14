@@ -147,7 +147,7 @@ def api_my_requested_rides():
             'creation_time': ride[8],
             'updated_at': ride[9],
             'current_riders': ride[10],
-            'requested_riders': ride[11]
+            'request_status': ride[11]
         }
         updated_rides.append(updated_ride)
 

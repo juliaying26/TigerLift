@@ -7,12 +7,23 @@ export default function RideCard({
   buttonOnClick,
   buttonClassName,
   buttonStatus = "",
+  secondaryButtonText = "",
+  secondaryButtonOnClick = () => {},
+  secondaryButtonClassName = "",
+  secondaryButtonStatus = "",
 }) {
   return (
     <div id="ridecard" className="p-6 bg-white rounded-lg h-full">
       <div className="flex flex-col gap-2 justify-between h-full">
         <div>{children}</div>
-        <div className="self-end">
+        <div className="flex justify-between">
+          <Button
+            onClick={secondaryButtonOnClick}
+            className={secondaryButtonClassName}
+            status={secondaryButtonStatus}
+          >
+            {secondaryButtonText}
+          </Button>
           <Button
             onClick={buttonOnClick}
             className={buttonClassName}
