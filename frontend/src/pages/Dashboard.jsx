@@ -32,6 +32,8 @@ export default function Dashboard() {
   const [date, setDate] = useState();
   const [time, setTime] = useState();
 
+  const [startSearchDate, setStartSearchDate] = useState();
+  const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
 
@@ -52,15 +54,25 @@ export default function Dashboard() {
     console.log(dashboardData);
 
     try {
+
+      const start_search_time_string = `${startSearchDate.format("YYYY-MM-DD")}T${startSearchTime.format(
+        "HH:mm:ss"
+      )}`;
+      const start_search_time_iso = new Date(start_search_time_string).toISOString();
+
+      
       const arrival_time_string = `${endSearchDate.format("YYYY-MM-DD")}T${endSearchTime.format(
         "HH:mm:ss"
       )}`;
       const arrival_time_iso = new Date(arrival_time_string).toISOString();
 
-      console.log("time iso: " + arrival_time_iso)
+
+      console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
+      console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
+
 
       const response = await fetch(
-        `/api/searchrides?origin=${origin.label}&destination=${dest.label}&arrival_time=${arrival_time_iso}`,
+        `/api/searchrides?origin=${origin.label}&destination=${dest.label}&arrival_time=${arrival_time_iso}&start_search_time=${start_search_time_iso}`,
         {
           method: "GET",
           headers: {
@@ -359,6 +371,17 @@ export default function Dashboard() {
 
             <br />
 
+            start time:
+            <DateTimePicker
+              date={startSearchDate}
+              setDate={setStartSearchDate}
+              time={startSearchTime}
+              setTime={setStartSearchTime}
+            />
+
+            <br />
+
+            end time:
             <DateTimePicker
               date={endSearchDate}
               setDate={setEndSearchDate}

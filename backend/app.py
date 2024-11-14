@@ -214,15 +214,16 @@ def searchrides():
     user_info = _cas.authenticate()
     origin = database.location_to_id(request.args.get('origin'))
     destination = database.location_to_id(request.args.get('destination'))
-    arrival_time = request.args.get('arrival_time', '')
+    arrival_time = request.args.get('arrival_time')
+    start_search_time = request.args.get('start_search_time')
 
-    rides = database.search_rides(origin, destination, arrival_time)
+    rides = database.search_rides(origin, destination, arrival_time, start_search_time)
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
     print(rides)
 
-     # mapping for location
+    # mapping for location
     location_map = {location[0]: location[1] for location in locations}
     
     # mapping for rides array 
