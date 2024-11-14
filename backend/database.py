@@ -514,7 +514,7 @@ def get_all_locations():
 
     return locations
 
-def search_rides(origin, destination, arrival_time=None):
+def search_rides(origin, destination, arrival_time=None, start_search_time=None):
     query = """
         SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides
         WHERE origin = %s AND destination = %s
@@ -528,6 +528,9 @@ def search_rides(origin, destination, arrival_time=None):
         # for now: searching for EARLIER arrival time than given
         query += " AND arrival_time <= %s"
         values.append(arrival_time)
+    if start_search_time:
+        query += " AND arrival_time >= %s"
+        values.append(start_search_time)
 
     if conn:
         try: 
