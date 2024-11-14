@@ -206,19 +206,19 @@ export default function Dashboard() {
         <div className="flex gap-4">
           <Link
             to="/myrides"
-            className="inline-block bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+            className="inline-block bg-theme_dark_2 text-white px-4 py-2 rounded-md hover:text-theme_medium_1"
           >
             My Rides
           </Link>
           <Button
-            className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+            className="bg-theme_dark_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
             onClick={() => handleOpenRideModal()}
           >
             Create a Ride
           </Button>
         </div>
         <Button
-          className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+          className="bg-theme_dark_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
           onClick={() => handleOpenSearchRideModal()}
         >
           Search
@@ -258,14 +258,13 @@ export default function Dashboard() {
                   : "bg-theme_dark_1 text-white font-semibold"
               }`}
             >
-              <p>
-                <strong>Origin:</strong> {ride.origin_name}
+              <p className="text-xl text-center">
+                <strong>
+                  {ride.origin_name} → {ride.destination_name}
+                </strong>
               </p>
-              <p>
-                <strong>Destination:</strong> {ride.destination_name}
-              </p>
-              <p>
-                <strong>Arrival Time:</strong>{" "}
+              <p className="text-center mb-2">
+                Arrival by{" "}
                 {new Date(ride.arrival_time).toLocaleString("en-US", {
                   year: "numeric",
                   month: "numeric",
@@ -275,6 +274,7 @@ export default function Dashboard() {
                   hour12: true,
                 })}
               </p>
+              <hr className="border-1 my-3 border-theme_medium_1" />
               <p>
                 <strong>Admin Name:</strong> {ride.admin_name}
               </p>
