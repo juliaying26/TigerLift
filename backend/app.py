@@ -283,25 +283,26 @@ def requestride():
 def batchupdateriderequest():
     try:
         data = request.get_json()
+        rideid = data.get('rideid')
         print(data)
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
-            rideid = rider.get('rideid')
             database.accept_ride_request(requester_id, full_name, mail, rideid)
             
         for rider in data.get('rejecting_riders', []):
             requester_id = rider.get('requester_id')
-            rideid = rider.get('rideid')
             database.reject_ride_request(requester_id, rideid)
 
         for rider in data.get('pending_riders', []):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
-            rideid = rider.get('rideid')
             database.remove_rider(requester_id, full_name, mail, rideid)
+
+        if data.get('new_capacity'):
+            database.update_capacity(rideid, data.get('new_capacity'))
 
         return jsonify({'success': True, 'message': 'Ride requests accepted'})
     except:

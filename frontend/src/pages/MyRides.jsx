@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"; // Added React for consistency
-import Navbar from "../components/Navbar";
 import RideCard from "../components/RideCard";
 import MyDateTimePicker from "../components/DateTimePicker";
 import Modal from "../components/Modal";
@@ -7,10 +6,12 @@ import Button from "../components/Button";
 import Pill from "../components/Pill";
 import IconButton from "../components/IconButton";
 import { useNavigate } from "react-router-dom";
+import Dropdown from "../components/Dropdown";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
+
   const [myRidesData, setMyRidesData] = useState([]);
   const [viewType, setViewType] = useState("posted");
   const [loading, setLoading] = useState(true);
@@ -20,6 +21,9 @@ export default function MyRides() {
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
+
+  const [isEditingCapacity, setIsEditingCapacity] = useState(false);
+  const [newCapacity, setNewCapacity] = useState(null);
 
   function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
@@ -60,6 +64,15 @@ export default function MyRides() {
     fetchMyRidesData();
   }, [viewType]);
 
+  useEffect(() => {
+    if (selectedRide) {
+      setNewCapacity({
+        value: selectedRide.max_capacity,
+        label: selectedRide.max_capacity,
+      });
+    }
+  }, [selectedRide]);
+
   // states for modal
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);
@@ -74,6 +87,8 @@ export default function MyRides() {
     setModalCurrentRiders([]);
     setModalRequestedRiders([]);
     setModalRejectedRiders([]);
+    setIsEditingCapacity(false);
+    setNewCapacity(null);
   };
 
   // if Delete clicked on Modal popup
@@ -110,7 +125,6 @@ export default function MyRides() {
         requester_id: requester_id,
         full_name: fullName,
         mail: mail,
-        rideid: rideId,
       };
       accepting_riders.push(rider);
     });
@@ -118,7 +132,6 @@ export default function MyRides() {
     modalRejectedRiders.forEach(([requester_id, fullName, mail]) => {
       const rider = {
         requester_id: requester_id,
-        rideid: rideId,
       };
       rejecting_riders.push(rider);
     });
@@ -128,7 +141,6 @@ export default function MyRides() {
         requester_id: requester_id,
         full_name: fullName,
         mail: mail,
-        rideid: rideId,
       };
       pending_riders.push(rider);
     });
@@ -144,9 +156,11 @@ export default function MyRides() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          rideid: rideId,
           accepting_riders: accepting_riders,
           rejecting_riders: rejecting_riders,
           pending_riders: pending_riders,
+          new_capacity: newCapacity?.label,
         }),
       });
       handleCloseModal();
@@ -311,7 +325,7 @@ export default function MyRides() {
                     </strong>
                     {Array.isArray(ride.current_riders) &&
                     ride.current_riders.length > 0 ? (
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-2 mt-1">
                         {ride.current_riders.map((rider) => (
                           <Pill>
                             {rider[0] + " " + rider[1] + " " + rider[2]}
@@ -367,16 +381,52 @@ export default function MyRides() {
             <p>
               <strong>Admin Email:</strong> {selectedRide.admin_email}
             </p>
-            <p>
-              <strong>Seats Taken:</strong>{" "}
-              {selectedRide.current_riders?.length || 0}/
-              {selectedRide.max_capacity}
-            </p>
+            <div className="flex items-center gap-1">
+              <strong>Seats Taken:</strong> {modalCurrentRiders.length || 0}
+              {"/"}
+              {isEditingCapacity ? (
+                <Dropdown
+                  inputValue={newCapacity}
+                  setInputValue={setNewCapacity}
+                  options={Array.from({ length: 5 }, (_, i) => {
+                    const start =
+                      selectedRide.current_riders?.length > 1
+                        ? selectedRide.current_riders.length
+                        : 0;
+                    const value = i + start + 1;
+                    return {
+                      value,
+                      label: value,
+                    };
+                  }).slice(0, 6 - (selectedRide.current_riders?.length || 0))}
+                  isClearable
+                ></Dropdown>
+              ) : (
+                newCapacity?.label || selectedRide.max_capacity
+              )}
+              {isEditingCapacity ? (
+                <Button
+                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => setIsEditingCapacity(false)}
+                >
+                  {newCapacity?.label !== selectedRide.max_capacity
+                    ? "Save"
+                    : "Cancel"}
+                </Button>
+              ) : (
+                <Button
+                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => setIsEditingCapacity(true)}
+                >
+                  Edit
+                </Button>
+              )}
+            </div>
             <p>
               <strong>Current Riders:</strong>
               {Array.isArray(modalCurrentRiders) &&
               modalCurrentRiders.length > 0 ? (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 mt-1">
                   {modalCurrentRiders.map((rider, index) => {
                     const [netid, fullName, email] = rider;
                     return (
@@ -403,8 +453,7 @@ export default function MyRides() {
                 <p>No current riders.</p>
               )}
             </p>
-
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 mb-4">
               <p>
                 <strong>Requests to Join:</strong>
               </p>
