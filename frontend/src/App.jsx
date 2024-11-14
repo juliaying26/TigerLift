@@ -52,7 +52,7 @@ function App() {
             element={
               <div>
                 <Navbar />
-                <MyRides netid={user.netid} />
+                <MyRides />
               </div>
             }
           />

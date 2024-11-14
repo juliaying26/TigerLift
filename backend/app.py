@@ -74,8 +74,6 @@ def api_dashboard():
         }
         updated_rides.append(updated_ride)
     
-    ridereqs = database.get_all_my_ride_requests(user_info['netid'])
-
     ridereqs_map = {}
     for ridereq in ridereqs:
         ridereqs_map[ridereq[1]] = ridereq[2]
@@ -149,7 +147,7 @@ def api_my_requested_rides():
             'creation_time': ride[8],
             'updated_at': ride[9],
             'current_riders': ride[10],
-            'requested_riders': ride[11]
+            'request_status': ride[11]
         }
         updated_rides.append(updated_ride)
 
@@ -212,16 +210,63 @@ def deleteallrides():
 @app.route("/api/searchrides", methods=["GET"])
 def searchrides():
 
+    print("in search rides")
     user_info = _cas.authenticate()
     origin = database.location_to_id(request.args.get('origin'))
     destination = database.location_to_id(request.args.get('destination'))
-    arrival_time = request.args.get('arrival_time', '')
-    rides = database.search_rides(origin, destination, arrival_time)
-    # locations = database.get_all_locations() ?? Why is this here
+    arrival_time = request.args.get('arrival_time')
+    start_search_time = request.args.get('start_search_time')
 
-    response = jsonify(rides)
-    response.headers['Content-Type'] = 'application/json'
-    return response, 200
+    #if arrival_time is not null and start_search_time is not null:
+    #    rides = database.search_rides(origin, destination, arrival_time, start_search_time)
+    #elif arrival_time is not null and start_search_time is null:
+    #    rides = database.search_rides(origin, destination, arrival_time=arrival_time)
+    #elif arrival_time is null and start_search_time is not null:
+    #    rides = database.search_rides(origin, destination, start_search_time=start_search_time)
+
+
+    rides = database.search_rides(origin, destination, arrival_time, start_search_time)
+    locations = database.get_all_locations()
+    ridereqs = database.get_all_my_ride_requests(user_info['netid'])
+
+    print(rides)
+
+    # mapping for location
+    location_map = {location[0]: location[1] for location in locations}
+    
+    # mapping for rides array 
+    updated_rides = []
+    for ride in rides:
+        updated_ride = {
+            'id': ride[0],
+            'admin_netid': ride[1],
+            'admin_name': ride[2],
+            'admin_email': ride[3],
+            'max_capacity': ride[4],
+            'origin': ride[5],
+            'origin_name': location_map.get(ride[5], 'Unknown'),
+            'destination': ride[6],
+            'destination_name': location_map.get(ride[6], 'Unknown'),
+            'arrival_time': ride[7],
+            'creation_time': ride[8],
+            'updated_at': ride[9],
+            'current_riders': ride[10]
+        }
+
+        updated_rides.append(updated_ride)
+
+    ridereqs_map = {}
+    for ridereq in ridereqs:
+        ridereqs_map[ridereq[1]] = ridereq[2]
+
+    print("UPDATED RIDES = ", updated_rides)
+
+    return jsonify({
+        'user_info': user_info,
+        'rides': updated_rides,
+        'locations': locations,
+        'ridereqs': ridereqs_map
+    })
 
 @app.route("/api/requestride", methods=["POST"])
 def requestride():

@@ -8,7 +8,7 @@ import Pill from "../components/Pill";
 import IconButton from "../components/IconButton";
 import { useNavigate } from "react-router-dom";
 
-export default function MyRides({ netid }) {
+export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
   const [myRidesData, setMyRidesData] = useState([]);
@@ -20,6 +20,10 @@ export default function MyRides({ netid }) {
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
+
+  function capitalizeFirstLetter(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+  }
 
   const fetchMyRidesData = async () => {
     setLoading(true);
@@ -33,8 +37,14 @@ export default function MyRides({ netid }) {
       }
       const data = await response.json();
 
-      const ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
+      let ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
       console.log(ride_data);
+      if (viewType === "requested") {
+        console.log("efjsefojio");
+        ride_data = ride_data.filter(
+          (entry) => new Date(entry.arrival_time) >= new Date()
+        );
+      }
       ride_data.sort(
         (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
       );
@@ -211,12 +221,12 @@ export default function MyRides({ netid }) {
   console.log("my rides data is", myRidesData);
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="flex gap-2">
+      <div className="flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
           className={`${
             viewType == "posted" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-medium`}
+          } text-white font-semibold px-4 py-2`}
           onClick={() => setViewType("posted")}
         >
           My Posted Rides
@@ -224,7 +234,7 @@ export default function MyRides({ netid }) {
         <Button
           className={`${
             viewType == "requested" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-medium`}
+          } text-white font-semibold px-4 py-2`}
           onClick={() => setViewType("requested")}
         >
           My Requested Rides
@@ -238,25 +248,50 @@ export default function MyRides({ netid }) {
             <RideCard
               key={ride.id}
               buttonText={
-                viewType === "posted" ? "Manage Ride" : "Cancel Request"
+                new Date(ride.arrival_time) > new Date() &&
+                (viewType === "posted"
+                  ? "Manage Ride"
+                  : ride.request_status !== "accepted" && "Cancel Request")
               }
               buttonOnClick={
                 viewType === "posted"
                   ? () => handleManageRideClick(ride)
+                  : ride.request_status === "accepted"
+                  ? () => {}
                   : () => handleCancelRideRequest(ride.id)
               }
-              buttonClassName="bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
+              buttonClassName={`${
+                ride.request_status === "accepted" ||
+                new Date(ride.arrival_time) <= new Date()
+                  ? "cursor-auto"
+                  : "bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
+              }`}
+              secondaryButtonText={
+                viewType === "requested" &&
+                capitalizeFirstLetter(ride.request_status)
+              }
+              secondaryButtonOnClick={() => {}}
+              secondaryButtonClassName="cursor-auto"
+              secondaryButtonStatus={ride.request_status}
             >
-              <div className="flex flex-col gap-1">
-                <p>
-                  <strong>Origin:</strong> {ride.origin_name}
+              <div>
+                <p className="text-xl text-center">
+                  <strong>
+                    {ride.origin_name} → {ride.destination_name}
+                  </strong>
                 </p>
-                <p>
-                  <strong>Destination:</strong> {ride.destination_name}
+                <p className="text-center mb-2">
+                  Arrival by{" "}
+                  {new Date(ride.arrival_time).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
                 </p>
-                <p>
-                  <strong>Arrival Time:</strong> {ride.arrival_time}
-                </p>
+                <hr className="border-1 my-3 border-theme_medium_1" />
                 <p>
                   <strong>Admin Name:</strong> {ride.admin_name}
                 </p>
@@ -267,27 +302,39 @@ export default function MyRides({ netid }) {
                   <strong>Seats Taken:</strong> {ride.current_riders.length}/
                   {ride.max_capacity}
                 </p>
-                <p>
-                  <strong>Current Riders:</strong>
-                  {Array.isArray(ride.current_riders) &&
-                  ride.current_riders.length > 0 ? (
-                    <div className="flex flex-col gap-2">
-                      {ride.current_riders.map((rider) => (
-                        <Pill>
-                          {rider[0] + " " + rider[1] + " " + rider[2]}
-                        </Pill>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>No current riders.</p>
-                  )}
-                </p>
+                {viewType === "posted" && (
+                  <p>
+                    <strong>
+                      {new Date(ride.arrival_time) > new Date()
+                        ? "Current Riders:"
+                        : "Rode with:"}
+                    </strong>
+                    {Array.isArray(ride.current_riders) &&
+                    ride.current_riders.length > 0 ? (
+                      <div className="flex flex-col gap-2">
+                        {ride.current_riders.map((rider) => (
+                          <Pill>
+                            {rider[0] + " " + rider[1] + " " + rider[2]}
+                          </Pill>
+                        ))}
+                      </div>
+                    ) : (
+                      <p>
+                        {new Date(ride.arrival_time) > new Date()
+                          ? "No current riders."
+                          : "None."}
+                      </p>
+                    )}
+                  </p>
+                )}
               </div>
             </RideCard>
           ))}
         </div>
       ) : (
-        <p className="text-center">No rides available in this category.</p>
+        <p className="text-center">
+          {viewType === "posted" ? "No posted rides." : "No requested rides."}
+        </p>
       )}
 
       {isModalOpen && (
@@ -304,7 +351,15 @@ export default function MyRides({ netid }) {
               <strong>Destination:</strong> {selectedRide.destination_name}
             </p>
             <p>
-              <strong>Arrival Time:</strong> {selectedRide.arrival_time}
+              <strong>Arrival Time:</strong>{" "}
+              {new Date(selectedRide.arrival_time).toLocaleString("en-US", {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              })}
             </p>
             <p>
               <strong>Admin Name:</strong> {selectedRide.admin_name}
