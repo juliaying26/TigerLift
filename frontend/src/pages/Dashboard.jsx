@@ -37,6 +37,8 @@ export default function Dashboard() {
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
 
+  const [inSearch, setInSearch] = useState(false);
+
   const [locations, setLocations] = useState([]);
 
   const max_capacity_option = 5;
@@ -50,25 +52,25 @@ export default function Dashboard() {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
+
   const searchRide = async () => {
     console.log(dashboardData);
 
     try {
+      const start_search_time_string = `${startSearchDate.format(
+        "YYYY-MM-DD"
+      )}T${startSearchTime.format("HH:mm:ss")}`;
+      const start_search_time_iso = new Date(
+        start_search_time_string
+      ).toISOString();
 
-      const start_search_time_string = `${startSearchDate.format("YYYY-MM-DD")}T${startSearchTime.format(
-        "HH:mm:ss"
-      )}`;
-      const start_search_time_iso = new Date(start_search_time_string).toISOString();
-
-      const arrival_time_string = `${endSearchDate.format("YYYY-MM-DD")}T${endSearchTime.format(
-        "HH:mm:ss"
-      )}`;
+      const arrival_time_string = `${endSearchDate.format(
+        "YYYY-MM-DD"
+      )}T${endSearchTime.format("HH:mm:ss")}`;
       const arrival_time_iso = new Date(arrival_time_string).toISOString();
 
-      
-      console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
-      console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
-
+      console.log("start date: " + startSearchDate.format("YYYY-MM-DD"));
+      console.log("end date: " + endSearchDate.format("YYYY-MM-DD"));
 
       const response = await fetch(
         `/api/searchrides?origin=${origin.label}&destination=${dest.label}&arrival_time=${arrival_time_iso}&start_search_time=${start_search_time_iso}`,
@@ -79,17 +81,18 @@ export default function Dashboard() {
           },
         }
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch rides: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("DATA =", data)
+      console.log("DATA =", data);
 
       setRidesData(data.rides);
+      setInSearch(true);
+      console.log(inSearch);
       console.log("end of search ride");
-
     } catch (error) {
       console.error("Error during fetch:", error);
     }
@@ -193,6 +196,13 @@ export default function Dashboard() {
     }
   };
 
+  const resetSearch = async () => {
+    setLoading(true);
+    setInSearch(false);
+    await fetchDashboardData();
+    setLoading(false);
+  };
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -234,67 +244,83 @@ export default function Dashboard() {
 
       {loading ? (
         <div className="text-center">Loading...</div>
-      ) : ridesData.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {ridesData.map((ride) => (
-            <RideCard
-              key={ride.id}
-              buttonText={
-                ride.admin_netid === dashboardData.user_info.netid
-                  ? "Cannot join your own ride"
-                  : dashboardData.ridereqs[ride.id] !== undefined &&
-                    dashboardData.ridereqs[ride.id] !== null
-                  ? capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
-                  : ride.current_riders.length === ride.max_capacity
-                  ? "Ride filled"
-                  : "Request to Join"
-              }
-              buttonOnClick={
-                dashboardData.ridereqs[ride.id] ||
-                ride.admin_netid === dashboardData.user_info.netid ||
-                ride.current_riders.length === ride.max_capacity
-                  ? () => {}
-                  : () => handleRideRequest(ride.id)
-              }
-              buttonClassName={`${
-                dashboardData.ridereqs[ride.id] ||
-                ride.admin_netid === dashboardData.user_info.netid
-                  ? "cursor-auto bg-theme_light text-theme_dark_1 font-semibold"
-                  : "bg-theme_dark_1 text-white font-semibold"
-              }`}
-            >
-              <p className="text-xl text-center">
-                <strong>
-                  {ride.origin_name} → {ride.destination_name}
-                </strong>
-              </p>
-              <p className="text-center mb-2">
-                Arrival by{" "}
-                {new Date(ride.arrival_time).toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                  hour12: true,
-                })}
-              </p>
-              <hr className="border-1 my-3 border-theme_medium_1" />
-              <p>
-                <strong>Admin Name:</strong> {ride.admin_name}
-              </p>
-              <p>
-                <strong>Admin Email:</strong> {ride.admin_email}
-              </p>
-              <p>
-                <strong>Seats Taken:</strong> {ride.current_riders.length}/
-                {ride.max_capacity}
-              </p>
-            </RideCard>
-          ))}
-        </div>
       ) : (
-        <p className="text-center">No rides available in this category.</p>
+        <div>
+          {inSearch && (
+            <div>
+              <Button
+                onClick={resetSearch}
+                className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
+              >
+                Back to All Rides
+              </Button>
+              <br />
+              <br />
+            </div>
+          )}
+          {ridesData.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {ridesData.map((ride) => (
+                <RideCard
+                  key={ride.id}
+                  buttonText={
+                    ride.admin_netid === dashboardData.user_info.netid
+                      ? "Cannot join your own ride"
+                      : dashboardData.ridereqs[ride.id] !== undefined &&
+                        dashboardData.ridereqs[ride.id] !== null
+                      ? capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
+                      : ride.current_riders.length === ride.max_capacity
+                      ? "Ride filled"
+                      : "Request to Join"
+                  }
+                  buttonOnClick={
+                    dashboardData.ridereqs[ride.id] ||
+                    ride.admin_netid === dashboardData.user_info.netid ||
+                    ride.current_riders.length === ride.max_capacity
+                      ? () => {}
+                      : () => handleRideRequest(ride.id)
+                  }
+                  buttonClassName={`${
+                    dashboardData.ridereqs[ride.id] ||
+                    ride.admin_netid === dashboardData.user_info.netid
+                      ? "cursor-auto bg-theme_light text-theme_dark_1 font-semibold"
+                      : "bg-theme_dark_1 text-white font-semibold"
+                  }`}
+                >
+                  <p className="text-xl text-center">
+                    <strong>
+                      {ride.origin_name} → {ride.destination_name}
+                    </strong>
+                  </p>
+                  <p className="text-center mb-2">
+                    Arrival by{" "}
+                    {new Date(ride.arrival_time).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    })}
+                  </p>
+                  <hr className="border-1 my-3 border-theme_medium_1" />
+                  <p>
+                    <strong>Admin Name:</strong> {ride.admin_name}
+                  </p>
+                  <p>
+                    <strong>Admin Email:</strong> {ride.admin_email}
+                  </p>
+                  <p>
+                    <strong>Seats Taken:</strong> {ride.current_riders.length}/
+                    {ride.max_capacity}
+                  </p>
+                </RideCard>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center">No rides available in this category.</p>
+          )}
+        </div>
       )}
 
       {createRideModal && (
@@ -359,7 +385,6 @@ export default function Dashboard() {
               isClearable
               placeholder="Select starting point"
             ></Dropdown>
-
             <Dropdown
               inputValue={dest}
               setInputValue={setDest}
@@ -367,9 +392,7 @@ export default function Dashboard() {
               isClearable
               placeholder="Select destination"
             ></Dropdown>
-
             <br />
-
             start time:
             <DateTimePicker
               date={startSearchDate}
@@ -377,9 +400,7 @@ export default function Dashboard() {
               time={startSearchTime}
               setTime={setStartSearchTime}
             />
-
             <br />
-
             end time:
             <DateTimePicker
               date={endSearchDate}
@@ -387,9 +408,7 @@ export default function Dashboard() {
               time={endSearchTime}
               setTime={setEndSearchTime}
             />
-
             <br />
-
             <Button
               className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
               onClick={searchRide}
