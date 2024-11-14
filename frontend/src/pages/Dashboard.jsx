@@ -65,7 +65,7 @@ export default function Dashboard() {
       )}`;
       const arrival_time_iso = new Date(arrival_time_string).toISOString();
 
-      
+
       console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
       console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 
@@ -370,7 +370,7 @@ export default function Dashboard() {
 
             <br />
 
-            start time:
+            Start time:
             <DateTimePicker
               date={startSearchDate}
               setDate={setStartSearchDate}
@@ -380,7 +380,7 @@ export default function Dashboard() {
 
             <br />
 
-            end time:
+            End time:
             <DateTimePicker
               date={endSearchDate}
               setDate={setEndSearchDate}
