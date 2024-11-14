@@ -241,6 +241,11 @@ def create_ride_request(netid, full_name, mail, ride_id):
 
     status = 'pending'
     
+    # check whether exists
+    sql_exists_check = """
+        SELECT 1 FROM RideRequests WHERE netid = %s AND ride_id = %s;
+    """
+
     sql_command = f"""
         INSERT INTO RideRequests (netid, full_name, mail, ride_id, status, request_time) VALUES (%s, %s, %s, 
         %s, %s, CURRENT_TIMESTAMP);
@@ -254,6 +259,13 @@ def create_ride_request(netid, full_name, mail, ride_id):
     if conn:
         try:
             with conn.cursor() as cursor:
+                # check if exists
+                cursor.execute(sql_exists_check, (netid, ride_id))
+                if cursor.fetchone() is not None:
+                    print("Request already exists.")
+                    return
+
+                # else execute
                 cursor.execute(sql_command, values)
                 conn.commit()
                 print("Ride request addded successfully!")
@@ -693,6 +705,10 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
                     cursor.execute(update_rides_sql_command, ride_values)
                     conn.commit()
                     print("RideRequest accepted successfully!")
+
+                    # Send email for ride request accepted
+                    send_email_notification(user_netid, 'Your ride request was accepted!', 'Please check your ride at tigerlift.onrender.com')
+                    
             except Exception as e:
                 print(f"Error accepting ride request: {e}")
             finally:
