@@ -352,6 +352,34 @@ def update_capacity(rideid, new_capacity):
             conn.close()
 
 
+def update_arrival_time(rideid, new_arrival_time):
+    """
+    Updates the arrival time of a ride
+    """
+
+    sql_command = f"""
+        UPDATE Rides
+        SET arrival_time = %s
+        WHERE id = %s;
+    """
+
+    values = (new_arrival_time, rideid)
+
+    conn = connect()
+
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride arrival time updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride arrival time: {e}")
+        finally:
+            conn.close()
+
+
 def create_notification(netid, message, type):
     """
     Adds a notifiction in the Notifications database

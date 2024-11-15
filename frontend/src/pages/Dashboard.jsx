@@ -359,10 +359,8 @@ export default function Dashboard() {
               isClearable
               placeholder="Select destination"
             ></Dropdown>
-          
-            <br/>
+
             <p> Arrival Time </p>
-            <br/>
             <DateTimePicker
               date={date}
               setDate={setDate}
@@ -401,7 +399,6 @@ export default function Dashboard() {
               isClearable
               placeholder="Select destination"
             ></Dropdown>
-            <br />
             Arrive After:
             <DateTimePicker
               date={startSearchDate}
@@ -409,7 +406,6 @@ export default function Dashboard() {
               time={startSearchTime}
               setTime={setStartSearchTime}
             />
-            <br />
             Arrive Before:
             <DateTimePicker
               date={endSearchDate}
