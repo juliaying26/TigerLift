@@ -304,6 +304,9 @@ def batchupdateriderequest():
         if data.get('new_capacity'):
             database.update_capacity(rideid, data.get('new_capacity'))
 
+        if data.get('new_arrival_time'):
+            database.update_arrival_time(rideid, data.get('new_arrival_time'))
+
         return jsonify({'success': True, 'message': 'Ride requests accepted'})
     except:
         return jsonify({'success': False, 'message': 'Failed to accept ride requests'}), 400
