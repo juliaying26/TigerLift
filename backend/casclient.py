@@ -47,11 +47,8 @@ class CASClient:
                 
                 if 'authenticationSuccess' in service_response:
                     user_info = service_response['authenticationSuccess']
-                    year = "Graduate"
+                    year = "Student"
                     
-                    # if user_info['attributes']['pustatus'][0] == "undergraduate":
-                    split_dpt = user_info['attributes']['department'][0].split(" ")
-                    year = split_dpt[-1]
                     return {
                         'netid': user_info['user'],
                         'displayname': user_info['attributes'].get('displayname', ['Student'])[0],
