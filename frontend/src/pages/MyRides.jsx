@@ -352,11 +352,12 @@ export default function MyRides() {
                     {Array.isArray(ride.current_riders) &&
                     ride.current_riders.length > 0 ? (
                       <div className="flex flex-col gap-2 mt-1">
-                        {ride.current_riders.map((rider) => (
-                          <Pill>
-                            {rider[0] + " " + rider[1] + " " + rider[2]}
-                          </Pill>
-                        ))}
+                        {ride.current_riders.map((rider, index) => {
+                          const [netid, fullName, email] = rider;
+                          return (
+                            <Pill key={index}>{`${fullName} ${email}`}</Pill>
+                          );
+                        })}
                       </div>
                     ) : (
                       <p>
@@ -507,7 +508,7 @@ export default function MyRides() {
                     return (
                       <Pill key={index}>
                         <div className="flex items-center justify-between">
-                          <div>{`${netid} ${fullName} ${email}`}</div>
+                          <div>{`${fullName} ${email}`}</div>
                           <IconButton
                             type="xmark"
                             onClick={() =>
@@ -539,8 +540,8 @@ export default function MyRides() {
                     const [netid, fullName, email] = requested_rider;
                     return (
                       <Pill key={index}>
-                        <div className="p-1 flex justify-between items-center">
-                          <div>{`${netid} ${fullName} ${email}`}</div>
+                        <div className="flex justify-between items-center">
+                          <div>{`${fullName} ${email}`}</div>
                           <div className="flex items-center gap-2">
                             <IconButton
                               type="checkmark"
