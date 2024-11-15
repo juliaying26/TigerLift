@@ -1,8 +1,4 @@
-// src/components/Navbar.js
-
 import React, { useState, useRef } from "react";
-import Select from "react-select";
-import { Link } from "react-router-dom";
 import ProfilePopup from "../components/ProfilePopUp.jsx";
 
 export default function Navbar() {

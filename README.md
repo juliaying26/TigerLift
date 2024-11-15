@@ -10,4 +10,11 @@ Julia Ying, Grace Kim, Ritika Bhatnagar, Aasha Jain
 - To run the application, make two terminals:
   - Make sure you are in `backend` and run `python app.py`
   - Make sure you are in `frontend` and run `npm run dev`
-- Navigate to `localhost:5173` to view application. (Backend runs on `localhost:3100`)
+- Navigate to http://localhost:5173/ to view application. (Backend runs on http://localhost:3100/)
+
+### Deploying
+
+- `cd frontend` and run `npm run build`. This will create a `dist` folder in `frontend`.
+- Commit that new `dist` folder.
+- Go to Render and Manual Deploy using that latest commit.
+- Navigate to https://tigerlift.onrender.com/.

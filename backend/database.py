@@ -3,8 +3,43 @@ import psycopg2
 import json
 from dotenv import load_dotenv
 load_dotenv()
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
+
+def send_email_notification(netid, subject, message):
+    """
+    Sends email notifications
+
+    How to use: copy paste the following lines ---
+    mail = user_info['netid'] + "@princeton.edu" // because RN we can't get mail from CAS
+    database.send_email_notification(user_info['netid'], mail, 'INSERT SUBJECT HERE', 'INSERT MESSAGE HERE')
+    """
+
+    mail = netid + "@princeton.edu"
+    from_email = os.environ.get('EMAIL_ADDRESS')
+    from_password = os.environ.get('EMAIL_PASSWORD')
+
+    # Set up the email
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = mail
+    msg['Subject'] = subject
+
+    # Attach the message
+    msg.attach(MIMEText(message, 'plain'))
+
+    try:
+        # Connect to the SMTP server and send the email
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()  # Secure the connection
+            server.login(from_email, from_password)
+            server.send_message(msg)
+        print(f"Email sent to {mail} successfully!")
+    except Exception as e:
+        print(f"Error sending email to {mail}: {e}")
 
 def database_setup():
     """
@@ -206,6 +241,11 @@ def create_ride_request(netid, full_name, mail, ride_id):
 
     status = 'pending'
     
+    # check whether exists
+    sql_exists_check = """
+        SELECT 1 FROM RideRequests WHERE netid = %s AND ride_id = %s;
+    """
+
     sql_command = f"""
         INSERT INTO RideRequests (netid, full_name, mail, ride_id, status, request_time) VALUES (%s, %s, %s, 
         %s, %s, CURRENT_TIMESTAMP);
@@ -219,9 +259,33 @@ def create_ride_request(netid, full_name, mail, ride_id):
     if conn:
         try:
             with conn.cursor() as cursor:
+                # check if exists
+                cursor.execute(sql_exists_check, (netid, ride_id))
+                if cursor.fetchone() is not None:
+                    print("Request already exists.")
+                    return
+
+                # else execute
                 cursor.execute(sql_command, values)
                 conn.commit()
                 print("Ride request addded successfully!")
+
+                try:
+                    # Retrieve the admin_id from the Rides table
+                    admin_query = "SELECT admin_netid FROM Rides WHERE id = %s;"
+                    cursor.execute(admin_query, (ride_id,))
+                    admin_netid_result = cursor.fetchone()
+                    
+                    if admin_netid_result:
+                        admin_id = admin_netid_result[0]
+                        print(f"Admin ID for ride {ride_id} is {admin_id}")
+
+                    # Send email notification
+                    send_email_notification(admin_id, 'You have a new Ride Request!', 'Please check the new request to join your ride at tigerlift.onrender.com')
+
+                except Exception as e:
+                    print(f"Error: Ride {ride_id} not found")
+
         except Exception as e:
             print(f"Error adding ride request: {e}")
         finally:
@@ -258,6 +322,62 @@ def update_ride_request(request_id, status):
             conn.close()
     else:
         print("Connection not established.")
+
+
+def update_capacity(rideid, new_capacity):
+    """
+    Updates the capacity of a ride
+    """
+
+    sql_command = f"""
+        UPDATE Rides
+        SET max_capacity = %s
+        WHERE id = %s;
+    """
+
+    values = (new_capacity, rideid)
+
+    conn = connect()
+
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride capacity updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride capacity: {e}")
+        finally:
+            conn.close()
+
+
+def update_arrival_time(rideid, new_arrival_time):
+    """
+    Updates the arrival time of a ride
+    """
+
+    sql_command = f"""
+        UPDATE Rides
+        SET arrival_time = %s
+        WHERE id = %s;
+    """
+
+    values = (new_arrival_time, rideid)
+
+    conn = connect()
+
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride arrival time updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride arrival time: {e}")
+        finally:
+            conn.close()
 
 
 def create_notification(netid, message, type):
@@ -462,7 +582,7 @@ def get_all_locations():
 
     return locations
 
-def search_rides(origin, destination, arrival_time=None):
+def search_rides(origin, destination, arrival_time=None, start_search_time=None):
     query = """
         SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides
         WHERE origin = %s AND destination = %s
@@ -476,6 +596,9 @@ def search_rides(origin, destination, arrival_time=None):
         # for now: searching for EARLIER arrival time than given
         query += " AND arrival_time <= %s"
         values.append(arrival_time)
+    if start_search_time:
+        query += " AND arrival_time >= %s"
+        values.append(start_search_time)
 
     if conn:
         try: 
@@ -610,6 +733,10 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
                     cursor.execute(update_rides_sql_command, ride_values)
                     conn.commit()
                     print("RideRequest accepted successfully!")
+
+                    # Send email for ride request accepted
+                    send_email_notification(user_netid, 'Your ride request was accepted!', 'Please check your ride at tigerlift.onrender.com')
+                    
             except Exception as e:
                 print(f"Error accepting ride request: {e}")
             finally:
