@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react"; // Added React for consistency
 import RideCard from "../components/RideCard";
-import MyDateTimePicker from "../components/DateTimePicker";
+import DateTimePicker from "../components/DateTimePicker";
 import Modal from "../components/Modal";
 import Button from "../components/Button";
 import Pill from "../components/Pill";
 import IconButton from "../components/IconButton";
 import { useNavigate } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
+import dayjs from "dayjs";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
@@ -24,6 +25,10 @@ export default function MyRides() {
 
   const [isEditingCapacity, setIsEditingCapacity] = useState(false);
   const [newCapacity, setNewCapacity] = useState(null);
+
+  const [isEditingArrivalTime, setIsEditingArrivalTime] = useState(false);
+  const [newArrivalDate, setNewArrivalDate] = useState(null);
+  const [newArrivalTime, setNewArrivalTime] = useState(null);
 
   function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
@@ -70,8 +75,16 @@ export default function MyRides() {
         value: selectedRide.max_capacity,
         label: selectedRide.max_capacity,
       });
+      setNewArrivalDate(dayjs(selectedRide.arrival_time));
+      setNewArrivalTime(dayjs(selectedRide.arrival_time));
     }
   }, [selectedRide]);
+
+  useEffect(() => {
+    console.log(newArrivalDate);
+    console.log(newArrivalTime);
+    console.log(dayjs(selectedRide?.arrival_time));
+  }, [newArrivalDate, newArrivalTime]);
 
   // states for modal
   const handleManageRideClick = (ride) => {
@@ -89,6 +102,9 @@ export default function MyRides() {
     setModalRejectedRiders([]);
     setIsEditingCapacity(false);
     setNewCapacity(null);
+    setIsEditingArrivalTime(false);
+    setNewArrivalDate(null);
+    setNewArrivalTime(null);
   };
 
   // if Delete clicked on Modal popup
@@ -149,6 +165,15 @@ export default function MyRides() {
     console.log("Rejecting riders:", rejecting_riders);
     console.log("Pending riders:", pending_riders);
 
+    const new_arrival_time_string = `${newArrivalDate.format(
+      "YYYY-MM-DD"
+    )}T${newArrivalTime.format("HH:mm:ss")}`;
+    const new_arrival_time_iso = new Date(
+      new_arrival_time_string
+    ).toISOString();
+
+    console.log(new_arrival_time_iso);
+
     try {
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
@@ -161,6 +186,7 @@ export default function MyRides() {
           rejecting_riders: rejecting_riders,
           pending_riders: pending_riders,
           new_capacity: newCapacity?.label,
+          new_arrival_time: new_arrival_time_iso,
         }),
       });
       handleCloseModal();
@@ -326,11 +352,12 @@ export default function MyRides() {
                     {Array.isArray(ride.current_riders) &&
                     ride.current_riders.length > 0 ? (
                       <div className="flex flex-col gap-2 mt-1">
-                        {ride.current_riders.map((rider) => (
-                          <Pill>
-                            {rider[0] + " " + rider[1] + " " + rider[2]}
-                          </Pill>
-                        ))}
+                        {ride.current_riders.map((rider, index) => {
+                          const [netid, fullName, email] = rider;
+                          return (
+                            <Pill key={index}>{`${fullName} ${email}`}</Pill>
+                          );
+                        })}
                       </div>
                     ) : (
                       <p>
@@ -364,17 +391,66 @@ export default function MyRides() {
             <p>
               <strong>Destination:</strong> {selectedRide.destination_name}
             </p>
-            <p>
-              <strong>Arrival Time:</strong>{" "}
-              {new Date(selectedRide.arrival_time).toLocaleString("en-US", {
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "numeric",
-                minute: "numeric",
-                hour12: true,
-              })}
-            </p>
+            <div className="flex items-center gap-1">
+              <p>
+                <strong>Arrival Time:</strong>{" "}
+              </p>
+              {isEditingArrivalTime ? (
+                <DateTimePicker
+                  date={newArrivalDate}
+                  setDate={setNewArrivalDate}
+                  time={newArrivalTime}
+                  setTime={setNewArrivalTime}
+                  allowClear={false}
+                />
+              ) : newArrivalDate || newArrivalTime ? (
+                new Date(
+                  `${newArrivalDate.format(
+                    "YYYY-MM-DD"
+                  )}T${newArrivalTime.format("HH:mm:ss")}`
+                ).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                })
+              ) : (
+                new Date(selectedRide.arrival_time).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                })
+              )}
+              {isEditingArrivalTime ? (
+                <Button
+                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => setIsEditingArrivalTime(false)}
+                >
+                  {!dayjs(newArrivalDate).isSame(
+                    dayjs(selectedRide.arrival_time),
+                    "day"
+                  ) ||
+                  !dayjs(newArrivalTime).isSame(
+                    dayjs(selectedRide.arrival_time),
+                    "time"
+                  )
+                    ? "Save"
+                    : "Cancel"}
+                </Button>
+              ) : (
+                <Button
+                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => setIsEditingArrivalTime(true)}
+                >
+                  Edit
+                </Button>
+              )}
+            </div>
             <p>
               <strong>Admin Name:</strong> {selectedRide.admin_name}
             </p>
@@ -390,15 +466,15 @@ export default function MyRides() {
                   setInputValue={setNewCapacity}
                   options={Array.from({ length: 5 }, (_, i) => {
                     const start =
-                      selectedRide.current_riders?.length > 1
-                        ? selectedRide.current_riders.length
-                        : 0;
-                    const value = i + start + 1;
+                      modalCurrentRiders?.length > 1
+                        ? modalCurrentRiders.length
+                        : 1;
+                    const value = i + start;
                     return {
                       value,
                       label: value,
                     };
-                  }).slice(0, 6 - (selectedRide.current_riders?.length || 0))}
+                  }).slice(0, 6 - (modalCurrentRiders?.length || 0))}
                   isClearable
                 ></Dropdown>
               ) : (
@@ -432,7 +508,7 @@ export default function MyRides() {
                     return (
                       <Pill key={index}>
                         <div className="flex items-center justify-between">
-                          <div>{`${netid} ${fullName} ${email}`}</div>
+                          <div>{`${fullName} ${email}`}</div>
                           <IconButton
                             type="xmark"
                             onClick={() =>
@@ -464,8 +540,8 @@ export default function MyRides() {
                     const [netid, fullName, email] = requested_rider;
                     return (
                       <Pill key={index}>
-                        <div className="p-1 flex justify-between items-center">
-                          <div>{`${netid} ${fullName} ${email}`}</div>
+                        <div className="flex justify-between items-center">
+                          <div>{`${fullName} ${email}`}</div>
                           <div className="flex items-center gap-2">
                             <IconButton
                               type="checkmark"

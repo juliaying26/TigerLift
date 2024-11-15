@@ -156,8 +156,10 @@ export default function Dashboard() {
       console.log(data.rides);
 
       const currentTime = new Date();
-      data.rides = data.rides.filter(entry => new Date(entry.arrival_time) >= currentTime);
-      console.log(currentTime)
+      data.rides = data.rides.filter(
+        (entry) => new Date(entry.arrival_time) >= currentTime
+      );
+      console.log(currentTime);
       data.rides.sort(
         (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
       );
@@ -221,26 +223,26 @@ export default function Dashboard() {
       </div>
 
       <div className="flex justify-between">
+        <Link
+          to="/myrides"
+          className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:text-theme_dark_2"
+        >
+          My Rides
+        </Link>
         <div className="flex gap-4">
-          <Link
-            to="/myrides"
-            className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:text-theme_dark_2"
-          >
-            My Rides
-          </Link>
           <Button
             className="bg-theme_dark_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
             onClick={() => handleOpenRideModal()}
           >
             Create a Ride
           </Button>
+          <Button
+            className="bg-theme_dark_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
+            onClick={() => handleOpenSearchRideModal()}
+          >
+            Search
+          </Button>
         </div>
-        <Button
-          className="bg-theme_dark_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
-          onClick={() => handleOpenSearchRideModal()}
-        >
-          Search
-        </Button>
       </div>
 
       <br />
@@ -358,6 +360,7 @@ export default function Dashboard() {
               placeholder="Select destination"
             ></Dropdown>
 
+            <p> Arrival Time </p>
             <DateTimePicker
               date={date}
               setDate={setDate}
@@ -396,16 +399,14 @@ export default function Dashboard() {
               isClearable
               placeholder="Select destination"
             ></Dropdown>
-            <br />
-            start time:
+            Arrive After:
             <DateTimePicker
               date={startSearchDate}
               setDate={setStartSearchDate}
               time={startSearchTime}
               setTime={setStartSearchTime}
             />
-            <br />
-            end time:
+            Arrive Before:
             <DateTimePicker
               date={endSearchDate}
               setDate={setEndSearchDate}
