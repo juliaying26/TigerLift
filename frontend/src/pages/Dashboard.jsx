@@ -26,11 +26,12 @@ export default function Dashboard() {
   const [createRideModal, setCreateRideModal] = useState(false);
   const [searchRideModal, setSearchRideModal] = useState(false);
 
-  const [capacity, setCapacity] = useState();
-  const [origin, setOrigin] = useState();
-  const [dest, setDest] = useState();
-  const [date, setDate] = useState();
-  const [time, setTime] = useState();
+  const [createRideNotif, setCreateRideNotif] = useState(false);
+  const [capacity, setCapacity] = useState('');
+  const [origin, setOrigin] = useState('');
+  const [dest, setDest] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
 
   const [startSearchDate, setStartSearchDate] = useState();
   const [startSearchTime, setStartSearchTime] = useState();
@@ -100,7 +101,23 @@ export default function Dashboard() {
     handleCloseSearchRideModal();
   };
 
+  const checkCreateRideParams = async() => {
+    if(capacity === '' || origin === '' || dest === '' || date === '' || 
+      time === '') {
+        setCreateRideNotif(true)
+      }
+    else {
+      createRide()
+      setCapacity = ''
+      setOrigin = ''
+      setDest = ''
+      setDate = ''
+      setTime = ''
+    }
+  }
+
   const createRide = async () => {
+
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -371,10 +388,15 @@ export default function Dashboard() {
 
             <Button
               className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-              onClick={createRide}
+              onClick={checkCreateRideParams}
             >
               Submit
             </Button>
+
+          {createRideNotif && (
+            <p> Please enter all fields! </p>
+          )}
+
           </div>
         </Modal>
       )}
@@ -392,6 +414,7 @@ export default function Dashboard() {
               isClearable
               placeholder="Select starting point"
             ></Dropdown>
+            
             <Dropdown
               inputValue={dest}
               setInputValue={setDest}
