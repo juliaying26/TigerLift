@@ -108,11 +108,11 @@ export default function Dashboard() {
       }
     else {
       createRide()
-      setCapacity = ''
-      setOrigin = ''
-      setDest = ''
-      setDate = ''
-      setTime = ''
+      setCapacity('')
+      setOrigin('')
+      setDest('')
+      setDate('')
+      setTime('')
     }
   }
 
