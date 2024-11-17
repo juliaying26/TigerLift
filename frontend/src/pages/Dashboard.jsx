@@ -8,6 +8,7 @@ import Pill from "../components/Pill.jsx";
 import Button from "../components/Button.jsx";
 import Modal from "../components/Modal.jsx";
 import Dropdown from "../components/Dropdown.jsx";
+import IconButton from "../components/IconButton.jsx";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
@@ -53,6 +54,14 @@ export default function Dashboard() {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
+
+  const flipSearchFields = () => {
+    let prevDest = dest;
+    let prevOrigin = origin;
+    setOrigin(prevDest);
+    setDest(prevOrigin);
+    return
+  };
 
   const searchRide = async () => {
     console.log(dashboardData);
@@ -369,6 +378,11 @@ export default function Dashboard() {
               placeholder="Select starting point"
             ></Dropdown>
 
+            <IconButton type="flip" 
+              onClick={flipSearchFields}
+              disabled={false}>
+            </IconButton>
+
             <Dropdown
               inputValue={dest}
               setInputValue={setDest}
@@ -414,7 +428,7 @@ export default function Dashboard() {
               isClearable
               placeholder="Select starting point"
             ></Dropdown>
-            
+          
             <Dropdown
               inputValue={dest}
               setInputValue={setDest}
