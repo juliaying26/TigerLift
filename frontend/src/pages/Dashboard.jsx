@@ -28,11 +28,11 @@ export default function Dashboard() {
   const [searchRideModal, setSearchRideModal] = useState(false);
 
   const [createRideNotif, setCreateRideNotif] = useState(false);
-  const [capacity, setCapacity] = useState('');
-  const [origin, setOrigin] = useState('');
-  const [dest, setDest] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [capacity, setCapacity] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [dest, setDest] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
 
   const [startSearchDate, setStartSearchDate] = useState();
   const [startSearchTime, setStartSearchTime] = useState();
@@ -60,7 +60,7 @@ export default function Dashboard() {
     let prevOrigin = origin;
     setOrigin(prevDest);
     setDest(prevOrigin);
-    return
+    return;
   };
 
   const searchRide = async () => {
@@ -110,23 +110,26 @@ export default function Dashboard() {
     handleCloseSearchRideModal();
   };
 
-  const checkCreateRideParams = async() => {
-    if(capacity === '' || origin === '' || dest === '' || date === '' || 
-      time === '') {
-        setCreateRideNotif(true)
-      }
-    else {
-      createRide()
-      setCapacity('')
-      setOrigin('')
-      setDest('')
-      setDate('')
-      setTime('')
+  const checkCreateRideParams = async () => {
+    if (
+      capacity === "" ||
+      origin === "" ||
+      dest === "" ||
+      date === "" ||
+      time === ""
+    ) {
+      setCreateRideNotif(true);
+    } else {
+      createRide();
+      setCapacity("");
+      setOrigin("");
+      setDest("");
+      setDate("");
+      setTime("");
     }
-  }
+  };
 
   const createRide = async () => {
-
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -257,13 +260,13 @@ export default function Dashboard() {
         </Link>
         <div className="flex gap-4">
           <Button
-            className="bg-theme_dark_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
+            className="bg-theme_medium_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
             onClick={() => handleOpenRideModal()}
           >
             Create a Ride
           </Button>
           <Button
-            className="bg-theme_dark_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
+            className="bg-theme_medium_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
             onClick={() => handleOpenSearchRideModal()}
           >
             Search
@@ -378,10 +381,11 @@ export default function Dashboard() {
               placeholder="Select starting point"
             ></Dropdown>
 
-            <IconButton type="flip" 
+            <IconButton
+              type="flip"
               onClick={flipSearchFields}
-              disabled={false}>
-            </IconButton>
+              disabled={false}
+            ></IconButton>
 
             <Dropdown
               inputValue={dest}
@@ -407,10 +411,7 @@ export default function Dashboard() {
               Submit
             </Button>
 
-          {createRideNotif && (
-            <p> Please enter all fields! </p>
-          )}
-
+            {createRideNotif && <p> Please enter all fields! </p>}
           </div>
         </Modal>
       )}
@@ -428,7 +429,6 @@ export default function Dashboard() {
               isClearable
               placeholder="Select starting point"
             ></Dropdown>
-          
             <Dropdown
               inputValue={dest}
               setInputValue={setDest}
