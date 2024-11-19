@@ -22,8 +22,6 @@ export default function Input({
         placeholder={placeholder}
         onChange={handleChange}
       />
-
-      <p> User input from field above (testing purposes): {inputValue} </p>
     </div>
   );
 }
