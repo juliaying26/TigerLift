@@ -80,7 +80,7 @@ export default function IconButton({ type, onClick, disabled, className }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-full p-1 items-center justify-center ${className}`}
+      className={`rounded-full p-1.5 items-center justify-center ${className}`}
     >
       {renderIcon()}
     </button>

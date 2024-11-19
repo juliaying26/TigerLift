@@ -117,6 +117,7 @@ def api_my_posted_rides():
         updated_rides.append(updated_ride)
     
     return jsonify({
+        'user_info': user_info,
         'myrides': updated_rides,
     })
 
@@ -152,6 +153,7 @@ def api_my_requested_rides():
         updated_rides.append(updated_ride)
 
     return jsonify({
+        'user_info': user_info,
         'myreqrides': updated_rides
     })
 
