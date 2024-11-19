@@ -8,16 +8,27 @@ import IconButton from "../components/IconButton";
 import { useNavigate } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
 import dayjs from "dayjs";
+import WarningModal from "../components/WarningModal";
+import Input from "../components/Input";
+import TextArea from "antd/es/input/TextArea";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
 
+  const [userInfo, setUserInfo] = useState({});
   const [myRidesData, setMyRidesData] = useState([]);
   const [viewType, setViewType] = useState("posted");
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [selectedRide, setSelectedRide] = useState(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
+  const [warningModalInfo, setWarningModalInfo] = useState({
+    title: "",
+    buttonText: "",
+  });
 
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
@@ -58,6 +69,7 @@ export default function MyRides() {
         (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
       );
       setMyRidesData(ride_data);
+      setUserInfo(data.user_info);
     } catch (error) {
       console.error("Error fetching rides:", error);
     } finally {
@@ -80,12 +92,6 @@ export default function MyRides() {
     }
   }, [selectedRide]);
 
-  useEffect(() => {
-    console.log(newArrivalDate);
-    console.log(newArrivalTime);
-    console.log(dayjs(selectedRide?.arrival_time));
-  }, [newArrivalDate, newArrivalTime]);
-
   // states for modal
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);
@@ -95,6 +101,21 @@ export default function MyRides() {
   };
 
   const handleCloseModal = () => {
+    if (hasRideChanges()) {
+      setIsWarningModalOpen(true);
+      setWarningModalInfo({
+        title: "Unsaved Changes",
+        buttonText: "Discard Changes",
+      });
+    } else {
+      closeModal();
+    }
+  };
+
+  const closeModal = () => {
+    if (isWarningModalOpen) {
+      handleCloseWarningModal();
+    }
     setIsModalOpen(false);
     setSelectedRide(null);
     setModalCurrentRiders([]);
@@ -107,8 +128,23 @@ export default function MyRides() {
     setNewArrivalTime(null);
   };
 
-  // if Delete clicked on Modal popup
-  const handleDeleteRide = async (rideId) => {
+  const handleCloseWarningModal = () => {
+    setIsWarningModalOpen(false);
+    setWarningModalInfo({
+      title: "",
+      buttonText: "",
+    });
+  };
+
+  const handleDeleteRide = () => {
+    setIsWarningModalOpen(true);
+    setWarningModalInfo({
+      title: "Delete this Ride?",
+      buttonText: "Delete Ride",
+    });
+  };
+
+  const deleteRide = async (rideId) => {
     try {
       const response = await fetch("/api/deleteride", {
         method: "POST",
@@ -119,7 +155,7 @@ export default function MyRides() {
           rideid: rideId,
         }),
       });
-      handleCloseModal();
+      closeModal();
       await fetchMyRidesData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -127,6 +163,19 @@ export default function MyRides() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+  };
+
+  const hasRideChanges = () => {
+    if (
+      (newCapacity && newCapacity.label !== selectedRide.max_capacity) ||
+      !dayjs(newArrivalDate).isSame(dayjs(selectedRide.arrival_time), "day") ||
+      !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time") ||
+      modalCurrentRiders?.length !== selectedRide.current_riders.length ||
+      modalRequestedRiders?.length !== selectedRide.requested_riders.length ||
+      modalRejectedRiders?.length !== 0
+    ) {
+      return true;
+    } else return false;
   };
 
   // if Save clicked on Modal popup
@@ -174,6 +223,11 @@ export default function MyRides() {
 
     console.log(new_arrival_time_iso);
 
+    if (!hasRideChanges()) {
+      handleCloseModal();
+      return;
+    }
+
     try {
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
@@ -189,7 +243,7 @@ export default function MyRides() {
           new_arrival_time: new_arrival_time_iso,
         }),
       });
-      handleCloseModal();
+      closeModal();
       await fetchMyRidesData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -201,15 +255,26 @@ export default function MyRides() {
 
   // Accepts rider in modal
   const handleAcceptRider = async (netid, fullName, email, rideId) => {
-    setModalCurrentRiders((prevCurrentRiders) => [
-      ...prevCurrentRiders,
-      [netid, fullName, email],
-    ]);
+    if (
+      (newCapacity && modalCurrentRiders.length >= newCapacity.label) ||
+      (!newCapacity && modalCurrentRiders.length >= selectedRide.max_capacity)
+    ) {
+      setWarningModalInfo({
+        title: "Capacity Full",
+        buttonText: "Okay",
+      });
+      setIsWarningModalOpen(true);
+    } else {
+      setModalCurrentRiders((prevCurrentRiders) => [
+        ...prevCurrentRiders,
+        [netid, fullName, email],
+      ]);
 
-    setModalRequestedRiders((prevRequestedRiders) => {
-      // Remove requested rider from requested_riders
-      return prevRequestedRiders.filter(([n, name, mail]) => n !== netid);
-    });
+      setModalRequestedRiders((prevRequestedRiders) => {
+        // Remove requested rider from requested_riders
+        return prevRequestedRiders.filter(([n, name, mail]) => n !== netid);
+      });
+    }
   };
 
   // Rejects rider in modal
@@ -260,7 +325,12 @@ export default function MyRides() {
 
   console.log("my rides data is", myRidesData);
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-8">
+      {!loading && (
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl">Welcome, {userInfo?.displayname}</h1>
+        </div>
+      )}
       <div className="flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
@@ -283,7 +353,7 @@ export default function MyRides() {
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : Object.keys(myRidesData).length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {myRidesData.map((ride) => (
             <RideCard
               key={ride.id}
@@ -343,12 +413,14 @@ export default function MyRides() {
                   {ride.max_capacity}
                 </p>
                 {viewType === "posted" && (
-                  <p>
-                    <strong>
-                      {new Date(ride.arrival_time) > new Date()
-                        ? "Current Riders:"
-                        : "Rode with:"}
-                    </strong>
+                  <div>
+                    <p>
+                      <strong>
+                        {new Date(ride.arrival_time) > new Date()
+                          ? "Current Riders:"
+                          : "Rode with:"}
+                      </strong>
+                    </p>
                     {Array.isArray(ride.current_riders) &&
                     ride.current_riders.length > 0 ? (
                       <div className="flex flex-col gap-2 mt-1">
@@ -366,7 +438,7 @@ export default function MyRides() {
                           : "None."}
                       </p>
                     )}
-                  </p>
+                  </div>
                 )}
               </div>
             </RideCard>
@@ -376,6 +448,60 @@ export default function MyRides() {
         <p className="text-center">
           {viewType === "posted" ? "No posted rides." : "No requested rides."}
         </p>
+      )}
+
+      {isWarningModalOpen && (
+        <WarningModal
+          isOpen={isWarningModalOpen}
+          title={warningModalInfo.title}
+        >
+          <div className="flex flex-col gap-3">
+            <p>
+              {warningModalInfo.title === "Unsaved Changes"
+                ? "You have unsaved changes. Do you want to discard them?"
+                : warningModalInfo.title === "Delete this Ride?"
+                ? "Are you sure you want to delete this ride?"
+                : "The capacity for this ride is full. Please remove a rider before accepting another, or increase the capacity of the ride (maximum 5)."}
+            </p>
+            {warningModalInfo.title === "Delete this Ride?" &&
+              selectedRide.current_riders.length != 0 && (
+                <div className="flex flex-col gap-4">
+                  <p>
+                    Please give a reason for deleting this ride. The riders you
+                    have currently accepted will be notified that this ride was
+                    deleted.
+                  </p>
+                  <TextArea placeholder={"List reason here."} />
+                </div>
+              )}
+            <div className="flex items-center self-end gap-2">
+              {warningModalInfo.title !== "Capacity Full" && (
+                <Button
+                  className="border-[1px] border-gray-300 text-theme_dark_1 hover:bg-neutral-100"
+                  onClick={handleCloseWarningModal}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button
+                className={`${
+                  warningModalInfo.title !== "Capacity Full"
+                    ? "bg-red-400 text-white hover:bg-red-500"
+                    : "bg-theme_medium_2 text-white hover:bg-theme_dark_2"
+                }`}
+                onClick={
+                  warningModalInfo.title === "Unsaved Changes"
+                    ? closeModal
+                    : warningModalInfo.title === "Delete this Ride?"
+                    ? () => deleteRide(selectedRide.id)
+                    : handleCloseWarningModal
+                }
+              >
+                {warningModalInfo.buttonText}
+              </Button>
+            </div>
+          </div>
+        </WarningModal>
       )}
 
       {isModalOpen && (
@@ -482,7 +608,7 @@ export default function MyRides() {
               )}
               {isEditingCapacity ? (
                 <Button
-                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  className="text-theme_medium_2 hover:text-theme_dark_2"
                   onClick={() => setIsEditingCapacity(false)}
                 >
                   {newCapacity?.label !== selectedRide.max_capacity
@@ -491,7 +617,7 @@ export default function MyRides() {
                 </Button>
               ) : (
                 <Button
-                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  className="text-theme_medium_2 hover:text-theme_dark_2"
                   onClick={() => setIsEditingCapacity(true)}
                 >
                   Edit
@@ -580,13 +706,13 @@ export default function MyRides() {
             <div className="flex justify-between">
               <Button
                 onClick={() => handleDeleteRide(selectedRide.id)}
-                className="hover:bg-red-600 border border-gray-300"
+                className="hover:bg-red-300 border border-neutral-300 text-neutral-700"
               >
                 Delete this Ride
               </Button>
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
-                className="hover:bg-green-600 border border-gray-300"
+                className="hover:bg-theme_light_2 border border-neutral-300 text-neutral-700"
               >
                 Save
               </Button>
