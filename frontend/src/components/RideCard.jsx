@@ -13,7 +13,10 @@ export default function RideCard({
   secondaryButtonStatus = "",
 }) {
   return (
-    <div id="ridecard" className="p-6 bg-white rounded-lg h-full">
+    <div
+      id="ridecard"
+      className="p-6 bg-white rounded-lg h-full drop-shadow-sm"
+    >
       <div className="flex flex-col gap-2 justify-between h-full">
         <div>{children}</div>
         <div className="flex justify-between">
