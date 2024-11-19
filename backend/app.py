@@ -4,6 +4,9 @@ import database
 from casclient import CASClient
 from dotenv import load_dotenv
 load_dotenv() # load vars in .env file
+import smtplib # library for emails
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
@@ -13,6 +16,9 @@ FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
 print("flask env " + FLASK_ENV)
 print("frontend url " + FRONTEND_URL)
+
+# FOR TESTING -- change to False if you don't want emails sent
+EMAILS_ON = True
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -277,6 +283,14 @@ def requestride():
     rideid = data.get('rideid')
     try:
         database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
+
+        # send emails
+        if EMAILS_ON:
+            admin_id = database.rideid_to_admin_id(rideid)
+            message = "user " + user_info['netid'] + " requested to join your ride!"
+            send_email_notification(admin_id, admin_id + "@princeton.edu", message, 
+                "Please see details at tigerlift.onrender.com")
+
         return jsonify({'success': True, 'message': 'Ride request created'})
     except:
         return jsonify({'success': False, 'message': 'Failed to create ride request'}), 400
@@ -291,11 +305,22 @@ def batchupdateriderequest():
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
-            database.accept_ride_request(requester_id, full_name, mail, rideid)
-            
+            status = database.accept_ride_request(requester_id, full_name, mail, rideid)
+
+            # if status is True (meaning new ride request was created)
+            if status:
+                # send email to accepted rider
+                if EMAILS_ON:
+                    send_email_notification(requester_id, mail, "Your ride request was accepted", 
+                        "Your ride request was recently accepted. Please see details at tigerlift.onrender.com")
+
         for rider in data.get('rejecting_riders', []):
             requester_id = rider.get('requester_id')
             database.reject_ride_request(requester_id, rideid)
+
+            if EMAILS_ON:
+                    send_email_notification(requester_id, mail, "Your ride request was rejected", 
+                        "Your ride request was recently rejected. Please see details at tigerlift.onrender.com")
 
         for rider in data.get('pending_riders', []):
             requester_id = rider.get('requester_id')
@@ -312,6 +337,44 @@ def batchupdateriderequest():
         return jsonify({'success': True, 'message': 'Ride requests accepted'})
     except:
         return jsonify({'success': False, 'message': 'Failed to accept ride requests'}), 400
+    
+@app.route("/api/sendemailnotifs", methods=["GET"])
+def send_email_notification(netid, mail, subject, message):
+    print("EMAIL NOTIF!!")
+    """
+    Sends email notifications
+
+    How to use: copy paste the following lines ---
+    mail = user_info['netid'] + "@princeton.edu" // because RN we can't get mail from CAS
+    database.send_email_notification(user_info['netid'], mail, 'INSERT SUBJECT HERE', 'INSERT MESSAGE HERE')
+    """
+
+    # if mail is empty for some reason, use netid @ princeton.edu
+    if not mail:
+        mail = netid + "@princeton.edu"
+
+    from_email = os.environ.get('EMAIL_ADDRESS')
+    from_password = os.environ.get('EMAIL_PASSWORD')
+
+    # Set up the email
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = mail
+    msg['Subject'] = subject
+
+    # Attach the message
+    msg.attach(MIMEText(message, 'plain'))
+
+    try:
+        # Connect to the SMTP server and send the email
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()  # Secure the connection
+            server.login(from_email, from_password)
+            server.send_message(msg)
+        print(f"Email sent to {mail} successfully!")
+    except Exception as e:
+        print(f"Error sending email to {mail}: {e}")
+
 
 # @app.route("/api/acceptriderequest", methods=["POST"])
 # def acceptriderequest():

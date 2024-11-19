@@ -3,43 +3,8 @@ import psycopg2
 import json
 from dotenv import load_dotenv
 load_dotenv()
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-
-def send_email_notification(netid, subject, message):
-    """
-    Sends email notifications
-
-    How to use: copy paste the following lines ---
-    mail = user_info['netid'] + "@princeton.edu" // because RN we can't get mail from CAS
-    database.send_email_notification(user_info['netid'], mail, 'INSERT SUBJECT HERE', 'INSERT MESSAGE HERE')
-    """
-
-    mail = netid + "@princeton.edu"
-    from_email = os.environ.get('EMAIL_ADDRESS')
-    from_password = os.environ.get('EMAIL_PASSWORD')
-
-    # Set up the email
-    msg = MIMEMultipart()
-    msg['From'] = from_email
-    msg['To'] = mail
-    msg['Subject'] = subject
-
-    # Attach the message
-    msg.attach(MIMEText(message, 'plain'))
-
-    try:
-        # Connect to the SMTP server and send the email
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()  # Secure the connection
-            server.login(from_email, from_password)
-            server.send_message(msg)
-        print(f"Email sent to {mail} successfully!")
-    except Exception as e:
-        print(f"Error sending email to {mail}: {e}")
 
 def database_setup():
     """
@@ -270,21 +235,6 @@ def create_ride_request(netid, full_name, mail, ride_id):
                 conn.commit()
                 print("Ride request addded successfully!")
 
-                try:
-                    # Retrieve the admin_id from the Rides table
-                    admin_query = "SELECT admin_netid FROM Rides WHERE id = %s;"
-                    cursor.execute(admin_query, (ride_id,))
-                    admin_netid_result = cursor.fetchone()
-                    
-                    if admin_netid_result:
-                        admin_id = admin_netid_result[0]
-                        print(f"Admin ID for ride {ride_id} is {admin_id}")
-
-                    # Send email notification
-                    send_email_notification(admin_id, 'You have a new Ride Request!', 'Please check the new request to join your ride at tigerlift.onrender.com')
-
-                except Exception as e:
-                    print(f"Error: Ride {ride_id} not found")
 
         except Exception as e:
             print(f"Error adding ride request: {e}")
@@ -348,34 +298,6 @@ def update_capacity(rideid, new_capacity):
                 print("Ride capacity updated successfully!")
         except Exception as e:
             print(f"Error updating ride capacity: {e}")
-        finally:
-            conn.close()
-
-
-def update_arrival_time(rideid, new_arrival_time):
-    """
-    Updates the arrival time of a ride
-    """
-
-    sql_command = f"""
-        UPDATE Rides
-        SET arrival_time = %s
-        WHERE id = %s;
-    """
-
-    values = (new_arrival_time, rideid)
-
-    conn = connect()
-
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
-                conn.commit()
-                print("Ride arrival time updated successfully!")
-        except Exception as e:
-            print(f"Error updating ride arrival time: {e}")
         finally:
             conn.close()
 
@@ -679,7 +601,10 @@ def delete_ride_request(netid, ride_id):
 
 def accept_ride_request(user_netid, full_name, mail, ride_id):
     """
-    Accepts a ride request and updates current_riders in Rides
+    Accepts a ride request and updates current_riders in Rides.
+    Returns False if user with user_netid already has a ride
+    request in that ride. Else returns True if new ride_request
+    is successfully created for user with
     """
 
     # checks status of ride request
@@ -700,6 +625,8 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
                 result = cursor.fetchone()
                 if result:
                     request_status = result[0]
+                    if request_status == 'accepted':
+                        return False
         except Exception as e:
             print(f"Error checking ride request status: {e}")
         finally:
@@ -733,16 +660,14 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
                     cursor.execute(update_rides_sql_command, ride_values)
                     conn.commit()
                     print("RideRequest accepted successfully!")
-
-                    # Send email for ride request accepted
-                    send_email_notification(user_netid, 'Your ride request was accepted!', 'Please check your ride at tigerlift.onrender.com')
-                    
+                                        
             except Exception as e:
                 print(f"Error accepting ride request: {e}")
             finally:
                 conn.close()
         else:
             print("Connection not established.")
+    return True
 
 # SHOULD THIS AUTO DELETE AFTER A WHILE??? OR ACTUALLY DELETE THE REQUEST INSTEAD OF REJECTING?
 #  OR IS A USER WHO IS REJECTED THEREFORE BANNED FROM REQUESTING AGAIN
@@ -916,6 +841,32 @@ def id_to_location(id):
     print("ID corresponding to num is", location_result)
     return int(location_result)
 
+
+def rideid_to_admin_id(id):
+    sql_command = "SELECT admin_netid FROM Rides WHERE id = %s"
+    values = (id,)
+    admin_netid_result = None
+
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                result = cursor.fetchone()
+                if result:
+                    admin_netid_result = result[0]
+                    print("Admin_netid retrieved successfully:", admin_netid_result)
+                else:
+                    print("No matching admin_netid found.")
+        except Exception as e:
+            print(f"Error retrieving admin_netid: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    print("Admin_netid corresponding to ride_id is", admin_netid_result)
+    return admin_netid_result
 
 if __name__ == "__main__":
     database_setup()
