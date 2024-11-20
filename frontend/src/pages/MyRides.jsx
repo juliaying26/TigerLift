@@ -477,7 +477,7 @@ export default function MyRides() {
             <div className="flex items-center self-end gap-2">
               {warningModalInfo.title !== "Capacity Full" && (
                 <Button
-                  className="border-[1px] border-gray-300 text-theme_dark_1 hover:bg-neutral-100"
+                  className="border-[1px] border-gray-300 text-theme_dark_1 hover:bg-zinc-100"
                   onClick={handleCloseWarningModal}
                 >
                   Cancel
@@ -659,7 +659,7 @@ export default function MyRides() {
               <p>
                 <strong>Requests to Join:</strong>
               </p>
-              <div className="overflow-y-auto bg-neutral-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
+              <div className="overflow-y-auto bg-zinc-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
                 {Array.isArray(modalRequestedRiders) &&
                 modalRequestedRiders.length > 0 ? (
                   modalRequestedRiders.map((requested_rider, index) => {
@@ -706,13 +706,13 @@ export default function MyRides() {
             <div className="flex justify-between">
               <Button
                 onClick={() => handleDeleteRide(selectedRide.id)}
-                className="hover:bg-red-300 border border-neutral-300 text-neutral-700"
+                className="hover:bg-red-300 border border-zinc-300 text-zinc-700"
               >
                 Delete this Ride
               </Button>
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
-                className="hover:bg-theme_light_2 border border-neutral-300 text-neutral-700"
+                className="hover:bg-theme_light_2 border border-zinc-300 text-zinc-700"
               >
                 Save
               </Button>

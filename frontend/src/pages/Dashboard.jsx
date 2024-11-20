@@ -121,11 +121,6 @@ export default function Dashboard() {
       setCreateRideNotif(true);
     } else {
       createRide();
-      setCapacity("");
-      setOrigin("");
-      setDest("");
-      setDate("");
-      setTime("");
     }
   };
 
@@ -165,6 +160,11 @@ export default function Dashboard() {
 
   const handleCloseRideModal = async () => {
     setCreateRideModal(false);
+    setCapacity("");
+    setOrigin("");
+    setDest("");
+    setDate("");
+    setTime("");
   };
 
   const handleOpenSearchRideModal = async () => {
