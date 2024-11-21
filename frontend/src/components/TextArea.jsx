@@ -12,16 +12,14 @@ export default function Input({
   };
 
   return (
-    <div className="p-1">
-      <TextArea
-        label={label}
-        variant="outlined"
-        value={inputValue}
-        fullWidth
-        placeholder={placeholder}
-        onChange={handleChange}
-        style={{ height: 80, resize: "none" }}
-      />
-    </div>
+    <TextArea
+      label={label}
+      variant="outlined"
+      value={inputValue}
+      fullWidth
+      placeholder={placeholder}
+      onChange={handleChange}
+      style={{ height: 80, resize: "none" }}
+    />
   );
 }

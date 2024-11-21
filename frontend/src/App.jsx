@@ -10,8 +10,6 @@ function App() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const apiURL = import.meta.env.VITE_API_URL;
-
   useEffect(() => {
     fetch(`/api/isloggedin`)
       .then((res) => res.json())
