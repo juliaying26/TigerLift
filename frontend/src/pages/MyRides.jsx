@@ -520,7 +520,7 @@ export default function MyRides() {
         >
           <div className="flex flex-col gap-1">
             <p className="text-sm text-zinc-700 mb-2 rounded-md bg-info_light p-2">
-              Any changes you make in this pop up will remain unsaved unless you
+              Any changes you make in this pop up will remain unsaved until you
               click "Save".
             </p>
             <p className="text-xl my-1">
