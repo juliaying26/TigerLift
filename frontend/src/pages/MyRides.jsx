@@ -10,7 +10,7 @@ import Dropdown from "../components/Dropdown";
 import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
 import Input from "../components/Input";
-import TextArea from "antd/es/input/TextArea";
+import TextArea from "../components/TextArea";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
@@ -29,6 +29,7 @@ export default function MyRides() {
     title: "",
     buttonText: "",
   });
+  const [deleteRideMessage, setDeleteRideMessage] = useState("");
 
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
@@ -134,6 +135,7 @@ export default function MyRides() {
       title: "",
       buttonText: "",
     });
+    setDeleteRideMessage("");
   };
 
   const handleDeleteRide = () => {
@@ -177,6 +179,10 @@ export default function MyRides() {
       return true;
     } else return false;
   };
+
+  useEffect(() => {
+    console.log(deleteRideMessage);
+  }, [deleteRideMessage]);
 
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
@@ -471,7 +477,11 @@ export default function MyRides() {
                     have currently accepted will be notified that this ride was
                     deleted.
                   </p>
-                  <TextArea placeholder={"List reason here."} />
+                  <TextArea
+                    placeholder={"List reason here."}
+                    inputValue={deleteRideMessage}
+                    setInputValue={setDeleteRideMessage}
+                  />
                 </div>
               )}
             <div className="flex items-center self-end gap-2">
@@ -626,35 +636,35 @@ export default function MyRides() {
             </div>
             <p>
               <strong>Current Riders:</strong>
-              {Array.isArray(modalCurrentRiders) &&
-              modalCurrentRiders.length > 0 ? (
-                <div className="flex flex-col gap-2 mt-1">
-                  {modalCurrentRiders.map((rider, index) => {
-                    const [netid, fullName, email] = rider;
-                    return (
-                      <Pill key={index}>
-                        <div className="flex items-center justify-between">
-                          <div>{`${fullName} ${email}`}</div>
-                          <IconButton
-                            type="xmark"
-                            onClick={() =>
-                              handleRemoveRider(
-                                netid,
-                                fullName,
-                                email,
-                                selectedRide.id
-                              )
-                            }
-                          />
-                        </div>
-                      </Pill>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p>No current riders.</p>
-              )}
             </p>
+            {Array.isArray(modalCurrentRiders) &&
+            modalCurrentRiders.length > 0 ? (
+              <div className="flex flex-col gap-2 mt-1">
+                {modalCurrentRiders.map((rider, index) => {
+                  const [netid, fullName, email] = rider;
+                  return (
+                    <Pill key={index}>
+                      <div className="flex items-center justify-between">
+                        <div>{`${fullName} ${email}`}</div>
+                        <IconButton
+                          type="xmark"
+                          onClick={() =>
+                            handleRemoveRider(
+                              netid,
+                              fullName,
+                              email,
+                              selectedRide.id
+                            )
+                          }
+                        />
+                      </div>
+                    </Pill>
+                  );
+                })}
+              </div>
+            ) : (
+              <p>No current riders.</p>
+            )}
             <div className="flex flex-col gap-2 mb-4">
               <p>
                 <strong>Requests to Join:</strong>

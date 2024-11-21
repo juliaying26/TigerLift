@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import TextField from "@mui/material/TextField";
+import TextArea from "antd/lib/input/TextArea";
 
 export default function Input({
   label,
@@ -13,14 +13,14 @@ export default function Input({
 
   return (
     <div className="p-1">
-      <TextField
+      <TextArea
         label={label}
         variant="outlined"
-        type="email"
         value={inputValue}
         fullWidth
         placeholder={placeholder}
         onChange={handleChange}
+        style={{ height: 80, resize: "none" }}
       />
     </div>
   );
