@@ -254,19 +254,19 @@ export default function Dashboard() {
       <div className="flex justify-between">
         <Link
           to="/myrides"
-          className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:text-theme_dark_2"
+          className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
         >
           My Rides
         </Link>
         <div className="flex gap-4">
           <Button
-            className="bg-theme_medium_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
+            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
             onClick={() => handleOpenRideModal()}
           >
-            Create a Ride
+            Create a Rideshare
           </Button>
           <Button
-            className="bg-theme_medium_2 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
+            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
             onClick={() => handleOpenSearchRideModal()}
           >
             Search
@@ -299,10 +299,11 @@ export default function Dashboard() {
                   key={ride.id}
                   buttonText={
                     ride.admin_netid === dashboardData.user_info.netid
-                      ? "Cannot join your own ride"
+                      ? ""
                       : dashboardData.ridereqs[ride.id] !== undefined &&
                         dashboardData.ridereqs[ride.id] !== null
-                      ? capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
+                      ? "Status: " +
+                        capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
                       : ride.current_riders.length === ride.max_capacity
                       ? "Ride filled"
                       : "Request to Join"
@@ -315,9 +316,10 @@ export default function Dashboard() {
                       : () => handleRideRequest(ride.id)
                   }
                   buttonClassName={`${
-                    dashboardData.ridereqs[ride.id] ||
                     ride.admin_netid === dashboardData.user_info.netid
-                      ? "cursor-auto bg-theme_light_1 text-theme_dark_1 font-semibold"
+                      ? "cursor-auto"
+                      : dashboardData.ridereqs[ride.id]
+                      ? "cursor-auto font-semibold"
                       : "bg-theme_dark_1 text-white font-semibold"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
@@ -328,7 +330,7 @@ export default function Dashboard() {
                     </strong>
                   </p>
                   <p className="text-center mb-2">
-                    Arrival by{" "}
+                    Arrive by{" "}
                     {new Date(ride.arrival_time).toLocaleString("en-US", {
                       year: "numeric",
                       month: "numeric",
@@ -340,14 +342,12 @@ export default function Dashboard() {
                   </p>
                   <hr className="border-1 my-3 border-theme_medium_1" />
                   <p>
-                    <strong>Admin Name:</strong> {ride.admin_name}
+                    <span className="font-semibold">Posted by:</span>{" "}
+                    {ride.admin_name}, {ride.admin_email}
                   </p>
                   <p>
-                    <strong>Admin Email:</strong> {ride.admin_email}
-                  </p>
-                  <p>
-                    <strong>Seats Taken:</strong> {ride.current_riders.length}/
-                    {ride.max_capacity}
+                    <span className="font-semibold">Seats Taken:</span>{" "}
+                    {ride.current_riders.length}/{ride.max_capacity}
                   </p>
                 </RideCard>
               ))}
@@ -362,50 +362,56 @@ export default function Dashboard() {
         <Modal
           isOpen={createRideModal}
           onClose={handleCloseRideModal}
-          title={"Create a Ride"}
+          title={"Create a Rideshare"}
         >
-          <div>
-            <Dropdown
-              inputValue={capacity}
-              setInputValue={setCapacity}
-              options={capacity_options}
-              isClearable
-              placeholder="Select capacity"
-            ></Dropdown>
-
-            <Dropdown
-              inputValue={origin}
-              setInputValue={setOrigin}
-              options={locations}
-              isClearable
-              placeholder="Select starting point"
-            ></Dropdown>
-
-            <IconButton
-              type="flip"
-              onClick={flipSearchFields}
-              disabled={false}
-            ></IconButton>
-
-            <Dropdown
-              inputValue={dest}
-              setInputValue={setDest}
-              options={locations}
-              isClearable
-              placeholder="Select destination"
-            ></Dropdown>
-
-            <p> Arrival Time </p>
-            <DateTimePicker
-              date={date}
-              setDate={setDate}
-              time={time}
-              setTime={setTime}
-            />
-            <br />
-
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
+              <div>
+                <p className="font-medium">Capacity </p>
+                <Dropdown
+                  inputValue={capacity}
+                  setInputValue={setCapacity}
+                  options={capacity_options}
+                  isClearable
+                  placeholder="Select capacity"
+                ></Dropdown>
+              </div>
+              <div>
+                <p className="font-medium">Origin & Destination</p>
+                <div className="flex items-center gap-2">
+                  <Dropdown
+                    inputValue={origin}
+                    setInputValue={setOrigin}
+                    options={locations}
+                    isClearable
+                    placeholder="Select an origin"
+                  ></Dropdown>
+                  <IconButton
+                    type="flip"
+                    onClick={flipSearchFields}
+                    disabled={false}
+                  ></IconButton>
+                  <Dropdown
+                    inputValue={dest}
+                    setInputValue={setDest}
+                    options={locations}
+                    isClearable
+                    placeholder="Select a destination"
+                  ></Dropdown>
+                </div>
+              </div>
+              <div>
+                <p className="font-medium">Arrival Time</p>
+                <DateTimePicker
+                  date={date}
+                  setDate={setDate}
+                  time={time}
+                  setTime={setTime}
+                />
+              </div>
+            </div>
             <Button
-              className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+              className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:text-theme_medium_1"
               onClick={checkCreateRideParams}
             >
               Submit

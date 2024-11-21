@@ -380,11 +380,11 @@ export default function MyRides() {
                 ride.request_status === "accepted" ||
                 new Date(ride.arrival_time) <= new Date()
                   ? "cursor-auto"
-                  : "bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
+                  : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
               }`}
               secondaryButtonText={
                 viewType === "requested" &&
-                capitalizeFirstLetter(ride.request_status)
+                "Status: " + capitalizeFirstLetter(ride.request_status)
               }
               secondaryButtonOnClick={() => {}}
               secondaryButtonClassName="cursor-auto"
@@ -397,7 +397,7 @@ export default function MyRides() {
                   </strong>
                 </p>
                 <p className="text-center mb-2">
-                  Arrival by{" "}
+                  Arrive by{" "}
                   {new Date(ride.arrival_time).toLocaleString("en-US", {
                     year: "numeric",
                     month: "numeric",
@@ -409,23 +409,21 @@ export default function MyRides() {
                 </p>
                 <hr className="border-1 my-3 border-theme_medium_1" />
                 <p>
-                  <strong>Admin Name:</strong> {ride.admin_name}
+                  <span className="font-semibold">Posted by:</span>{" "}
+                  {ride.admin_name}, {ride.admin_email}
                 </p>
                 <p>
-                  <strong>Admin Email:</strong> {ride.admin_email}
-                </p>
-                <p>
-                  <strong>Seats Taken:</strong> {ride.current_riders.length}/
-                  {ride.max_capacity}
+                  <span className="font-semibold">Seats Taken:</span>{" "}
+                  {ride.current_riders.length}/{ride.max_capacity}
                 </p>
                 {viewType === "posted" && (
                   <div>
                     <p>
-                      <strong>
+                      <span className="font-semibold">
                         {new Date(ride.arrival_time) > new Date()
                           ? "Current Riders:"
                           : "Rode with:"}
-                      </strong>
+                      </span>
                     </p>
                     {Array.isArray(ride.current_riders) &&
                     ride.current_riders.length > 0 ? (
@@ -521,15 +519,18 @@ export default function MyRides() {
           title={"Manage this Ride"}
         >
           <div className="flex flex-col gap-1">
-            <p>
-              <strong>Origin:</strong> {selectedRide.origin_name}
+            <p className="text-sm text-zinc-700 mb-2 rounded-md bg-info_light p-2">
+              Any changes you make in this pop up will remain unsaved unless you
+              click "Save".
             </p>
-            <p>
-              <strong>Destination:</strong> {selectedRide.destination_name}
+            <p className="text-xl my-1">
+              <strong>
+                {selectedRide.origin_name} → {selectedRide.destination_name}
+              </strong>
             </p>
             <div className="flex items-center gap-1">
               <p>
-                <strong>Arrival Time:</strong>{" "}
+                <span className="font-semibold">Arrive by:</span>{" "}
               </p>
               {isEditingArrivalTime ? (
                 <DateTimePicker
@@ -588,13 +589,12 @@ export default function MyRides() {
               )}
             </div>
             <p>
-              <strong>Admin Name:</strong> {selectedRide.admin_name}
-            </p>
-            <p>
-              <strong>Admin Email:</strong> {selectedRide.admin_email}
+              <span className="font-semibold">Posted by:</span>{" "}
+              {selectedRide.admin_name}, {selectedRide.admin_email}
             </p>
             <div className="flex items-center gap-1">
-              <strong>Seats Taken:</strong> {modalCurrentRiders.length || 0}
+              <span className="font-semibold">Seats Taken:</span>{" "}
+              {modalCurrentRiders.length || 0}
               {"/"}
               {isEditingCapacity ? (
                 <Dropdown
@@ -635,7 +635,7 @@ export default function MyRides() {
               )}
             </div>
             <p>
-              <strong>Current Riders:</strong>
+              <span className="font-semibold">Current Riders:</span>
             </p>
             {Array.isArray(modalCurrentRiders) &&
             modalCurrentRiders.length > 0 ? (
@@ -656,6 +656,7 @@ export default function MyRides() {
                               selectedRide.id
                             )
                           }
+                          className="text-zinc-700 hover:text-zinc-500"
                         />
                       </div>
                     </Pill>
@@ -665,9 +666,9 @@ export default function MyRides() {
             ) : (
               <p>No current riders.</p>
             )}
-            <div className="flex flex-col gap-2 mb-4">
-              <p>
-                <strong>Requests to Join:</strong>
+            <div className="flex flex-col gap-2 mt-1 mb-4">
+              <p className="-mb-1">
+                <span className="font-semibold">Requests to Join:</span>
               </p>
               <div className="overflow-y-auto bg-zinc-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
                 {Array.isArray(modalRequestedRiders) &&

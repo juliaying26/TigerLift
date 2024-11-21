@@ -9,15 +9,17 @@ export default function Button({
 }) {
   let buttonStyling = "";
   if (status === "pending") {
-    buttonStyling = "bg-theme_light_1 text-theme_dark_1";
+    buttonStyling = "px-3 rounded-full bg-theme_light_1 text-theme_dark_1";
   } else if (status === "accepted") {
-    buttonStyling = "bg-theme_light_2 text-theme_dark_2";
+    buttonStyling = "px-3 rounded-full bg-theme_light_2 text-theme_dark_2";
   }
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-2 py-1 rounded-md font-semibold ${className} ${buttonStyling}`}
+      className={`py-1 font-medium ${className} ${
+        buttonStyling ? buttonStyling : "px-2 rounded-md"
+      }`}
     >
       {children}
     </button>

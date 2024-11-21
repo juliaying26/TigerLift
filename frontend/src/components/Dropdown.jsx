@@ -12,13 +12,11 @@ export default function Dropdown({
   };
 
   return (
-    <div className="p-1">
-      <Select
-        value={inputValue}
-        onChange={handleChange}
-        options={options}
-        placeholder={placeholder}
-      />
-    </div>
+    <Select
+      value={inputValue}
+      onChange={handleChange}
+      options={options}
+      placeholder={placeholder}
+    />
   );
 }
