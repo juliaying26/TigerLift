@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
 import Input from "../components/Input";
 import TextArea from "../components/TextArea";
-import CopyEmailIcon from "../components/CopyEmailIcon";
+import CopyEmailButton from "../components/CopyEmailButton";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
@@ -45,6 +45,11 @@ export default function MyRides() {
 
   function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+  }
+
+  function copyAllRiderEmails(current_riders) {
+    const emails = current_riders.map((rider) => rider[2]);
+    navigator.clipboard.writeText(emails.join(", "));
   }
 
   const fetchMyRidesData = async () => {
@@ -161,14 +166,17 @@ export default function MyRides() {
 
       // Email all riders whose ride was cancelled
       // Extract and format ride date
-      const rideDate = new Date(selectedRide.arrival_time).toLocaleString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      });
+      const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        }
+      );
 
       // Email notification details
       const subj = "Ride Cancellation Notification";
@@ -184,9 +192,9 @@ export default function MyRides() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              full_name: rider[1], 
-              netid: rider[0], 
-              mail: rider[2], 
+              full_name: rider[1],
+              netid: rider[0],
+              mail: rider[2],
               subject: subj,
               message: mess,
             }),
@@ -196,14 +204,14 @@ export default function MyRides() {
               `Failed to send email notification to ${rider[0]}:`,
               response_email.statusText
             );
-          }     
-        } catch (error) {
-            console.error(
-              `Error sending email notification to ${rider[0]}:`,
-              error
-            );
           }
+        } catch (error) {
+          console.error(
+            `Error sending email notification to ${rider[0]}:`,
+            error
+          );
         }
+      }
 
       closeModal();
       await fetchMyRidesData();
@@ -297,14 +305,21 @@ export default function MyRides() {
           new_arrival_time: new_arrival_time_iso,
         }),
       });
-  
+
       if (
-        !dayjs(newArrivalDate).isSame(dayjs(selectedRide.arrival_time), "day") ||
+        !dayjs(newArrivalDate).isSame(
+          dayjs(selectedRide.arrival_time),
+          "day"
+        ) ||
         !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
       ) {
         try {
           const subj = "A ride you're in has changed time!";
-          const mess = `Your ride has changed time to ${newArrivalDate.format("YYYY-MM-DD")} on ${newArrivalTime.format("HH:mm")}. Please see details at tigerlift.onrender.com`;
+          const mess = `Your ride has changed time to ${newArrivalDate.format(
+            "YYYY-MM-DD"
+          )} on ${newArrivalTime.format(
+            "HH:mm"
+          )}. Please see details at tigerlift.onrender.com`;
           for (const rider of accepting_riders) {
             // console.log("rider's name is", rider.full_name)
             // console.log("rider's mail is", rider.mail)
@@ -322,17 +337,16 @@ export default function MyRides() {
                   netid: rider.requester_id,
                   mail: rider.mail,
                   subject: subj,
-                  message: mess
+                  message: mess,
                 }),
               });
-  
+
               if (!response_1.ok) {
                 console.error(
                   `Failed to send email notification to ${rider.requester_id}:`,
                   response_1.statusText
                 );
               }
-              
             } catch (error) {
               console.error(
                 `Error sending email notification to ${rider.requester_id}:`,
@@ -344,10 +358,10 @@ export default function MyRides() {
           console.error("Error during fetch sendemailnotifs:", error);
         }
       }
-  
+
       closeModal();
       await fetchMyRidesData();
-  
+
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -355,7 +369,7 @@ export default function MyRides() {
       console.error("Error during fetch:", error);
     }
   };
-  
+
   // Accepts rider in modal
   const handleAcceptRider = async (netid, fullName, email, rideId) => {
     if (
@@ -515,11 +529,20 @@ export default function MyRides() {
                 {viewType === "posted" && (
                   <div>
                     <p>
-                      <span className="font-semibold">
-                        {new Date(ride.arrival_time) > new Date()
-                          ? "Current Riders:"
-                          : "Rode with:"}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">
+                          {new Date(ride.arrival_time) > new Date()
+                            ? "Current Riders:"
+                            : "Rode with:"}
+                        </span>
+                        {ride.current_riders.length > 0 && (
+                          <CopyEmailButton
+                            copy={ride.current_riders.map((rider) => rider[2])}
+                            text="Copy All Rider Emails"
+                            className="text-theme_medium_2 hover:text-theme_dark_2"
+                          />
+                        )}
+                      </div>
                     </p>
                     {Array.isArray(ride.current_riders) &&
                     ride.current_riders.length > 0 ? (
@@ -527,7 +550,15 @@ export default function MyRides() {
                         {ride.current_riders.map((rider, index) => {
                           const [netid, fullName, email] = rider;
                           return (
-                            <Pill email={email} key={index}>{`${fullName}`} </Pill>
+                            <Pill email={email} key={index}>
+                              <div className="w-full flex items-center justify-between">
+                                {`${fullName}`}
+                                <CopyEmailButton
+                                  copy={[email]}
+                                  text="Copy Email"
+                                />
+                              </div>
+                            </Pill>
                           );
                         })}
                       </div>
@@ -746,10 +777,15 @@ export default function MyRides() {
                           <IconButton
                             type="xmark"
                             onClick={() =>
-                              handleRemoveRider(netid, fullName, email, selectedRide.id)
+                              handleRemoveRider(
+                                netid,
+                                fullName,
+                                email,
+                                selectedRide.id
+                              )
                             }
                             className="text-zinc-700 hover:text-zinc-500"
-                            />
+                          />
                         </div>
                       </div>
                     </Pill>

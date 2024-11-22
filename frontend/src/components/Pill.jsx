@@ -1,22 +1,10 @@
 import React from "react";
-import CopyEmailIcon from "./CopyEmailIcon";
+import CopyEmailIcon from "./CopyEmailButton";
 
 export default function Pill({ children, className, email }) {
   return (
-    <div
-      className={`px-3 py-1 bg-zinc-300 rounded-full ${className}`}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between", // Push content to the left and right
-        gap: "8px",
-      }}
-    >
+    <div className={`px-3 py-1 bg-zinc-300 rounded-full ${className}`}>
       <span>{children}</span> {/* Text remains the default font size */}
-      <div style={{ marginLeft: "auto" }}>
-        {/* Push CopyEmailIcon to the far right */}
-        <CopyEmailIcon email={email} />
-      </div>
     </div>
   );
 }
