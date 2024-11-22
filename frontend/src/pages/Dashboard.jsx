@@ -11,6 +11,7 @@ import Dropdown from "../components/Dropdown.jsx";
 import IconButton from "../components/IconButton.jsx";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import PopUpMessage from "../components/PopUpMessage.jsx";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -26,6 +27,11 @@ export default function Dashboard() {
   const [ridesData, setRidesData] = useState([]);
   const [createRideModal, setCreateRideModal] = useState(false);
   const [searchRideModal, setSearchRideModal] = useState(false);
+
+  const [popupMessageInfo, setPopupMessageInfo] = useState({
+    status: "",
+    message: "",
+  });
 
   const [createRideNotif, setCreateRideNotif] = useState([false, ""]);
   const [capacity, setCapacity] = useState("");
@@ -54,6 +60,11 @@ export default function Dashboard() {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
+
+  const handleShowPopupMessage = (status, message) => {
+    setPopupMessageInfo({ status: status, message: message });
+    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
+  };
 
   const flipSearchFields = () => {
     let prevDest = dest;
@@ -111,11 +122,10 @@ export default function Dashboard() {
   };
 
   const checkCreateRideParams = async () => {
+    // const now = dayjs();
 
-    const now = dayjs()
-
-    console.log("current time = ", now)
-    console.log("time = ", time)
+    // console.log("current time = ", now);
+    // console.log("time = ", time);
 
     if (
       capacity === "" ||
@@ -125,8 +135,8 @@ export default function Dashboard() {
       time === ""
     ) {
       setCreateRideNotif([true, "Please enter all fields!"]);
-    } else if (time.isBefore(now, 'minute')) {
-      setCreateRideNotif([true, "Cannot enter a time in the past!"])
+      // } else if (time.isBefore(now, "minute")) {
+      //   setCreateRideNotif([true, "Cannot enter a time in the past!"]);
     } else {
       setCreateRideNotif([false, ""]);
       createRide();
@@ -138,7 +148,6 @@ export default function Dashboard() {
       "HH:mm:ss"
     )}`;
     const arrival_time_iso = new Date(arrival_time_string).toISOString();
-
     try {
       const response = await fetch("/api/addride", {
         method: "POST",
@@ -152,14 +161,18 @@ export default function Dashboard() {
           arrival_time: arrival_time_iso,
         }),
       });
+      const responseData = await response.json();
+      handleCloseRideModal();
+      console.log(responseData.success);
+      console.log(responseData.message);
+      handleShowPopupMessage(responseData.success, responseData.message);
+      await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
     } catch (error) {
       console.error("Error during fetch:", error);
     }
-    handleCloseRideModal();
-    await fetchDashboardData();
     setLoading(false);
   };
 
@@ -254,6 +267,12 @@ export default function Dashboard() {
 
   return (
     <div className="p-8">
+      {popupMessageInfo.message && (
+        <PopUpMessage
+          status={popupMessageInfo.status}
+          message={popupMessageInfo.message}
+        />
+      )}
       <div className="flex justify-between">
         <Link
           to="/myrides"
