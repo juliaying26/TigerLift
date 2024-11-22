@@ -17,6 +17,7 @@ export default function Dropdown({
       onChange={handleChange}
       options={options}
       placeholder={placeholder}
+      isClearable={true}
     />
   );
 }
