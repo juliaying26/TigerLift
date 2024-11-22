@@ -313,8 +313,8 @@ export default function Dashboard() {
                     ride.admin_netid === dashboardData.user_info.netid
                       ? "cursor-auto"
                       : dashboardData.ridereqs[ride.id]
-                      ? "cursor-auto font-semibold"
-                      : "bg-theme_dark_1 text-white font-semibold"
+                      ? "cursor-auto"
+                      : "bg-theme_dark_1 text-white hover:bg-theme_medium_1"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
                 >
