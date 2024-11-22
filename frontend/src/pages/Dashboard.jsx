@@ -27,7 +27,7 @@ export default function Dashboard() {
   const [createRideModal, setCreateRideModal] = useState(false);
   const [searchRideModal, setSearchRideModal] = useState(false);
 
-  const [createRideNotif, setCreateRideNotif] = useState(false);
+  const [createRideNotif, setCreateRideNotif] = useState([false, ""]);
   const [capacity, setCapacity] = useState("");
   const [origin, setOrigin] = useState("");
   const [dest, setDest] = useState("");
@@ -111,6 +111,12 @@ export default function Dashboard() {
   };
 
   const checkCreateRideParams = async () => {
+
+    const now = dayjs()
+
+    console.log("current time = ", now)
+    console.log("time = ", time)
+
     if (
       capacity === "" ||
       origin === "" ||
@@ -118,8 +124,11 @@ export default function Dashboard() {
       date === "" ||
       time === ""
     ) {
-      setCreateRideNotif(true);
+      setCreateRideNotif([true, "Please enter all fields!"]);
+    } else if (time.isBefore(now, 'minute')) {
+      setCreateRideNotif([true, "Cannot enter a time in the past!"])
     } else {
+      setCreateRideNotif([false, ""]);
       createRide();
     }
   };
@@ -417,7 +426,7 @@ export default function Dashboard() {
               Submit
             </Button>
 
-            {createRideNotif && <p> Please enter all fields! </p>}
+            {createRideNotif[0] && <p> {createRideNotif[1]} </p>}
           </div>
         </Modal>
       )}
