@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
 import Input from "../components/Input";
 import TextArea from "../components/TextArea";
+import CopyEmailIcon from "../components/CopyEmailIcon";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
@@ -431,7 +432,7 @@ export default function MyRides() {
                         {ride.current_riders.map((rider, index) => {
                           const [netid, fullName, email] = rider;
                           return (
-                            <Pill key={index}>{`${fullName} ${email}`}</Pill>
+                            <Pill email={email} key={index}>{`${fullName}`} </Pill>
                           );
                         })}
                       </div>
@@ -643,21 +644,18 @@ export default function MyRides() {
                 {modalCurrentRiders.map((rider, index) => {
                   const [netid, fullName, email] = rider;
                   return (
-                    <Pill key={index}>
-                      <div className="flex items-center justify-between">
-                        <div>{`${fullName} ${email}`}</div>
-                        <IconButton
-                          type="xmark"
-                          onClick={() =>
-                            handleRemoveRider(
-                              netid,
-                              fullName,
-                              email,
-                              selectedRide.id
-                            )
-                          }
-                          className="text-zinc-700 hover:text-zinc-500"
-                        />
+                    <Pill email={email} key={index}>
+                      <div className="flex items-center justify-between w-full">
+                        <div>{fullName}</div>
+                        <div className="flex items-center gap-2 ml-auto">
+                          <IconButton
+                            type="xmark"
+                            onClick={() =>
+                              handleRemoveRider(netid, fullName, email, selectedRide.id)
+                            }
+                            className="text-zinc-700 hover:text-zinc-500"
+                            />
+                        </div>
                       </div>
                     </Pill>
                   );
@@ -676,9 +674,9 @@ export default function MyRides() {
                   modalRequestedRiders.map((requested_rider, index) => {
                     const [netid, fullName, email] = requested_rider;
                     return (
-                      <Pill key={index}>
+                      <Pill email={email} key={index}>
                         <div className="flex justify-between items-center">
-                          <div>{`${fullName} ${email}`}</div>
+                          <div>{`${fullName}`}</div>
                           <div className="flex items-center gap-2">
                             <IconButton
                               type="checkmark"
