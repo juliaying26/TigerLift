@@ -10,6 +10,7 @@ export default {
         theme_light_2: "#C4E5E3",
         theme_medium_2: "#5AAFAA",
         theme_dark_2: "#145F5B",
+        info_light: "#FDF5EC",
       },
     },
   },

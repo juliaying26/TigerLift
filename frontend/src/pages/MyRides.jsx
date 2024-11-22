@@ -10,14 +10,17 @@ import Dropdown from "../components/Dropdown";
 import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
 import Input from "../components/Input";
-import TextArea from "antd/es/input/TextArea";
+import TextArea from "../components/TextArea";
+import CopyEmailButton from "../components/CopyEmailButton";
+import PopUpMessage from "../components/PopUpMessage";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
 
   const [userInfo, setUserInfo] = useState({});
-  const [myRidesData, setMyRidesData] = useState([]);
+  const [myUpcomingRidesData, setMyUpcomingRidesData] = useState([]);
+  const [myPastRidesData, setMyPastRidesData] = useState([]);
   const [viewType, setViewType] = useState("posted");
   const [loading, setLoading] = useState(true);
 
@@ -28,6 +31,12 @@ export default function MyRides() {
   const [warningModalInfo, setWarningModalInfo] = useState({
     title: "",
     buttonText: "",
+  });
+  const [deleteRideMessage, setDeleteRideMessage] = useState("");
+
+  const [popupMessageInfo, setPopupMessageInfo] = useState({
+    status: "",
+    message: "",
   });
 
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
@@ -45,6 +54,11 @@ export default function MyRides() {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
   }
 
+  const handleShowPopupMessage = (status, message) => {
+    setPopupMessageInfo({ status: status, message: message });
+    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
+  };
+
   const fetchMyRidesData = async () => {
     setLoading(true);
 
@@ -59,16 +73,27 @@ export default function MyRides() {
 
       let ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
       console.log(ride_data);
-      if (viewType === "requested") {
-        console.log("efjsefojio");
-        ride_data = ride_data.filter(
-          (entry) => new Date(entry.arrival_time) >= new Date()
-        );
-      }
       ride_data.sort(
         (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
       );
-      setMyRidesData(ride_data);
+      const upcoming_rides = [];
+      const past_rides = [];
+      const now = new Date();
+      ride_data.forEach((ride) => {
+        if (new Date(ride.arrival_time) > now) {
+          upcoming_rides.push(ride);
+        } else {
+          past_rides.push(ride);
+        }
+      });
+      setMyUpcomingRidesData(upcoming_rides);
+      if (viewType === "requested") {
+        setMyPastRidesData(
+          past_rides.filter((ride) => ride.request_status === "accepted")
+        );
+      } else {
+        setMyPastRidesData(past_rides);
+      }
       setUserInfo(data.user_info);
     } catch (error) {
       console.error("Error fetching rides:", error);
@@ -134,13 +159,14 @@ export default function MyRides() {
       title: "",
       buttonText: "",
     });
+    setDeleteRideMessage("");
   };
 
   const handleDeleteRide = () => {
     setIsWarningModalOpen(true);
     setWarningModalInfo({
-      title: "Delete this Ride?",
-      buttonText: "Delete Ride",
+      title: "Delete this Rideshare?",
+      buttonText: "Delete Rideshare",
     });
   };
 
@@ -155,11 +181,63 @@ export default function MyRides() {
           rideid: rideId,
         }),
       });
-      closeModal();
-      await fetchMyRidesData();
+
+      const responseData = await response.json();
+
+      // Email all riders whose ride was cancelled
+      // Extract and format ride date
+      const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        }
+      );
+
+      // Email notification details
+      const subj = "Ride Cancellation Notification";
+      const mess = `The ride scheduled for ${rideDate} has been canceled. Reason: ${
+        deleteRideMessage || "No reason provided."
+      }`;
+
+      for (const rider of selectedRide.current_riders) {
+        try {
+          const response_email = await fetch("/api/sendemailnotifs", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              full_name: rider[1],
+              netid: rider[0],
+              mail: rider[2],
+              subject: subj,
+              message: mess,
+            }),
+          });
+          if (!response_email.ok) {
+            console.error(
+              `Failed to send email notification to ${rider[0]}:`,
+              response_email.statusText
+            );
+          }
+        } catch (error) {
+          console.error(
+            `Error sending email notification to ${rider[0]}:`,
+            error
+          );
+        }
+      }
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
+      closeModal();
+      handleShowPopupMessage(responseData.success, responseData.message);
+      await fetchMyRidesData();
     } catch (error) {
       console.error("Error during fetch:", error);
     }
@@ -177,6 +255,10 @@ export default function MyRides() {
       return true;
     } else return false;
   };
+
+  useEffect(() => {
+    console.log(deleteRideMessage);
+  }, [deleteRideMessage]);
 
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
@@ -243,8 +325,64 @@ export default function MyRides() {
           new_arrival_time: new_arrival_time_iso,
         }),
       });
+
+      if (
+        !dayjs(newArrivalDate).isSame(
+          dayjs(selectedRide.arrival_time),
+          "day"
+        ) ||
+        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
+      ) {
+        try {
+         
+          const subj = "A rideshare you're in has changed time!";
+           const mess = `Your ride from ${selectedRide.origin_name} to ${selectedRide.destination_name} 
+          has changed time from ${dayjs(selectedRide.arrival_time).format("YYYY-MM-DD HH:mm")} 
+          to ${newArrivalDate.format("YYYY-MM-DD")} at ${newArrivalTime.format("HH:mm")}. 
+          Please see details at tigerlift.onrender.com.`;
+          
+          for (const rider of accepting_riders) {
+            // console.log("rider's name is", rider.full_name)
+            // console.log("rider's mail is", rider.mail)
+            // console.log("rider's mail is", subject_a)
+            // console.log("message is", message_a)
+
+            try {
+              const response_1 = await fetch("/api/sendemailnotifs", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  full_name: rider.full_name,
+                  netid: rider.requester_id,
+                  mail: rider.mail,
+                  subject: subj,
+                  message: mess,
+                }),
+              });
+
+              if (!response_1.ok) {
+                console.error(
+                  `Failed to send email notification to ${rider.requester_id}:`,
+                  response_1.statusText
+                );
+              }
+            } catch (error) {
+              console.error(
+                `Error sending email notification to ${rider.requester_id}:`,
+                error
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error during fetch sendemailnotifs:", error);
+        }
+      }
+
       closeModal();
       await fetchMyRidesData();
+
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -323,131 +461,273 @@ export default function MyRides() {
     }
   };
 
-  console.log("my rides data is", myRidesData);
+  console.log("my rides data is", myUpcomingRidesData, myPastRidesData);
   return (
     <div className="flex flex-col gap-6 p-8">
-      {!loading && (
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl">Welcome, {userInfo?.displayname}</h1>
-        </div>
+      {popupMessageInfo.message && (
+        <PopUpMessage
+          status={popupMessageInfo.status}
+          message={popupMessageInfo.message}
+        />
       )}
       <div className="flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
           className={`${
-            viewType == "posted" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-semibold px-4 py-2`}
+            viewType == "posted"
+              ? "bg-theme_dark_1 font-medium"
+              : "bg-theme_medium_1"
+          } text-white px-4 py-2 hover:bg-theme_dark_1`}
           onClick={() => setViewType("posted")}
         >
-          My Posted Rides
+          My Posted Rideshares
         </Button>
         <Button
           className={`${
-            viewType == "requested" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-semibold px-4 py-2`}
+            viewType == "requested"
+              ? "bg-theme_dark_1 font-medium"
+              : "bg-theme_medium_1"
+          } text-white px-4 py-2 hover:bg-theme_dark_1`}
           onClick={() => setViewType("requested")}
         >
-          My Requested Rides
+          My Requested Rideshares
         </Button>
       </div>
       {loading ? (
         <div className="text-center">Loading...</div>
-      ) : Object.keys(myRidesData).length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {myRidesData.map((ride) => (
-            <RideCard
-              key={ride.id}
-              buttonText={
-                new Date(ride.arrival_time) > new Date() &&
-                (viewType === "posted"
-                  ? "Manage Ride"
-                  : ride.request_status !== "accepted" && "Cancel Request")
-              }
-              buttonOnClick={
-                viewType === "posted"
-                  ? () => handleManageRideClick(ride)
-                  : ride.request_status === "accepted"
-                  ? () => {}
-                  : () => handleCancelRideRequest(ride.id)
-              }
-              buttonClassName={`${
-                ride.request_status === "accepted" ||
-                new Date(ride.arrival_time) <= new Date()
-                  ? "cursor-auto"
-                  : "bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
-              }`}
-              secondaryButtonText={
-                viewType === "requested" &&
-                capitalizeFirstLetter(ride.request_status)
-              }
-              secondaryButtonOnClick={() => {}}
-              secondaryButtonClassName="cursor-auto"
-              secondaryButtonStatus={ride.request_status}
-            >
-              <div>
-                <p className="text-xl text-center">
-                  <strong>
-                    {ride.origin_name} → {ride.destination_name}
-                  </strong>
-                </p>
-                <p className="text-center mb-2">
-                  Arrival by{" "}
-                  {new Date(ride.arrival_time).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "numeric",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
-                </p>
-                <hr className="border-1 my-3 border-theme_medium_1" />
-                <p>
-                  <strong>Admin Name:</strong> {ride.admin_name}
-                </p>
-                <p>
-                  <strong>Admin Email:</strong> {ride.admin_email}
-                </p>
-                <p>
-                  <strong>Seats Taken:</strong> {ride.current_riders.length}/
-                  {ride.max_capacity}
-                </p>
-                {viewType === "posted" && (
+      ) : (
+        <div className="flex flex-col gap-4">
+          <h3 className="text-lg font-medium">
+            {viewType === "posted"
+              ? "Upcoming posted rides"
+              : "Upcoming requested rides"}
+          </h3>
+          {Object.keys(myUpcomingRidesData).length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {myUpcomingRidesData.map((ride) => (
+                <RideCard
+                  key={ride.id}
+                  buttonText={
+                    new Date(ride.arrival_time) > new Date() &&
+                    (viewType === "posted"
+                      ? "Manage Rideshare"
+                      : ride.request_status !== "accepted" && "Cancel Request")
+                  }
+                  buttonOnClick={
+                    viewType === "posted"
+                      ? () => handleManageRideClick(ride)
+                      : ride.request_status === "accepted"
+                      ? () => {}
+                      : () => handleCancelRideRequest(ride.id)
+                  }
+                  buttonClassName={`${
+                    ride.request_status === "accepted" ||
+                    new Date(ride.arrival_time) <= new Date()
+                      ? "cursor-auto"
+                      : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
+                  }`}
+                  secondaryButtonText={
+                    viewType === "requested" &&
+                    "Status: " + capitalizeFirstLetter(ride.request_status)
+                  }
+                  secondaryButtonOnClick={() => {}}
+                  secondaryButtonClassName="cursor-auto"
+                  secondaryButtonStatus={ride.request_status}
+                >
                   <div>
-                    <p>
+                    <p className="text-xl text-center">
                       <strong>
-                        {new Date(ride.arrival_time) > new Date()
-                          ? "Current Riders:"
-                          : "Rode with:"}
+                        {ride.origin_name} → {ride.destination_name}
                       </strong>
                     </p>
-                    {Array.isArray(ride.current_riders) &&
-                    ride.current_riders.length > 0 ? (
-                      <div className="flex flex-col gap-2 mt-1">
-                        {ride.current_riders.map((rider, index) => {
-                          const [netid, fullName, email] = rider;
-                          return (
-                            <Pill key={index}>{`${fullName} ${email}`}</Pill>
-                          );
-                        })}
+                    <p className="text-center mb-2">
+                      Arrive by{" "}
+                      {new Date(ride.arrival_time).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      })}
+                    </p>
+                    <hr className="border-1 my-3 border-theme_medium_1" />
+                    <p>
+                      <span className="font-semibold">Posted by:</span>{" "}
+                      {ride.admin_name}, {ride.admin_email}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Seats Taken:</span>{" "}
+                      {ride.current_riders.length}/{ride.max_capacity}
+                    </p>
+                    {viewType === "posted" && (
+                      <div>
+                        <p>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold">
+                              {new Date(ride.arrival_time) > new Date()
+                                ? "Current Riders:"
+                                : "Rode with:"}
+                            </span>
+                            {ride.current_riders.length > 0 && (
+                              <CopyEmailButton
+                                copy={ride.current_riders.map(
+                                  (rider) => rider[2]
+                                )}
+                                text="Copy All Rider Emails"
+                                className="text-theme_medium_2 hover:text-theme_dark_2"
+                              />
+                            )}
+                          </div>
+                        </p>
+                        {Array.isArray(ride.current_riders) &&
+                        ride.current_riders.length > 0 ? (
+                          <div className="flex flex-col gap-2 mt-1">
+                            {ride.current_riders.map((rider, index) => {
+                              const [netid, fullName, email] = rider;
+                              return (
+                                <Pill email={email} key={index}>
+                                  <div className="w-full flex items-center justify-between">
+                                    {`${fullName}`}
+                                    <CopyEmailButton
+                                      copy={[email]}
+                                      text="Copy Email"
+                                    />
+                                  </div>
+                                </Pill>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p>
+                            {new Date(ride.arrival_time) > new Date()
+                              ? "No current riders."
+                              : "None."}
+                          </p>
+                        )}
                       </div>
-                    ) : (
-                      <p>
-                        {new Date(ride.arrival_time) > new Date()
-                          ? "No current riders."
-                          : "None."}
-                      </p>
                     )}
                   </div>
-                )}
-              </div>
-            </RideCard>
-          ))}
+                </RideCard>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center">
+              {viewType === "posted"
+                ? "No upcoming posted rides."
+                : "No upcoming requested rides."}
+            </p>
+          )}
+          <h3 className="text-lg font-medium">
+            {viewType === "posted"
+              ? "Past posted rides"
+              : "Previously accepted rides"}
+          </h3>
+          {/* past rides do not have copy email buttons */}
+          {Object.keys(myPastRidesData).length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {myPastRidesData.map((ride) => (
+                <RideCard
+                  key={ride.id}
+                  buttonText={
+                    new Date(ride.arrival_time) > new Date() &&
+                    (viewType === "posted"
+                      ? "Manage Rideshare"
+                      : ride.request_status !== "accepted" && "Cancel Request")
+                  }
+                  buttonOnClick={
+                    viewType === "posted"
+                      ? () => handleManageRideClick(ride)
+                      : ride.request_status === "accepted"
+                      ? () => {}
+                      : () => handleCancelRideRequest(ride.id)
+                  }
+                  buttonClassName={`${
+                    ride.request_status === "accepted" ||
+                    new Date(ride.arrival_time) <= new Date()
+                      ? "cursor-auto"
+                      : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
+                  }`}
+                  secondaryButtonText={
+                    viewType === "requested" &&
+                    "Status: " + capitalizeFirstLetter(ride.request_status)
+                  }
+                  secondaryButtonOnClick={() => {}}
+                  secondaryButtonClassName="cursor-auto"
+                  secondaryButtonStatus={ride.request_status}
+                >
+                  <div>
+                    <p className="text-xl text-center">
+                      <strong>
+                        {ride.origin_name} → {ride.destination_name}
+                      </strong>
+                    </p>
+                    <p className="text-center mb-2">
+                      Arrive by{" "}
+                      {new Date(ride.arrival_time).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      })}
+                    </p>
+                    <hr className="border-1 my-3 border-theme_medium_1" />
+                    <p>
+                      <span className="font-semibold">Posted by:</span>{" "}
+                      {ride.admin_name}, {ride.admin_email}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Seats Taken:</span>{" "}
+                      {ride.current_riders.length}/{ride.max_capacity}
+                    </p>
+                    {viewType === "posted" && (
+                      <div>
+                        <p>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold">
+                              {new Date(ride.arrival_time) > new Date()
+                                ? "Current Riders:"
+                                : "Rode with:"}
+                            </span>
+                          </div>
+                        </p>
+                        {Array.isArray(ride.current_riders) &&
+                        ride.current_riders.length > 0 ? (
+                          <div className="flex flex-col gap-2 mt-1">
+                            {ride.current_riders.map((rider, index) => {
+                              const [netid, fullName, email] = rider;
+                              return (
+                                <Pill email={email} key={index}>
+                                  <div className="w-full flex items-center justify-between">
+                                    {`${fullName}`}
+                                  </div>
+                                </Pill>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p>
+                            {new Date(ride.arrival_time) > new Date()
+                              ? "No current riders."
+                              : "None."}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </RideCard>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center">
+              {viewType === "posted"
+                ? "No past posted rides."
+                : "No previously accepted rides."}
+            </p>
+          )}
         </div>
-      ) : (
-        <p className="text-center">
-          {viewType === "posted" ? "No posted rides." : "No requested rides."}
-        </p>
       )}
 
       {isWarningModalOpen && (
@@ -459,25 +739,29 @@ export default function MyRides() {
             <p>
               {warningModalInfo.title === "Unsaved Changes"
                 ? "You have unsaved changes. Do you want to discard them?"
-                : warningModalInfo.title === "Delete this Ride?"
-                ? "Are you sure you want to delete this ride?"
-                : "The capacity for this ride is full. Please remove a rider before accepting another, or increase the capacity of the ride (maximum 5)."}
+                : warningModalInfo.title === "Delete this Rideshare?"
+                ? "Are you sure you want to delete this rideshare?"
+                : "The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum 5)."}
             </p>
-            {warningModalInfo.title === "Delete this Ride?" &&
+            {warningModalInfo.title === "Delete this Rideshare?" &&
               selectedRide.current_riders.length != 0 && (
                 <div className="flex flex-col gap-4">
                   <p>
-                    Please give a reason for deleting this ride. The riders you
-                    have currently accepted will be notified that this ride was
-                    deleted.
+                    Please give a reason for deleting this rideshare. The riders
+                    you have currently accepted will be notified that this
+                    rideshare was deleted.
                   </p>
-                  <TextArea placeholder={"List reason here."} />
+                  <TextArea
+                    placeholder={"List reason here."}
+                    inputValue={deleteRideMessage}
+                    setInputValue={setDeleteRideMessage}
+                  />
                 </div>
               )}
             <div className="flex items-center self-end gap-2">
               {warningModalInfo.title !== "Capacity Full" && (
                 <Button
-                  className="border-[1px] border-gray-300 text-theme_dark_1 hover:bg-neutral-100"
+                  className="border-[1px] border-gray-300 text-theme_dark_1 hover:bg-zinc-100"
                   onClick={handleCloseWarningModal}
                 >
                   Cancel
@@ -492,7 +776,7 @@ export default function MyRides() {
                 onClick={
                   warningModalInfo.title === "Unsaved Changes"
                     ? closeModal
-                    : warningModalInfo.title === "Delete this Ride?"
+                    : warningModalInfo.title === "Delete this Rideshare?"
                     ? () => deleteRide(selectedRide.id)
                     : handleCloseWarningModal
                 }
@@ -508,18 +792,28 @@ export default function MyRides() {
         <Modal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          title={"Manage this Ride"}
+          title={"Manage this Rideshare"}
         >
           <div className="flex flex-col gap-1">
-            <p>
-              <strong>Origin:</strong> {selectedRide.origin_name}
+            <p className="text-sm text-zinc-700 mb-2 rounded-md bg-info_light p-2 flex flex-col gap-2">
+              <span>
+                Any changes you make in this pop up will remain unsaved until
+                you click "Save"—you can discard changes by leaving the modal.
+                You can only edit the rideshare before the arrival time.
+              </span>
+              <span className="font-semibold">
+                After selecting your preferred riders, you are responsible for
+                coordinating logistics to meet up.
+              </span>
             </p>
-            <p>
-              <strong>Destination:</strong> {selectedRide.destination_name}
+            <p className="text-xl my-1">
+              <strong>
+                {selectedRide.origin_name} → {selectedRide.destination_name}
+              </strong>
             </p>
             <div className="flex items-center gap-1">
               <p>
-                <strong>Arrival Time:</strong>{" "}
+                <span className="font-semibold">Arrive by:</span>{" "}
               </p>
               {isEditingArrivalTime ? (
                 <DateTimePicker
@@ -578,13 +872,12 @@ export default function MyRides() {
               )}
             </div>
             <p>
-              <strong>Admin Name:</strong> {selectedRide.admin_name}
-            </p>
-            <p>
-              <strong>Admin Email:</strong> {selectedRide.admin_email}
+              <span className="font-semibold">Posted by:</span>{" "}
+              {selectedRide.admin_name}, {selectedRide.admin_email}
             </p>
             <div className="flex items-center gap-1">
-              <strong>Seats Taken:</strong> {modalCurrentRiders.length || 0}
+              <span className="font-semibold">Seats Taken:</span>{" "}
+              {modalCurrentRiders.length || 0}
               {"/"}
               {isEditingCapacity ? (
                 <Dropdown
@@ -625,16 +918,18 @@ export default function MyRides() {
               )}
             </div>
             <p>
-              <strong>Current Riders:</strong>
-              {Array.isArray(modalCurrentRiders) &&
-              modalCurrentRiders.length > 0 ? (
-                <div className="flex flex-col gap-2 mt-1">
-                  {modalCurrentRiders.map((rider, index) => {
-                    const [netid, fullName, email] = rider;
-                    return (
-                      <Pill key={index}>
-                        <div className="flex items-center justify-between">
-                          <div>{`${fullName} ${email}`}</div>
+              <span className="font-semibold">Current Riders:</span>
+            </p>
+            {Array.isArray(modalCurrentRiders) &&
+            modalCurrentRiders.length > 0 ? (
+              <div className="flex flex-col gap-2 mt-1">
+                {modalCurrentRiders.map((rider, index) => {
+                  const [netid, fullName, email] = rider;
+                  return (
+                    <Pill email={email} key={index}>
+                      <div className="flex items-center justify-between w-full">
+                        <div>{fullName}</div>
+                        <div className="flex items-center gap-2 ml-auto">
                           <IconButton
                             type="xmark"
                             onClick={() =>
@@ -645,29 +940,30 @@ export default function MyRides() {
                                 selectedRide.id
                               )
                             }
+                            className="text-zinc-700 hover:text-zinc-500"
                           />
                         </div>
-                      </Pill>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p>No current riders.</p>
-              )}
-            </p>
-            <div className="flex flex-col gap-2 mb-4">
-              <p>
-                <strong>Requests to Join:</strong>
+                      </div>
+                    </Pill>
+                  );
+                })}
+              </div>
+            ) : (
+              <p>No current riders.</p>
+            )}
+            <div className="flex flex-col gap-2 mt-1 mb-4">
+              <p className="-mb-1">
+                <span className="font-semibold">Requests to Join:</span>
               </p>
-              <div className="overflow-y-auto bg-neutral-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
+              <div className="overflow-y-auto bg-zinc-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
                 {Array.isArray(modalRequestedRiders) &&
                 modalRequestedRiders.length > 0 ? (
                   modalRequestedRiders.map((requested_rider, index) => {
                     const [netid, fullName, email] = requested_rider;
                     return (
-                      <Pill key={index}>
+                      <Pill email={email} key={index}>
                         <div className="flex justify-between items-center">
-                          <div>{`${fullName} ${email}`}</div>
+                          <div>{`${fullName}`}</div>
                           <div className="flex items-center gap-2">
                             <IconButton
                               type="checkmark"
@@ -706,13 +1002,13 @@ export default function MyRides() {
             <div className="flex justify-between">
               <Button
                 onClick={() => handleDeleteRide(selectedRide.id)}
-                className="hover:bg-red-300 border border-neutral-300 text-neutral-700"
+                className="hover:bg-red-300 border border-zinc-300 text-zinc-700"
               >
-                Delete this Ride
+                Delete this Rideshare
               </Button>
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
-                className="hover:bg-theme_light_2 border border-neutral-300 text-neutral-700"
+                className="hover:bg-theme_light_2 border border-zinc-300 text-zinc-700"
               >
                 Save
               </Button>
