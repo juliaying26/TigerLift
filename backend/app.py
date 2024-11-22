@@ -18,7 +18,7 @@ print("flask env " + FLASK_ENV)
 print("frontend url " + FRONTEND_URL)
 
 # FOR TESTING -- change to False if you don't want emails sent
-EMAILS_ON = False
+EMAILS_ON = True
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
