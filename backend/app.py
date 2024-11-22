@@ -18,7 +18,7 @@ print("flask env " + FLASK_ENV)
 print("frontend url " + FRONTEND_URL)
 
 # FOR TESTING -- change to False if you don't want emails sent
-EMAILS_ON = False
+EMAILS_ON = True
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -220,20 +220,21 @@ def searchrides():
 
     print("in search rides")
     user_info = _cas.authenticate()
-    origin = database.location_to_id(request.args.get('origin'))
-    destination = database.location_to_id(request.args.get('destination'))
     arrival_time = request.args.get('arrival_time')
     start_search_time = request.args.get('start_search_time')
 
-    #if arrival_time is not null and start_search_time is not null:
-    #    rides = database.search_rides(origin, destination, arrival_time, start_search_time)
-    #elif arrival_time is not null and start_search_time is null:
-    #    rides = database.search_rides(origin, destination, arrival_time=arrival_time)
-    #elif arrival_time is null and start_search_time is not null:
-    #    rides = database.search_rides(origin, destination, start_search_time=start_search_time)
+    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
+    print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
 
+    origin = request.args.get('origin')
+    destination = request.args.get('destination')
+    if not origin and not destination:
+        return jsonify({"error": "You must provide at least one of 'origin' or 'destination'"}), 400
 
-    rides = database.search_rides(origin, destination, arrival_time, start_search_time)
+    origin_id = database.location_to_id(origin) if origin else None
+    destination_id = database.location_to_id(destination) if destination else None
+
+    rides = database.search_rides(origin_id, destination_id, arrival_time, start_search_time)
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 
-const CopyEmailIcon = ({ text, copy, className = "" }) => {
+export default function CopyEmailIcon({ text, copy, className = "" }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -70,6 +70,4 @@ const CopyEmailIcon = ({ text, copy, className = "" }) => {
       )}
     </button>
   );
-};
-
-export default CopyEmailIcon;
+}
