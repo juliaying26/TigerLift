@@ -322,12 +322,13 @@ export default function MyRides() {
         !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
       ) {
         try {
+         
           const subj = "A rideshare you're in has changed time!";
-          const mess = `Your rideshare has changed time to ${newArrivalDate.format(
-            "YYYY-MM-DD"
-          )} on ${newArrivalTime.format(
-            "HH:mm"
-          )}. Please see details at tigerlift.onrender.com`;
+           const mess = `Your ride from ${selectedRide.origin_name} to ${selectedRide.destination_name} 
+          has changed time from ${dayjs(selectedRide.arrival_time).format("YYYY-MM-DD HH:mm")} 
+          to ${newArrivalDate.format("YYYY-MM-DD")} at ${newArrivalTime.format("HH:mm")}. 
+          Please see details at tigerlift.onrender.com.`;
+          
           for (const rider of accepting_riders) {
             // console.log("rider's name is", rider.full_name)
             // console.log("rider's mail is", rider.mail)
