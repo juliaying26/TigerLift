@@ -157,6 +157,53 @@ export default function MyRides() {
           rideid: rideId,
         }),
       });
+
+      // Email all riders whose ride was cancelled
+      // Extract and format ride date
+      const rideDate = new Date(selectedRide.arrival_time).toLocaleString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      });
+
+      // Email notification details
+      const subj = "Ride Cancellation Notification";
+      const mess = `The ride scheduled for ${rideDate} has been canceled. Reason: ${
+        deleteRideMessage || "No reason provided."
+      }`;
+
+      for (const rider of selectedRide.current_riders) {
+        try {
+          const response_email = await fetch("/api/sendemailnotifs", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              full_name: rider[1], 
+              netid: rider[0], 
+              mail: rider[2], 
+              subject: subj,
+              message: mess,
+            }),
+          });
+          if (!response_email.ok) {
+            console.error(
+              `Failed to send email notification to ${rider[0]}:`,
+              response_email.statusText
+            );
+          }     
+        } catch (error) {
+            console.error(
+              `Error sending email notification to ${rider[0]}:`,
+              error
+            );
+          }
+        }
+
       closeModal();
       await fetchMyRidesData();
       if (!response.ok) {
@@ -249,8 +296,57 @@ export default function MyRides() {
           new_arrival_time: new_arrival_time_iso,
         }),
       });
+  
+      if (
+        !dayjs(newArrivalDate).isSame(dayjs(selectedRide.arrival_time), "day") ||
+        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
+      ) {
+        try {
+          const subj = "A ride you're in has changed time!";
+          const mess = `Your ride has changed time to ${newArrivalDate.format("YYYY-MM-DD")} on ${newArrivalTime.format("HH:mm")}. Please see details at tigerlift.onrender.com`;
+          for (const rider of accepting_riders) {
+            // console.log("rider's name is", rider.full_name)
+            // console.log("rider's mail is", rider.mail)
+            // console.log("rider's mail is", subject_a)
+            // console.log("message is", message_a)
+
+            try {
+              const response_1 = await fetch("/api/sendemailnotifs", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  full_name: rider.full_name,
+                  netid: rider.requester_id,
+                  mail: rider.mail,
+                  subject: subj,
+                  message: mess
+                }),
+              });
+  
+              if (!response_1.ok) {
+                console.error(
+                  `Failed to send email notification to ${rider.requester_id}:`,
+                  response_1.statusText
+                );
+              }
+              
+            } catch (error) {
+              console.error(
+                `Error sending email notification to ${rider.requester_id}:`,
+                error
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error during fetch sendemailnotifs:", error);
+        }
+      }
+  
       closeModal();
       await fetchMyRidesData();
+  
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -258,7 +354,7 @@ export default function MyRides() {
       console.error("Error during fetch:", error);
     }
   };
-
+  
   // Accepts rider in modal
   const handleAcceptRider = async (netid, fullName, email, rideId) => {
     if (
