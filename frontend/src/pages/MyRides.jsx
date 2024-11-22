@@ -73,9 +73,6 @@ export default function MyRides() {
 
       let ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
       console.log(ride_data);
-      ride_data.sort(
-        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
-      );
       const upcoming_rides = [];
       const past_rides = [];
       const now = new Date();
@@ -86,6 +83,14 @@ export default function MyRides() {
           past_rides.push(ride);
         }
       });
+      // Sort upcoming rides in ascending order (by arrival time)
+      upcoming_rides.sort(
+        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
+      );
+      // Sort past rides in descending order (by arrival time)
+      past_rides.sort(
+        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
+      );
       setMyUpcomingRidesData(upcoming_rides);
       if (viewType === "requested") {
         setMyPastRidesData(
@@ -334,13 +339,18 @@ export default function MyRides() {
         !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
       ) {
         try {
-         
           const subj = "A rideshare you're in has changed time!";
-           const mess = `Your ride from ${selectedRide.origin_name} to ${selectedRide.destination_name} 
-          has changed time from ${dayjs(selectedRide.arrival_time).format("YYYY-MM-DD HH:mm")} 
-          to ${newArrivalDate.format("YYYY-MM-DD")} at ${newArrivalTime.format("HH:mm")}. 
+          const mess = `Your ride from ${selectedRide.origin_name} to ${
+            selectedRide.destination_name
+          } 
+          has changed time from ${dayjs(selectedRide.arrival_time).format(
+            "YYYY-MM-DD HH:mm"
+          )} 
+          to ${newArrivalDate.format("YYYY-MM-DD")} at ${newArrivalTime.format(
+            "HH:mm"
+          )}. 
           Please see details at tigerlift.onrender.com.`;
-          
+
           for (const rider of accepting_riders) {
             // console.log("rider's name is", rider.full_name)
             // console.log("rider's mail is", rider.mail)
