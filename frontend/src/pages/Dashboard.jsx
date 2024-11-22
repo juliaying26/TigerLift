@@ -384,16 +384,16 @@ export default function Dashboard() {
 
         <div className="flex flex-col gap-4">
           <Button
-            className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-            onClick={searchRide}
-          >
-            Search
-          </Button>
-          <Button
             className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
             onClick={() => handleOpenRideModal()}
           >
             Create a Rideshare
+          </Button>
+          <Button
+            className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+            onClick={searchRide}
+          >
+            Search
           </Button>
         </div>
       </div>
@@ -410,7 +410,7 @@ export default function Dashboard() {
                 onClick={resetSearch}
                 className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
               >
-                Back to All Rides
+                Clear Search Filters
               </Button>
               <br />
               <br />
