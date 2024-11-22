@@ -34,7 +34,7 @@ def serve_react_app(path):
 @app.route('/api/isloggedin', methods=['GET'])
 def isloggedin():
     print("IS LOGGED IN!!!!")
-    return jsonify({'is_logged_in': _cas.is_logged_in()})
+    return jsonify({'is_logged_in': _cas.is_logged_in(), 'user_info': _cas.getUserInfo()})
 
 @app.route('/api/login', methods=['GET'])
 def login():

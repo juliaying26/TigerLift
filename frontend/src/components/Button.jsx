@@ -18,7 +18,7 @@ export default function Button({
       onClick={onClick}
       disabled={disabled}
       className={`py-1 font-medium ${className} ${
-        buttonStyling ? buttonStyling : "px-2 rounded-md"
+        buttonStyling ? buttonStyling : "px-2.5 rounded-md"
       }`}
     >
       {children}

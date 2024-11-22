@@ -429,25 +429,24 @@ export default function MyRides() {
   console.log("my rides data is", myRidesData);
   return (
     <div className="flex flex-col gap-6 p-8">
-      {!loading && (
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl">Welcome, {userInfo?.displayname}</h1>
-        </div>
-      )}
       <div className="flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
           className={`${
-            viewType == "posted" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-semibold px-4 py-2`}
+            viewType == "posted"
+              ? "bg-theme_dark_1 font-medium"
+              : "bg-theme_medium_1"
+          } text-white px-4 py-2 hover:bg-theme_dark_1`}
           onClick={() => setViewType("posted")}
         >
           My Posted Rides
         </Button>
         <Button
           className={`${
-            viewType == "requested" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-semibold px-4 py-2`}
+            viewType == "requested"
+              ? "bg-theme_dark_1 font-medium"
+              : "bg-theme_medium_1"
+          } text-white px-4 py-2 hover:bg-theme_dark_1`}
           onClick={() => setViewType("requested")}
         >
           My Requested Rides
