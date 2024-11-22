@@ -291,10 +291,18 @@ export default function Dashboard() {
     setInSearch(false);
     await fetchDashboardData();
     setLoading(false);
+    setOrigin("");
+    setDest("");
+    setStartSearchDate(null);
+    setStartSearchTime(null);
+    setEndSearchDate(null);
+    setEndSearchTime(null);
   };
 
   useEffect(() => {
     fetchDashboardData();
+    //setOrigin("")
+    //setDest("")
   }, []);
 
   if (loading) return <div>Loading...</div>;
