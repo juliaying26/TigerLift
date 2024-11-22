@@ -15,7 +15,7 @@ export default function PopUpMessage({ status, message, duration = 3000 }) {
 
   return (
     <div
-      className={`fixed left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out
+      className={`z-25 fixed left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out
         ${isVisible ? "bottom-5 opacity-100" : "-bottom-20 opacity-0"}
         bg-white text-zinc-800 px-4 py-2 rounded-lg shadow-lg`}
     >
