@@ -84,18 +84,6 @@ export default function Dashboard() {
   
     try {
 
-      /*
-      const now = new Date();
-
-      const start_search_time_string = startSearchDate
-      ? `${startSearchDate.format("YYYY-MM-DD")}T${startSearchTime.format("HH:mm:ss")}`
-      : now.toISOString(); // defaults to current time
-
-      const arrival_time_string = endSearchDate
-      ? `${endSearchDate.format("YYYY-MM-DD")}T${endSearchTime.format("HH:mm:ss")}`
-      : null; // No filter for arrival time if not provided
-      */
-
       console.log("test, am in dashboard searchride")
 
       console.log("startSearchDate: " + startSearchDate)
