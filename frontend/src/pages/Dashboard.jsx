@@ -66,6 +66,12 @@ export default function Dashboard() {
   const searchRide = async () => {
     console.log(dashboardData);
 
+    if (!origin && !dest) {
+      alert("You must provide at least one of 'starting point' or 'destination'.");
+      return;
+    }
+  
+
     try {
       const start_search_time_string = `${startSearchDate.format(
         "YYYY-MM-DD"
@@ -84,18 +90,20 @@ export default function Dashboard() {
       console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 
 
-      const response = await fetch(
-        `/api/searchrides?origin=${origin.label}&destination=${dest.label}&arrival_time=${arrival_time_iso}&start_search_time=${start_search_time_iso}`,
-        {
+      const params = new URLSearchParams({
+        ...(origin && { origin: origin.label }),
+        ...(dest && { destination: dest.label }),
+        ...(arrival_time_string && { arrival_time: new Date(arrival_time_string).toISOString() }),
+        ...(start_search_time_string && { start_search_time: new Date(start_search_time_string).toISOString() }),
+      });
+
+      const response = await fetch(`/api/searchrides?${params.toString()}`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+          headers: { "Content-Type": "application/json" },
+      });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch rides: ${response.status}`);
+          throw new Error(`Failed to fetch rides: ${response.status}`);
       }
 
       const data = await response.json();
@@ -103,14 +111,14 @@ export default function Dashboard() {
 
       setRidesData(data.rides);
       setInSearch(true);
-      console.log(inSearch);
-      console.log("end of search ride");
-    } catch (error) {
-      console.error("Error during fetch:", error);
-    }
+      } catch (error) {
+          console.error("Error during fetch:", error);
+      } finally {
+          handleCloseSearchRideModal();
+      }
+    };
 
-    handleCloseSearchRideModal();
-  };
+
 
   const checkCreateRideParams = async () => {
     if (
@@ -431,6 +439,13 @@ export default function Dashboard() {
               isClearable
               placeholder="Select starting point"
             ></Dropdown>
+
+            <IconButton
+              type="flip"
+              onClick={flipSearchFields}
+              disabled={false}
+            ></IconButton>
+
             <Dropdown
               inputValue={dest}
               setInputValue={setDest}
@@ -445,6 +460,7 @@ export default function Dashboard() {
               time={startSearchTime}
               setTime={setStartSearchTime}
             />
+
             Arrive Before:
             <DateTimePicker
               date={endSearchDate}

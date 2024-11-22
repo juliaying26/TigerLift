@@ -507,11 +507,18 @@ def get_all_locations():
 def search_rides(origin, destination, arrival_time=None, start_search_time=None):
     query = """
         SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides
-        WHERE origin = %s AND destination = %s
+        WHERE 1=1
     """
 
     conn = connect()
-    values = [origin, destination]
+    values = []
+
+    if origin:
+        query += " AND origin = %s"
+        values.append(origin)
+    if destination:
+        query += " AND destination = %s"
+        values.append(destination)
 
     # if user also searched for arrival_time
     if arrival_time:
@@ -521,6 +528,10 @@ def search_rides(origin, destination, arrival_time=None, start_search_time=None)
     if start_search_time:
         query += " AND arrival_time >= %s"
         values.append(start_search_time)
+
+    if not (origin or destination):
+        raise ValueError("At least one of 'origin' or 'destination' must be provided.")
+
 
     if conn:
         try: 
