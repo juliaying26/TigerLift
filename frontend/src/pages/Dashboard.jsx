@@ -122,10 +122,10 @@ export default function Dashboard() {
   };
 
   const checkCreateRideParams = async () => {
-    const now = dayjs();
+    // const now = dayjs();
 
-    console.log("current time = ", now);
-    console.log("time = ", time);
+    // console.log("current time = ", now);
+    // console.log("time = ", time);
 
     if (
       capacity === "" ||
@@ -135,8 +135,8 @@ export default function Dashboard() {
       time === ""
     ) {
       setCreateRideNotif([true, "Please enter all fields!"]);
-    } else if (time.isBefore(now, "minute")) {
-      setCreateRideNotif([true, "Cannot enter a time in the past!"]);
+      // } else if (time.isBefore(now, "minute")) {
+      //   setCreateRideNotif([true, "Cannot enter a time in the past!"]);
     } else {
       setCreateRideNotif([false, ""]);
       createRide();
