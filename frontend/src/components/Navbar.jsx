@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
-import ProfilePopup from "../components/ProfilePopUp.jsx";
 
-export default function Navbar() {
+export default function Navbar({ user_info }) {
   const [profileClicked, setProfileClicked] = useState(false);
 
   const handleProfileClick = async () => {
@@ -27,38 +26,14 @@ export default function Navbar() {
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center space-x-4">
-            {/* Profile Button */}
-            <button
-              type="button"
-              className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-              aria-label="My Profile"
-              onClick={handleProfileClick}
+          <div className="flex items-center gap-4">
+            <p className="font-medium text-lg">{user_info.displayname}</p>
+            <a
+              href="/api/logout"
+              className="bg-theme_dark_1 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_1"
             >
-              <svg
-                className="h-8 w-8"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                4
-                <path
-                  fillRule="evenodd"
-                  d="M12 12c2.28 0 4-1.72 4-4s-1.72-4-4-4-4 1.72-4 4 1.72 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-
-            {profileClicked && (
-              <div>
-                <ProfilePopup
-                  isOpen={profileClicked}
-                  onClose={handleProfileClick}
-                ></ProfilePopup>
-              </div>
-            )}
+              Log out
+            </a>
           </div>
         </div>
       </div>

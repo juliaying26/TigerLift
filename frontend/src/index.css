@@ -16,8 +16,15 @@ body {
   background-color: #ece3ec;
 }
 
+@font-face {
+  font-family: "Inter";
+  src: url("/path/to/Inter-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
 :root {
-  font-family: Inter Variable, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   width: 100%;

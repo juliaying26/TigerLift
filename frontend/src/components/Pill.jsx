@@ -1,7 +1,10 @@
-export default function Pill({ children, className }) {
+import React from "react";
+import CopyEmailIcon from "./CopyEmailButton";
+
+export default function Pill({ children, className, email }) {
   return (
     <div className={`px-3 py-1 bg-zinc-300 rounded-full ${className}`}>
-      {children}
+      <span>{children}</span> {/* Text remains the default font size */}
     </div>
   );
 }

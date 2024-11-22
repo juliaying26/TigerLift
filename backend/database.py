@@ -303,6 +303,30 @@ def update_capacity(rideid, new_capacity):
             conn.close()
 
 
+def update_arrival_time(rideid, new_arrival_time):
+    """
+    Updates the arrival time of a ride
+    """
+    sql_command = f"""
+        UPDATE Rides
+        SET arrival_time = %s
+        WHERE id = %s;
+    """
+    values = (new_arrival_time, rideid)
+    conn = connect()
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride arrival time updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride arrival time: {e}")
+        finally:
+            conn.close()
+
+
 def create_notification(netid, message, type):
     """
     Adds a notifiction in the Notifications database
@@ -806,6 +830,9 @@ def remove_rider(requester_id, full_name, mail, ride_id):
 
 
 def location_to_id(location):    
+    """
+    given location name, returns ID from PredefinedLocations
+    """
     sql_command = "SELECT id FROM PredefinedLocations WHERE name = %s"
     values = (location,)
     id_result = None
@@ -833,6 +860,9 @@ def location_to_id(location):
     return int(id_result)
 
 def id_to_location(id):
+    """
+     Given id, returns location name from PredefinedLocations
+    """
     sql_command = "SELECT name FROM PredefinedLocations WHERE id = %s"
     values = (id,)
     location_result=None
@@ -859,10 +889,14 @@ def id_to_location(id):
     return int(location_result)
 
 
-def rideid_to_admin_id(id):
-    sql_command = "SELECT admin_netid FROM Rides WHERE id = %s"
-    values = (id,)
+def rideid_to_admin_id_email(ride_id):
+    """
+    Given a rideid, returns admin_netid and email
+    """
+    sql_command = "SELECT admin_netid, admin_email FROM Rides WHERE id = %s"
+    values = (ride_id,)
     admin_netid_result = None
+    admin_mail_result = None
 
     conn = connect()
     if conn:
@@ -872,6 +906,7 @@ def rideid_to_admin_id(id):
                 result = cursor.fetchone()
                 if result:
                     admin_netid_result = result[0]
+                    admin_mail_result = result[1]
                     print("Admin_netid retrieved successfully:", admin_netid_result)
                 else:
                     print("No matching admin_netid found.")
@@ -883,7 +918,7 @@ def rideid_to_admin_id(id):
         print("Connection not established.")
 
     print("Admin_netid corresponding to ride_id is", admin_netid_result)
-    return admin_netid_result
+    return (admin_netid_result, admin_mail_result) if admin_netid_result else None
 
 if __name__ == "__main__":
     database_setup()
