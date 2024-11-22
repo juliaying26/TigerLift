@@ -326,41 +326,51 @@ export default function Dashboard() {
           message={popupMessageInfo.message}
         />
       )}
-      <div className="flex justify-between items-center">
-        <Link
-          to="/myrides"
-          className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
-        >
-          My Rides
-        </Link>
 
 
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="flex items-center space-x-4">
-            <Dropdown
-              inputValue={searchOrigin}
-              setInputValue={setSearchOrigin}
-              options={locations}
-              isClearable
-              placeholder="Select starting point"
-            />
-    
-            <IconButton
-              type="flip"
-              onClick={flipSearchFields}
-              disabled={false}
-            />
-            
-            <Dropdown
-              inputValue={searchDest}
-              setInputValue={setSearchDest}
-              options={locations}
-              isClearable
-              placeholder="Select destination"
-            />
-          </div>
-        <div className="flex items-center space-x-10">
-          <div className="flex flex-col items-center">
+      <div className="flex flex-col space-y-6">
+        <div className="flex justify-between items-center">
+          <Link
+            to="/myrides"
+            className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
+          >
+            My Rides
+          </Link>
+
+          <Button
+            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2 rounded-md"
+            onClick={() => handleOpenRideModal()}
+          >
+            Create a Rideshare
+          </Button>
+        </div>
+
+
+
+        <div className="flex items-center justify-between space-x-3">
+          <Dropdown
+            inputValue={searchOrigin}
+            setInputValue={setSearchOrigin}
+            options={locations}
+            isClearable
+            placeholder="Select starting point"
+          />
+
+          <IconButton
+            type="flip"
+            onClick={flipSearchFields}
+            disabled={false}
+          />
+
+          <Dropdown
+            inputValue={searchDest}
+            setInputValue={setSearchDest}
+            options={locations}
+            isClearable
+            placeholder="Select destination"
+          />
+
+          <div className="flex flex-col items-center" style={{ transform: 'translateY(-12px)' }}>
             <label>Arrive After:</label>
             <DateTimePicker
               date={startSearchDate}
@@ -369,7 +379,8 @@ export default function Dashboard() {
               setTime={setStartSearchTime}
             />
           </div>
-          <div className="flex flex-col items-center">
+
+          <div className="flex flex-col items-center" style={{ transform: 'translateY(-12px)' }}>
             <label>Arrive Before:</label>
             <DateTimePicker
               date={endSearchDate}
@@ -378,17 +389,6 @@ export default function Dashboard() {
               setTime={setEndSearchTime}
             />
           </div>
-        </div>
-      </div>
-
-
-        <div className="flex flex-col gap-4">
-          <Button
-            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
-            onClick={() => handleOpenRideModal()}
-          >
-            Create a Rideshare
-          </Button>
           <Button
             className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
             onClick={searchRide}
@@ -398,7 +398,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <br />
 
       {loading ? (
         <div className="text-center">Loading...</div>
@@ -545,63 +544,6 @@ export default function Dashboard() {
           </div>
         </Modal>
       )}
-
-
-
-      {/*{searchRideModal && (
-        <Modal
-          isOpen={searchRideModal}
-          onClose={handleCloseSearchRideModal}
-          title={"Search"}
-        >
-          <div>
-            <Dropdown
-              inputValue={origin}
-              setInputValue={setOrigin}
-              options={locations}
-              isClearable
-              placeholder="Select starting point"
-            ></Dropdown>
-
-            <IconButton
-              type="flip"
-              onClick={flipSearchFields}
-              disabled={false}
-            ></IconButton>
-
-            <Dropdown
-              inputValue={dest}
-              setInputValue={setDest}
-              options={locations}
-              isClearable
-              placeholder="Select destination"
-            ></Dropdown>
-            Arrive After:
-            <DateTimePicker
-              date={startSearchDate}
-              setDate={setStartSearchDate}
-              time={startSearchTime}
-              setTime={setStartSearchTime}
-            />
-
-            Arrive Before:
-            <DateTimePicker
-              date={endSearchDate}
-              setDate={setEndSearchDate}
-              time={endSearchTime}
-              setTime={setEndSearchTime}
-            />
-            <br />
-            <Button
-              className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-              onClick={searchRide}
-            >
-              Search
-            </Button>
-          </div>
-        </Modal>
-      )}
-      */}
 
     </div>
   );
