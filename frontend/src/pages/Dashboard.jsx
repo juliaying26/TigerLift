@@ -40,6 +40,8 @@ export default function Dashboard() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
 
+  const [searchOrigin, setSearchOrigin] = useState("");
+  const [searchDest, setSearchDest] = useState("");
   const [startSearchDate, setStartSearchDate] = useState();
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
@@ -66,7 +68,7 @@ export default function Dashboard() {
     setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
   };
 
-  const flipSearchFields = () => {
+  const flipCreateRideFields = () => {
     let prevDest = dest;
     let prevOrigin = origin;
     setOrigin(prevDest);
@@ -74,10 +76,19 @@ export default function Dashboard() {
     return;
   };
 
+  const flipSearchFields = () => {
+    let prevDest = searchDest;
+    let prevOrigin = searchOrigin;
+    setSearchOrigin(prevDest);
+    setSearchDest(prevOrigin);
+    return;
+  };
+
+
   const searchRide = async () => {
     console.log(dashboardData);
 
-    if (!origin && !dest) {
+    if (!searchOrigin && !searchDest) {
       alert("You must provide at least one of 'starting point' or 'destination'.");
       return;
     }
@@ -122,8 +133,8 @@ export default function Dashboard() {
       //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 
       const params = new URLSearchParams({
-        ...(origin && { origin: origin.label }),
-        ...(dest && { destination: dest.label }),
+        ...(searchOrigin && { origin: searchOrigin.label }),
+        ...(searchDest && { destination: searchDest.label }),
         ...(start_search_time_string && { start_search_time: start_search_time_iso }),
         ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
@@ -291,8 +302,8 @@ export default function Dashboard() {
     setInSearch(false);
     await fetchDashboardData();
     setLoading(false);
-    setOrigin("");
-    setDest("");
+    setSearchOrigin("");
+    setSearchDest("");
     setStartSearchDate(null);
     setStartSearchTime(null);
     setEndSearchDate(null);
@@ -327,8 +338,8 @@ export default function Dashboard() {
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="flex items-center space-x-4">
             <Dropdown
-              inputValue={origin}
-              setInputValue={setOrigin}
+              inputValue={searchOrigin}
+              setInputValue={setSearchOrigin}
               options={locations}
               isClearable
               placeholder="Select starting point"
@@ -341,8 +352,8 @@ export default function Dashboard() {
             />
             
             <Dropdown
-              inputValue={dest}
-              setInputValue={setDest}
+              inputValue={searchDest}
+              setInputValue={setSearchDest}
               options={locations}
               isClearable
               placeholder="Select destination"
@@ -501,7 +512,7 @@ export default function Dashboard() {
                   ></Dropdown>
                   <IconButton
                     type="flip"
-                    onClick={flipSearchFields}
+                    onClick={flipCreateRideFields}
                     disabled={false}
                   ></IconButton>
                   <Dropdown
