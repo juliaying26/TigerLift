@@ -12,6 +12,7 @@ import WarningModal from "../components/WarningModal";
 import Input from "../components/Input";
 import TextArea from "../components/TextArea";
 import CopyEmailButton from "../components/CopyEmailButton";
+import PopUpMessage from "../components/PopUpMessage";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
@@ -32,6 +33,11 @@ export default function MyRides() {
   });
   const [deleteRideMessage, setDeleteRideMessage] = useState("");
 
+  const [popupMessageInfo, setPopupMessageInfo] = useState({
+    status: "",
+    message: "",
+  });
+
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
@@ -47,10 +53,10 @@ export default function MyRides() {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
   }
 
-  function copyAllRiderEmails(current_riders) {
-    const emails = current_riders.map((rider) => rider[2]);
-    navigator.clipboard.writeText(emails.join(", "));
-  }
+  const handleShowPopupMessage = (status, message) => {
+    setPopupMessageInfo({ status: status, message: message });
+    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
+  };
 
   const fetchMyRidesData = async () => {
     setLoading(true);
@@ -147,8 +153,8 @@ export default function MyRides() {
   const handleDeleteRide = () => {
     setIsWarningModalOpen(true);
     setWarningModalInfo({
-      title: "Delete this Ride?",
-      buttonText: "Delete Ride",
+      title: "Delete this Rideshare?",
+      buttonText: "Delete Rideshare",
     });
   };
 
@@ -163,6 +169,8 @@ export default function MyRides() {
           rideid: rideId,
         }),
       });
+
+      const responseData = await response.json();
 
       // Email all riders whose ride was cancelled
       // Extract and format ride date
@@ -212,12 +220,12 @@ export default function MyRides() {
           );
         }
       }
-
-      closeModal();
-      await fetchMyRidesData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
+      closeModal();
+      handleShowPopupMessage(responseData.success, responseData.message);
+      await fetchMyRidesData();
     } catch (error) {
       console.error("Error during fetch:", error);
     }
@@ -314,8 +322,9 @@ export default function MyRides() {
         !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
       ) {
         try {
-          const subj = "A ride you're in has changed time!";
-          const mess = `Your ride from ${selectedRide.origin_name} to ${selectedRide.destination_name} 
+         
+          const subj = "A rideshare you're in has changed time!";
+           const mess = `Your ride from ${selectedRide.origin_name} to ${selectedRide.destination_name} 
           has changed time from ${dayjs(selectedRide.arrival_time).format("YYYY-MM-DD HH:mm")} 
           to ${newArrivalDate.format("YYYY-MM-DD")} at ${newArrivalTime.format("HH:mm")}. 
           Please see details at tigerlift.onrender.com.`;
@@ -443,6 +452,12 @@ export default function MyRides() {
   console.log("my rides data is", myRidesData);
   return (
     <div className="flex flex-col gap-6 p-8">
+      {popupMessageInfo.message && (
+        <PopUpMessage
+          status={popupMessageInfo.status}
+          message={popupMessageInfo.message}
+        />
+      )}
       <div className="flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
@@ -453,7 +468,7 @@ export default function MyRides() {
           } text-white px-4 py-2 hover:bg-theme_dark_1`}
           onClick={() => setViewType("posted")}
         >
-          My Posted Rides
+          My Posted Rideshares
         </Button>
         <Button
           className={`${
@@ -463,7 +478,7 @@ export default function MyRides() {
           } text-white px-4 py-2 hover:bg-theme_dark_1`}
           onClick={() => setViewType("requested")}
         >
-          My Requested Rides
+          My Requested Rideshares
         </Button>
       </div>
       {loading ? (
@@ -476,7 +491,7 @@ export default function MyRides() {
               buttonText={
                 new Date(ride.arrival_time) > new Date() &&
                 (viewType === "posted"
-                  ? "Manage Ride"
+                  ? "Manage Rideshare"
                   : ride.request_status !== "accepted" && "Cancel Request")
               }
               buttonOnClick={
@@ -590,17 +605,17 @@ export default function MyRides() {
             <p>
               {warningModalInfo.title === "Unsaved Changes"
                 ? "You have unsaved changes. Do you want to discard them?"
-                : warningModalInfo.title === "Delete this Ride?"
-                ? "Are you sure you want to delete this ride?"
-                : "The capacity for this ride is full. Please remove a rider before accepting another, or increase the capacity of the ride (maximum 5)."}
+                : warningModalInfo.title === "Delete this Rideshare?"
+                ? "Are you sure you want to delete this rideshare?"
+                : "The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum 5)."}
             </p>
-            {warningModalInfo.title === "Delete this Ride?" &&
+            {warningModalInfo.title === "Delete this Rideshare?" &&
               selectedRide.current_riders.length != 0 && (
                 <div className="flex flex-col gap-4">
                   <p>
-                    Please give a reason for deleting this ride. The riders you
-                    have currently accepted will be notified that this ride was
-                    deleted.
+                    Please give a reason for deleting this rideshare. The riders
+                    you have currently accepted will be notified that this
+                    rideshare was deleted.
                   </p>
                   <TextArea
                     placeholder={"List reason here."}
@@ -627,7 +642,7 @@ export default function MyRides() {
                 onClick={
                   warningModalInfo.title === "Unsaved Changes"
                     ? closeModal
-                    : warningModalInfo.title === "Delete this Ride?"
+                    : warningModalInfo.title === "Delete this Rideshare?"
                     ? () => deleteRide(selectedRide.id)
                     : handleCloseWarningModal
                 }
@@ -643,7 +658,7 @@ export default function MyRides() {
         <Modal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          title={"Manage this Ride"}
+          title={"Manage this Rideshare"}
         >
           <div className="flex flex-col gap-1">
             <p className="text-sm text-zinc-700 mb-2 rounded-md bg-info_light p-2">
@@ -848,7 +863,7 @@ export default function MyRides() {
                 onClick={() => handleDeleteRide(selectedRide.id)}
                 className="hover:bg-red-300 border border-zinc-300 text-zinc-700"
               >
-                Delete this Ride
+                Delete this Rideshare
               </Button>
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}

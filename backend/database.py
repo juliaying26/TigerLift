@@ -3,6 +3,7 @@ import psycopg2
 import json
 from dotenv import load_dotenv
 load_dotenv()
+from datetime import datetime
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
@@ -531,20 +532,32 @@ def get_all_locations():
 def search_rides(origin, destination, arrival_time=None, start_search_time=None):
     query = """
         SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides
-        WHERE origin = %s AND destination = %s
+        WHERE 1=1
     """
 
     conn = connect()
-    values = [origin, destination]
+    values = []
 
-    # if user also searched for arrival_time
-    if arrival_time:
-        # for now: searching for EARLIER arrival time than given
-        query += " AND arrival_time <= %s"
-        values.append(arrival_time)
+    if origin:
+        query += " AND origin = %s"
+        values.append(origin)
+    if destination:
+        query += " AND destination = %s"
+        values.append(destination)
+    # start_search_time is arrive after
     if start_search_time:
         query += " AND arrival_time >= %s"
         values.append(start_search_time)
+    else:
+        query += " AND arrival_time >= %s"
+        values.append(datetime.now())
+    # arrival_time is arrive before
+    if arrival_time:
+        query += " AND arrival_time <= %s"
+        values.append(arrival_time)
+
+    if not (origin or destination):
+        raise ValueError("At least one of 'origin' or 'destination' must be provided.")
 
     if conn:
         try: 
