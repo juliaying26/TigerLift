@@ -544,21 +544,17 @@ def search_rides(origin, destination, arrival_time=None, start_search_time=None)
     if destination:
         query += " AND destination = %s"
         values.append(destination)
-
     # start_search_time is arrive after
-    # arrival_time is arrive before
-
     if start_search_time:
         query += " AND arrival_time >= %s"
         values.append(start_search_time)
     else:
         query += " AND arrival_time >= %s"
         values.append(datetime.now())
-
+    # arrival_time is arrive before
     if arrival_time:
         query += " AND arrival_time <= %s"
         values.append(arrival_time)
-
 
     if not (origin or destination):
         raise ValueError("At least one of 'origin' or 'destination' must be provided.")
