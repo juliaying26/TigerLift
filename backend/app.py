@@ -18,7 +18,7 @@ print("flask env " + FLASK_ENV)
 print("frontend url " + FRONTEND_URL)
 
 # FOR TESTING -- change to False if you don't want emails sent
-EMAILS_ON = True
+EMAILS_ON = False
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -173,9 +173,9 @@ def addride():
     arrival_time = data.get('arrival_time')
     try:
         database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, dest, arrival_time)
-        return jsonify({'success': True, 'message': 'Ride request accepted'})
+        return jsonify({'success': True, 'message': 'Ride successfully created!'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to accept ride request'}), 400
+        return jsonify({'success': False, 'message': 'Failed to create ride.'}), 400
 
 @app.route("/api/deleteride", methods=["POST"])
 def deleteride():
@@ -184,9 +184,9 @@ def deleteride():
     rideid = data.get('rideid')
     try:
        database.delete_ride(str(user_info['netid']), rideid)
-       return jsonify({'success': True, 'message': 'Delete request done'})
+       return jsonify({'success': True, 'message': 'Ride successfully deleted.'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to delete ride'}), 400
+        return jsonify({'success': False, 'message': 'Failed to delete ride.'}), 400
 
 @app.route("/api/cancelriderequest", methods=["POST"])
 def cancelriderequest():
@@ -195,9 +195,9 @@ def cancelriderequest():
     rideid = data.get('rideid')
     try:
         database.delete_ride_request(str(user_info['netid']), rideid)
-        return jsonify({'success': True, 'message': 'Ride request canceled'})
+        return jsonify({'success': True, 'message': 'Ride request canceled.'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to cancel ride request'}), 400
+        return jsonify({'success': False, 'message': 'Failed to cancel ride request.'}), 400
     
 @app.route("/addlocation", methods=["GET"])
 def addlocation():
@@ -295,9 +295,9 @@ def requestride():
         except:
             return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
 
-        return jsonify({'success': True, 'message': 'Ride request created'})
+        return jsonify({'success': True, 'message': 'Ride request created!'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to create ride request'}), 400
+        return jsonify({'success': False, 'message': 'Failed to create ride request.'}), 400
     
 @app.route("/api/batchupdateriderequest", methods=["POST"])
 def batchupdateriderequest():
@@ -338,9 +338,9 @@ def batchupdateriderequest():
         if data.get('new_arrival_time'):
             database.update_arrival_time(rideid, data.get('new_arrival_time'))
 
-        return jsonify({'success': True, 'message': 'Ride requests accepted'})
+        return jsonify({'success': True, 'message': 'Ride successfully updated!'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to accept ride requests'}), 400
+        return jsonify({'success': False, 'message': 'Failed to update ride.'}), 400
     
 @app.route("/api/sendemailnotifs", methods=["POST"])
 def send_email_notification():
@@ -377,7 +377,7 @@ def send_email_notification():
                 server.login(from_email, from_password)
                 server.send_message(msg)
             print(f"Email sent to {mail} successfully!")
-            return jsonify({'success': True, 'message': 'Ride request created'})
+            return jsonify({'success': True, 'message': 'Email sent successfully!'})
         except Exception as e:
             print(f"Error sending email to {mail}: {e}")
             return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
