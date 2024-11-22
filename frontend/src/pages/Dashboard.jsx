@@ -26,7 +26,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [ridesData, setRidesData] = useState([]);
   const [createRideModal, setCreateRideModal] = useState(false);
-  const [searchRideModal, setSearchRideModal] = useState(false);
+  //const [searchRideModal, setSearchRideModal] = useState(false);
 
   const [popupMessageInfo, setPopupMessageInfo] = useState({
     status: "",
@@ -146,9 +146,9 @@ export default function Dashboard() {
       setInSearch(true);
       } catch (error) {
           console.error("Error during fetch:", error);
-      } finally {
-          handleCloseSearchRideModal();
-      }
+      } //finally {
+          //handleCloseSearchRideModal();
+      //}
     };
 
 
@@ -221,6 +221,7 @@ export default function Dashboard() {
     setTime("");
   };
 
+  /*
   const handleOpenSearchRideModal = async () => {
     setSearchRideModal(true);
   };
@@ -228,6 +229,7 @@ export default function Dashboard() {
   const handleCloseSearchRideModal = async () => {
     setSearchRideModal(false);
   };
+  */
 
   const fetchDashboardData = async () => {
     try {
@@ -305,13 +307,69 @@ export default function Dashboard() {
           message={popupMessageInfo.message}
         />
       )}
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <Link
           to="/myrides"
           className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
         >
           My Rides
         </Link>
+
+
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="flex items-center space-x-4">
+            <Dropdown
+              inputValue={origin}
+              setInputValue={setOrigin}
+              options={locations}
+              isClearable
+              placeholder="Select starting point"
+            />
+    
+            <IconButton
+              type="flip"
+              onClick={flipSearchFields}
+              disabled={false}
+            />
+            
+            <Dropdown
+              inputValue={dest}
+              setInputValue={setDest}
+              options={locations}
+              isClearable
+              placeholder="Select destination"
+            />
+          </div>
+        <div className="flex items-center space-x-10">
+          <div className="flex flex-col items-center">
+            <label>Arrive After:</label>
+            <DateTimePicker
+              date={startSearchDate}
+              setDate={setStartSearchDate}
+              time={startSearchTime}
+              setTime={setStartSearchTime}
+            />
+          </div>
+          <div className="flex flex-col items-center">
+            <label>Arrive Before:</label>
+            <DateTimePicker
+              date={endSearchDate}
+              setDate={setEndSearchDate}
+              time={endSearchTime}
+              setTime={setEndSearchTime}
+            />
+          </div>
+        </div>
+
+          <Button
+            className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1 mt-6"
+            onClick={searchRide}
+          >
+            Search
+          </Button>
+        </div>
+
+
         <div className="flex gap-4">
           <Button
             className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
@@ -319,12 +377,12 @@ export default function Dashboard() {
           >
             Create a Rideshare
           </Button>
-          <Button
+          {/*<Button
             className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
             onClick={() => handleOpenSearchRideModal()}
           >
             Search
-          </Button>
+          </Button>*/}
         </div>
       </div>
 
@@ -475,7 +533,10 @@ export default function Dashboard() {
           </div>
         </Modal>
       )}
-      {searchRideModal && (
+
+
+
+      {/*{searchRideModal && (
         <Modal
           isOpen={searchRideModal}
           onClose={handleCloseSearchRideModal}
@@ -528,6 +589,8 @@ export default function Dashboard() {
           </div>
         </Modal>
       )}
+      */}
+
     </div>
   );
 }
