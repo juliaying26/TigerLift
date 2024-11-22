@@ -3,6 +3,7 @@ import psycopg2
 import json
 from dotenv import load_dotenv
 load_dotenv()
+from datetime import datetime
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
@@ -520,18 +521,23 @@ def search_rides(origin, destination, arrival_time=None, start_search_time=None)
         query += " AND destination = %s"
         values.append(destination)
 
-    # if user also searched for arrival_time
-    if arrival_time:
-        # for now: searching for EARLIER arrival time than given
-        query += " AND arrival_time <= %s"
-        values.append(arrival_time)
+    # start_search_time is arrive after
+    # arrival_time is arrive before
+
     if start_search_time:
         query += " AND arrival_time >= %s"
         values.append(start_search_time)
+    else:
+        query += " AND arrival_time >= %s"
+        values.append(datetime.now())
+
+    if arrival_time:
+        query += " AND arrival_time <= %s"
+        values.append(arrival_time)
+
 
     if not (origin or destination):
         raise ValueError("At least one of 'origin' or 'destination' must be provided.")
-
 
     if conn:
         try: 

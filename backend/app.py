@@ -223,6 +223,9 @@ def searchrides():
     arrival_time = request.args.get('arrival_time')
     start_search_time = request.args.get('start_search_time')
 
+    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
+    print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
+
     origin = request.args.get('origin')
     destination = request.args.get('destination')
     if not origin and not destination:
@@ -230,7 +233,6 @@ def searchrides():
 
     origin_id = database.location_to_id(origin) if origin else None
     destination_id = database.location_to_id(destination) if destination else None
-
 
     rides = database.search_rides(origin_id, destination_id, arrival_time, start_search_time)
     locations = database.get_all_locations()

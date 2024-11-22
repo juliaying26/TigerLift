@@ -71,35 +71,69 @@ export default function Dashboard() {
       return;
     }
   
-
     try {
-      const start_search_time_string = `${startSearchDate.format(
-        "YYYY-MM-DD"
-      )}T${startSearchTime.format("HH:mm:ss")}`;
-      const start_search_time_iso = new Date(
-        start_search_time_string
-      ).toISOString();
 
-      const arrival_time_string = `${endSearchDate.format(
-        "YYYY-MM-DD"
-      )}T${endSearchTime.format("HH:mm:ss")}`;
-      const arrival_time_iso = new Date(arrival_time_string).toISOString();
+      /*
+      const now = new Date();
+
+      const start_search_time_string = startSearchDate
+      ? `${startSearchDate.format("YYYY-MM-DD")}T${startSearchTime.format("HH:mm:ss")}`
+      : now.toISOString(); // defaults to current time
+
+      const arrival_time_string = endSearchDate
+      ? `${endSearchDate.format("YYYY-MM-DD")}T${endSearchTime.format("HH:mm:ss")}`
+      : null; // No filter for arrival time if not provided
+      */
+
+      console.log("test, am in dashboard searchride")
+
+      console.log("startSearchDate: " + startSearchDate)
+      console.log("endSearchDate: " + endSearchDate)
 
 
-      console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
-      console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
+      let start_search_time_string = null;
+      let arrival_time_string = null;
+      let start_search_time_iso = null;
+      let arrival_time_iso = null;
 
+
+      if (startSearchDate != null) {
+        start_search_time_string = `${startSearchDate.format(
+          "YYYY-MM-DD"
+        )}T${startSearchTime.format("HH:mm:ss")}`;
+      
+        start_search_time_iso = new Date(
+          start_search_time_string
+        ).toISOString();
+      }
+
+
+      if (endSearchDate != null) {
+        arrival_time_string = `${endSearchDate.format(
+          "YYYY-MM-DD"
+        )}T${endSearchTime.format("HH:mm:ss")}`;
+
+        arrival_time_iso = new Date(arrival_time_string).toISOString();
+      }
+
+      console.log("arrive after iso: " + start_search_time_iso)
+      console.log("arrive before iso: " + arrival_time_iso)
+
+      //console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
+      //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 
       const params = new URLSearchParams({
         ...(origin && { origin: origin.label }),
         ...(dest && { destination: dest.label }),
-        ...(arrival_time_string && { arrival_time: new Date(arrival_time_string).toISOString() }),
-        ...(start_search_time_string && { start_search_time: new Date(start_search_time_string).toISOString() }),
+        ...(start_search_time_string && { start_search_time: start_search_time_iso }),
+        ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
 
+      console.log("params: " + params.toString())
+
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
