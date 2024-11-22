@@ -291,10 +291,18 @@ export default function Dashboard() {
     setInSearch(false);
     await fetchDashboardData();
     setLoading(false);
+    setOrigin("");
+    setDest("");
+    setStartSearchDate(null);
+    setStartSearchTime(null);
+    setEndSearchDate(null);
+    setEndSearchTime(null);
   };
 
   useEffect(() => {
     fetchDashboardData();
+    //setOrigin("")
+    //setDest("")
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -360,29 +368,22 @@ export default function Dashboard() {
             />
           </div>
         </div>
+      </div>
 
+
+        <div className="flex flex-col gap-4">
           <Button
-            className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1 mt-6"
+            className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
             onClick={searchRide}
           >
             Search
           </Button>
-        </div>
-
-
-        <div className="flex gap-4">
           <Button
             className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
             onClick={() => handleOpenRideModal()}
           >
             Create a Rideshare
           </Button>
-          {/*<Button
-            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
-            onClick={() => handleOpenSearchRideModal()}
-          >
-            Search
-          </Button>*/}
         </div>
       </div>
 
