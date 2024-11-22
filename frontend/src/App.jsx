@@ -10,26 +10,17 @@ function App() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const apiURL = import.meta.env.VITE_API_URL;
-
   useEffect(() => {
     fetch(`/api/isloggedin`)
       .then((res) => res.json())
       .then((data) => {
         if (data.is_logged_in !== false) {
-          setUser(data);
+          console.log(data);
+          setUser(data.user_info);
         }
       })
       .finally(() => setLoading(false));
   }, []);
-
-  const handleLogin = async () => {
-    try {
-      await fetch(`/api/login`, {
-        method: "GET",
-      });
-    } catch (error) {}
-  };
 
   if (loading) return <div>Loading...</div>;
 
@@ -42,7 +33,7 @@ function App() {
             path="/dashboard"
             element={
               <div>
-                <Navbar />
+                <Navbar user_info={user} />
                 <Dashboard />
               </div>
             }
@@ -51,8 +42,8 @@ function App() {
             path="/myrides"
             element={
               <div>
-                <Navbar />
-                <MyRides netid={user.netid} />
+                <Navbar user_info={user} />
+                <MyRides />
               </div>
             }
           />

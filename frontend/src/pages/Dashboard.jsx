@@ -8,8 +8,10 @@ import Pill from "../components/Pill.jsx";
 import Button from "../components/Button.jsx";
 import Modal from "../components/Modal.jsx";
 import Dropdown from "../components/Dropdown.jsx";
+import IconButton from "../components/IconButton.jsx";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import PopUpMessage from "../components/PopUpMessage.jsx";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -26,14 +28,24 @@ export default function Dashboard() {
   const [createRideModal, setCreateRideModal] = useState(false);
   const [searchRideModal, setSearchRideModal] = useState(false);
 
-  const [capacity, setCapacity] = useState();
-  const [origin, setOrigin] = useState();
-  const [dest, setDest] = useState();
-  const [date, setDate] = useState();
-  const [time, setTime] = useState();
+  const [popupMessageInfo, setPopupMessageInfo] = useState({
+    status: "",
+    message: "",
+  });
 
+  const [createRideNotif, setCreateRideNotif] = useState([false, ""]);
+  const [capacity, setCapacity] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [dest, setDest] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+
+  const [startSearchDate, setStartSearchDate] = useState();
+  const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
+
+  const [inSearch, setInSearch] = useState(false);
 
   const [locations, setLocations] = useState([]);
 
@@ -48,42 +60,131 @@ export default function Dashboard() {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
+
+  const handleShowPopupMessage = (status, message) => {
+    setPopupMessageInfo({ status: status, message: message });
+    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
+  };
+
+  const flipSearchFields = () => {
+    let prevDest = dest;
+    let prevOrigin = origin;
+    setOrigin(prevDest);
+    setDest(prevOrigin);
+    return;
+  };
+
   const searchRide = async () => {
     console.log(dashboardData);
 
+    if (!origin && !dest) {
+      alert("You must provide at least one of 'starting point' or 'destination'.");
+      return;
+    }
+  
     try {
-      const arrival_time_string = `${endSearchDate.format("YYYY-MM-DD")}T${endSearchTime.format(
-        "HH:mm:ss"
-      )}`;
-      const arrival_time_iso = new Date(arrival_time_string).toISOString();
 
-      console.log("time iso: " + arrival_time_iso)
+      /*
+      const now = new Date();
 
-      const response = await fetch(
-        `/api/searchrides?origin=${origin.label}&destination=${dest.label}&arrival_time=${arrival_time_iso}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const start_search_time_string = startSearchDate
+      ? `${startSearchDate.format("YYYY-MM-DD")}T${startSearchTime.format("HH:mm:ss")}`
+      : now.toISOString(); // defaults to current time
+
+      const arrival_time_string = endSearchDate
+      ? `${endSearchDate.format("YYYY-MM-DD")}T${endSearchTime.format("HH:mm:ss")}`
+      : null; // No filter for arrival time if not provided
+      */
+
+      console.log("test, am in dashboard searchride")
+
+      console.log("startSearchDate: " + startSearchDate)
+      console.log("endSearchDate: " + endSearchDate)
+
+
+      let start_search_time_string = null;
+      let arrival_time_string = null;
+      let start_search_time_iso = null;
+      let arrival_time_iso = null;
+
+
+      if (startSearchDate != null) {
+        start_search_time_string = `${startSearchDate.format(
+          "YYYY-MM-DD"
+        )}T${startSearchTime.format("HH:mm:ss")}`;
       
+        start_search_time_iso = new Date(
+          start_search_time_string
+        ).toISOString();
+      }
+
+
+      if (endSearchDate != null) {
+        arrival_time_string = `${endSearchDate.format(
+          "YYYY-MM-DD"
+        )}T${endSearchTime.format("HH:mm:ss")}`;
+
+        arrival_time_iso = new Date(arrival_time_string).toISOString();
+      }
+
+      console.log("arrive after iso: " + start_search_time_iso)
+      console.log("arrive before iso: " + arrival_time_iso)
+
+      //console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
+      //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
+
+      const params = new URLSearchParams({
+        ...(origin && { origin: origin.label }),
+        ...(dest && { destination: dest.label }),
+        ...(start_search_time_string && { start_search_time: start_search_time_iso }),
+        ...(arrival_time_string && { arrival_time: arrival_time_iso }),
+      });
+
+      console.log("params: " + params.toString())
+
+      const response = await fetch(`/api/searchrides?${params.toString()}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch rides: ${response.status}`);
+          throw new Error(`Failed to fetch rides: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("DATA =", data)
+      console.log("DATA =", data);
 
       setRidesData(data.rides);
-      console.log("end of search ride");
+      setInSearch(true);
+      } catch (error) {
+          console.error("Error during fetch:", error);
+      } finally {
+          handleCloseSearchRideModal();
+      }
+    };
 
-    } catch (error) {
-      console.error("Error during fetch:", error);
+
+
+  const checkCreateRideParams = async () => {
+    // const now = dayjs();
+
+    // console.log("current time = ", now);
+    // console.log("time = ", time);
+
+    if (
+      capacity === "" ||
+      origin === "" ||
+      dest === "" ||
+      date === "" ||
+      time === ""
+    ) {
+      setCreateRideNotif([true, "Please enter all fields!"]);
+      // } else if (time.isBefore(now, "minute")) {
+      //   setCreateRideNotif([true, "Cannot enter a time in the past!"]);
+    } else {
+      setCreateRideNotif([false, ""]);
+      createRide();
     }
-
-    handleCloseSearchRideModal();
   };
 
   const createRide = async () => {
@@ -91,7 +192,6 @@ export default function Dashboard() {
       "HH:mm:ss"
     )}`;
     const arrival_time_iso = new Date(arrival_time_string).toISOString();
-
     try {
       const response = await fetch("/api/addride", {
         method: "POST",
@@ -105,14 +205,18 @@ export default function Dashboard() {
           arrival_time: arrival_time_iso,
         }),
       });
+      const responseData = await response.json();
+      handleCloseRideModal();
+      console.log(responseData.success);
+      console.log(responseData.message);
+      handleShowPopupMessage(responseData.success, responseData.message);
+      await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
     } catch (error) {
       console.error("Error during fetch:", error);
     }
-    handleCloseRideModal();
-    await fetchDashboardData();
     setLoading(false);
   };
 
@@ -122,6 +226,11 @@ export default function Dashboard() {
 
   const handleCloseRideModal = async () => {
     setCreateRideModal(false);
+    setCapacity("");
+    setOrigin("");
+    setDest("");
+    setDate("");
+    setTime("");
   };
 
   const handleOpenSearchRideModal = async () => {
@@ -141,8 +250,13 @@ export default function Dashboard() {
 
       console.log(data.rides);
 
+      const currentTime = new Date();
+      data.rides = data.rides.filter(
+        (entry) => new Date(entry.arrival_time) >= currentTime
+      );
+      console.log(currentTime);
       data.rides.sort(
-        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
+        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
       );
       setRidesData(data.rides);
       const tempLocations = [];
@@ -182,6 +296,13 @@ export default function Dashboard() {
     }
   };
 
+  const resetSearch = async () => {
+    setLoading(true);
+    setInSearch(false);
+    await fetchDashboardData();
+    setLoading(false);
+  };
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -190,147 +311,179 @@ export default function Dashboard() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl">
-          Welcome, {dashboardData.user_info?.displayname}
-        </h1>
-      </div>
-
+      {popupMessageInfo.message && (
+        <PopUpMessage
+          status={popupMessageInfo.status}
+          message={popupMessageInfo.message}
+        />
+      )}
       <div className="flex justify-between">
+        <Link
+          to="/myrides"
+          className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
+        >
+          My Rides
+        </Link>
         <div className="flex gap-4">
-          <Link
-            to="/myrides"
-            className="inline-block bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-          >
-            My Rides
-          </Link>
           <Button
-            className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
             onClick={() => handleOpenRideModal()}
           >
-            Create a Ride
+            Create a Rideshare
+          </Button>
+          <Button
+            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
+            onClick={() => handleOpenSearchRideModal()}
+          >
+            Search
           </Button>
         </div>
-        <Button
-          className="bg-theme_dark_2 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-          onClick={() => handleOpenSearchRideModal()}
-        >
-          Search
-        </Button>
       </div>
 
       <br />
 
       {loading ? (
         <div className="text-center">Loading...</div>
-      ) : ridesData.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {ridesData.map((ride) => (
-            <RideCard
-              key={ride.id}
-              buttonText={
-                ride.admin_netid === dashboardData.user_info.netid
-                  ? "Cannot join your own ride"
-                  : dashboardData.ridereqs[ride.id] !== undefined &&
-                    dashboardData.ridereqs[ride.id] !== null
-                  ? capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
-                  : ride.current_riders.length === ride.max_capacity
-                  ? "Ride filled"
-                  : "Request to Join"
-              }
-              buttonOnClick={
-                dashboardData.ridereqs[ride.id] ||
-                ride.admin_netid === dashboardData.user_info.netid ||
-                ride.current_riders.length === ride.max_capacity
-                  ? () => {}
-                  : () => handleRideRequest(ride.id)
-              }
-              buttonClassName={`${
-                dashboardData.ridereqs[ride.id] ||
-                ride.admin_netid === dashboardData.user_info.netid
-                  ? "cursor-auto bg-theme_light text-theme_dark_1 font-semibold"
-                  : "bg-theme_dark_1 text-white font-semibold"
-              }`}
-            >
-              <p>
-                <strong>Origin:</strong> {ride.origin_name}
-              </p>
-              <p>
-                <strong>Destination:</strong> {ride.destination_name}
-              </p>
-              <p>
-                <strong>Arrival Time:</strong>{" "}
-                {new Date(ride.arrival_time).toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                  hour12: true,
-                })}
-              </p>
-              <p>
-                <strong>Admin Name:</strong> {ride.admin_name}
-              </p>
-              <p>
-                <strong>Admin Email:</strong> {ride.admin_email}
-              </p>
-              <p>
-                <strong>Seats Taken:</strong> {ride.current_riders.length}/
-                {ride.max_capacity}
-              </p>
-            </RideCard>
-          ))}
-        </div>
       ) : (
-        <p className="text-center">No rides available in this category.</p>
+        <div>
+          {inSearch && (
+            <div>
+              <Button
+                onClick={resetSearch}
+                className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
+              >
+                Back to All Rides
+              </Button>
+              <br />
+              <br />
+            </div>
+          )}
+          {ridesData.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {ridesData.map((ride) => (
+                <RideCard
+                  key={ride.id}
+                  buttonText={
+                    ride.admin_netid === dashboardData.user_info.netid
+                      ? ""
+                      : dashboardData.ridereqs[ride.id] !== undefined &&
+                        dashboardData.ridereqs[ride.id] !== null
+                      ? "Status: " +
+                        capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
+                      : ride.current_riders.length === ride.max_capacity
+                      ? "Ride filled"
+                      : "Request to Join"
+                  }
+                  buttonOnClick={
+                    dashboardData.ridereqs[ride.id] ||
+                    ride.admin_netid === dashboardData.user_info.netid ||
+                    ride.current_riders.length === ride.max_capacity
+                      ? () => {}
+                      : () => handleRideRequest(ride.id)
+                  }
+                  buttonClassName={`${
+                    ride.admin_netid === dashboardData.user_info.netid
+                      ? "cursor-auto"
+                      : dashboardData.ridereqs[ride.id]
+                      ? "cursor-auto"
+                      : "bg-theme_dark_1 text-white hover:bg-theme_medium_1"
+                  }`}
+                  buttonStatus={dashboardData.ridereqs[ride.id]}
+                >
+                  <p className="text-xl text-center">
+                    <strong>
+                      {ride.origin_name} → {ride.destination_name}
+                    </strong>
+                  </p>
+                  <p className="text-center mb-2">
+                    Arrive by{" "}
+                    {new Date(ride.arrival_time).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    })}
+                  </p>
+                  <hr className="border-1 my-3 border-theme_medium_1" />
+                  <p>
+                    <span className="font-semibold">Posted by:</span>{" "}
+                    {ride.admin_name}, {ride.admin_email}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Seats Taken:</span>{" "}
+                    {ride.current_riders.length}/{ride.max_capacity}
+                  </p>
+                </RideCard>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center">No rides available in this category.</p>
+          )}
+        </div>
       )}
 
       {createRideModal && (
         <Modal
           isOpen={createRideModal}
           onClose={handleCloseRideModal}
-          title={"Create a Ride"}
+          title={"Create a Rideshare"}
         >
-          <div>
-            <Dropdown
-              inputValue={capacity}
-              setInputValue={setCapacity}
-              options={capacity_options}
-              isClearable
-              placeholder="Select capacity"
-            ></Dropdown>
-
-            <Dropdown
-              inputValue={origin}
-              setInputValue={setOrigin}
-              options={locations}
-              isClearable
-              placeholder="Select starting point"
-            ></Dropdown>
-
-            <Dropdown
-              inputValue={dest}
-              setInputValue={setDest}
-              options={locations}
-              isClearable
-              placeholder="Select destination"
-            ></Dropdown>
-
-            <DateTimePicker
-              date={date}
-              setDate={setDate}
-              time={time}
-              setTime={setTime}
-            />
-            <br />
-
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
+              <div>
+                <p className="font-medium">Capacity </p>
+                <Dropdown
+                  inputValue={capacity}
+                  setInputValue={setCapacity}
+                  options={capacity_options}
+                  isClearable
+                  placeholder="Select capacity"
+                ></Dropdown>
+              </div>
+              <div>
+                <p className="font-medium">Origin & Destination</p>
+                <div className="flex items-center gap-2">
+                  <Dropdown
+                    inputValue={origin}
+                    setInputValue={setOrigin}
+                    options={locations}
+                    isClearable
+                    placeholder="Select an origin"
+                  ></Dropdown>
+                  <IconButton
+                    type="flip"
+                    onClick={flipSearchFields}
+                    disabled={false}
+                  ></IconButton>
+                  <Dropdown
+                    inputValue={dest}
+                    setInputValue={setDest}
+                    options={locations}
+                    isClearable
+                    placeholder="Select a destination"
+                  ></Dropdown>
+                </div>
+              </div>
+              <div>
+                <p className="font-medium">Arrival Time</p>
+                <DateTimePicker
+                  date={date}
+                  setDate={setDate}
+                  time={time}
+                  setTime={setTime}
+                />
+              </div>
+            </div>
             <Button
-              className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-              onClick={createRide}
+              className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:text-theme_medium_1"
+              onClick={checkCreateRideParams}
             >
               Submit
             </Button>
+
+            {createRideNotif[0] && <p> {createRideNotif[1]} </p>}
           </div>
         </Modal>
       )}
@@ -349,6 +502,12 @@ export default function Dashboard() {
               placeholder="Select starting point"
             ></Dropdown>
 
+            <IconButton
+              type="flip"
+              onClick={flipSearchFields}
+              disabled={false}
+            ></IconButton>
+
             <Dropdown
               inputValue={dest}
               setInputValue={setDest}
@@ -356,18 +515,22 @@ export default function Dashboard() {
               isClearable
               placeholder="Select destination"
             ></Dropdown>
+            Arrive After:
+            <DateTimePicker
+              date={startSearchDate}
+              setDate={setStartSearchDate}
+              time={startSearchTime}
+              setTime={setStartSearchTime}
+            />
 
-            <br />
-
+            Arrive Before:
             <DateTimePicker
               date={endSearchDate}
               setDate={setEndSearchDate}
               time={endSearchTime}
               setTime={setEndSearchTime}
             />
-
             <br />
-
             <Button
               className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
               onClick={searchRide}

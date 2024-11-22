@@ -54,6 +54,23 @@ export default function IconButton({ type, onClick, disabled, className }) {
             />
           </svg>
         );
+      case "flip":
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2.5}
+            stroke="currentColor"
+            className="size-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+            />
+          </svg>
+        );
       default:
         return null;
     }
@@ -63,7 +80,7 @@ export default function IconButton({ type, onClick, disabled, className }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-full p-1 ${className}`}
+      className={`rounded-full p-1.5 items-center justify-center ${className}`}
     >
       {renderIcon()}
     </button>

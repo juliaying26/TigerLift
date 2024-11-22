@@ -4,6 +4,9 @@ import database
 from casclient import CASClient
 from dotenv import load_dotenv
 load_dotenv() # load vars in .env file
+import smtplib # library for emails
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
@@ -13,6 +16,9 @@ FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
 print("flask env " + FLASK_ENV)
 print("frontend url " + FRONTEND_URL)
+
+# FOR TESTING -- change to False if you don't want emails sent
+EMAILS_ON = True
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -28,7 +34,7 @@ def serve_react_app(path):
 @app.route('/api/isloggedin', methods=['GET'])
 def isloggedin():
     print("IS LOGGED IN!!!!")
-    return jsonify({'is_logged_in': _cas.is_logged_in()})
+    return jsonify({'is_logged_in': _cas.is_logged_in(), 'user_info': _cas.getUserInfo()})
 
 @app.route('/api/login', methods=['GET'])
 def login():
@@ -117,6 +123,7 @@ def api_my_posted_rides():
         updated_rides.append(updated_ride)
     
     return jsonify({
+        'user_info': user_info,
         'myrides': updated_rides,
     })
 
@@ -147,11 +154,12 @@ def api_my_requested_rides():
             'creation_time': ride[8],
             'updated_at': ride[9],
             'current_riders': ride[10],
-            'requested_riders': ride[11]
+            'request_status': ride[11]
         }
         updated_rides.append(updated_ride)
 
     return jsonify({
+        'user_info': user_info,
         'myreqrides': updated_rides
     })
 
@@ -165,9 +173,9 @@ def addride():
     arrival_time = data.get('arrival_time')
     try:
         database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, dest, arrival_time)
-        return jsonify({'success': True, 'message': 'Ride request accepted'})
+        return jsonify({'success': True, 'message': 'Ride successfully created!'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to accept ride request'}), 400
+        return jsonify({'success': False, 'message': 'Failed to create ride.'}), 400
 
 @app.route("/api/deleteride", methods=["POST"])
 def deleteride():
@@ -176,9 +184,9 @@ def deleteride():
     rideid = data.get('rideid')
     try:
        database.delete_ride(str(user_info['netid']), rideid)
-       return jsonify({'success': True, 'message': 'Delete request done'})
+       return jsonify({'success': True, 'message': 'Ride successfully deleted.'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to delete ride'}), 400
+        return jsonify({'success': False, 'message': 'Failed to delete ride.'}), 400
 
 @app.route("/api/cancelriderequest", methods=["POST"])
 def cancelriderequest():
@@ -187,9 +195,9 @@ def cancelriderequest():
     rideid = data.get('rideid')
     try:
         database.delete_ride_request(str(user_info['netid']), rideid)
-        return jsonify({'success': True, 'message': 'Ride request canceled'})
+        return jsonify({'success': True, 'message': 'Ride request canceled.'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to cancel ride request'}), 400
+        return jsonify({'success': False, 'message': 'Failed to cancel ride request.'}), 400
     
 @app.route("/addlocation", methods=["GET"])
 def addlocation():
@@ -212,17 +220,27 @@ def searchrides():
 
     print("in search rides")
     user_info = _cas.authenticate()
-    origin = database.location_to_id(request.args.get('origin'))
-    destination = database.location_to_id(request.args.get('destination'))
-    arrival_time = request.args.get('arrival_time', '')
+    arrival_time = request.args.get('arrival_time')
+    start_search_time = request.args.get('start_search_time')
 
-    rides = database.search_rides(origin, destination, arrival_time)
+    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
+    print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
+
+    origin = request.args.get('origin')
+    destination = request.args.get('destination')
+    if not origin and not destination:
+        return jsonify({"error": "You must provide at least one of 'origin' or 'destination'"}), 400
+
+    origin_id = database.location_to_id(origin) if origin else None
+    destination_id = database.location_to_id(destination) if destination else None
+
+    rides = database.search_rides(origin_id, destination_id, arrival_time, start_search_time)
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
     print(rides)
 
-     # mapping for location
+    # mapping for location
     location_map = {location[0]: location[1] for location in locations}
     
     # mapping for rides array 
@@ -264,39 +282,147 @@ def requestride():
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
+    if not rideid:
+        return jsonify({'success': False, 'message': 'Ride ID is required'}), 400
+
     try:
         database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
-        return jsonify({'success': True, 'message': 'Ride request created'})
+
+        # send
+        try: 
+            admin_info = database.rideid_to_admin_id_email(rideid)
+            subject = 'You have a new riderequest from ' + str(user_info['displayname']) + '!'
+            send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, "Please see it on tigerlift.onrender.com")
+        except:
+            return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
+
+        return jsonify({'success': True, 'message': 'Ride request created!'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to create ride request'}), 400
+        return jsonify({'success': False, 'message': 'Failed to create ride request.'}), 400
     
 @app.route("/api/batchupdateriderequest", methods=["POST"])
 def batchupdateriderequest():
     try:
         data = request.get_json()
+        rideid = data.get('rideid')
         print(data)
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
-            rideid = rider.get('rideid')
-            database.accept_ride_request(requester_id, full_name, mail, rideid)
-            
+            status = database.accept_ride_request(requester_id, full_name, mail, rideid)
+
+            # if status is True (meaning new ride request was created)
+            if status:
+                # send email to accepted rider
+                if EMAILS_ON:
+                    send_email_notification(requester_id, mail, "Your ride request was accepted", 
+                        "Your ride request was recently accepted. Please see details at tigerlift.onrender.com")
+
         for rider in data.get('rejecting_riders', []):
             requester_id = rider.get('requester_id')
-            rideid = rider.get('rideid')
             database.reject_ride_request(requester_id, rideid)
+
+            if EMAILS_ON:
+                    send_email_notification(requester_id, mail, "Your ride request was rejected", 
+                        "Your ride request was recently rejected. Please see details at tigerlift.onrender.com")
 
         for rider in data.get('pending_riders', []):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
-            rideid = rider.get('rideid')
             database.remove_rider(requester_id, full_name, mail, rideid)
 
-        return jsonify({'success': True, 'message': 'Ride requests accepted'})
+        if data.get('new_capacity'):
+            database.update_capacity(rideid, data.get('new_capacity'))
+
+        if data.get('new_arrival_time'):
+            database.update_arrival_time(rideid, data.get('new_arrival_time'))
+
+        return jsonify({'success': True, 'message': 'Ride successfully updated!'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to accept ride requests'}), 400
+        return jsonify({'success': False, 'message': 'Failed to update ride.'}), 400
+    
+@app.route("/api/sendemailnotifs", methods=["POST"])
+def send_email_notification():
+    print("EMAIL NOTIF!!")
+    """
+    Sends email notifications
+    """
+    try:
+        data = request.get_json()        
+        netid = data.get('netid')
+        mail = data.get('mail')
+        subject = data.get('subject')
+        message = data.get('message')
+        # if mail is empty for some reason, use netid @ princeton.edu
+
+        if not mail:
+            mail = netid + "@princeton.edu"
+
+        from_email = os.environ.get('EMAIL_ADDRESS')
+        from_password = os.environ.get('EMAIL_PASSWORD')
+
+        # Set up the email
+        msg = MIMEMultipart()
+        msg['From'] = from_email
+        msg['To'] = mail
+        msg['Subject'] = subject
+        # Attach the message
+        msg.attach(MIMEText(message, 'plain'))
+
+        try:
+            # Connect to the SMTP server and send the email
+            with smtplib.SMTP('smtp.gmail.com', 587) as server:
+                server.starttls()  # Secure the connection
+                server.login(from_email, from_password)
+                server.send_message(msg)
+            print(f"Email sent to {mail} successfully!")
+            return jsonify({'success': True, 'message': 'Email sent successfully!'})
+        except Exception as e:
+            print(f"Error sending email to {mail}: {e}")
+            return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
+
+    except Exception as e:
+         return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
+
+
+def send_email_notification(netid, mail, subject, message):
+    print("EMAIL NOTIF!!")
+    """
+    Sends email notifications
+    """
+    try:
+        if not mail:
+            mail = netid + "@princeton.edu"
+
+        from_email = os.environ.get('EMAIL_ADDRESS')
+        from_password = os.environ.get('EMAIL_PASSWORD')
+
+        # Set up the email
+        msg = MIMEMultipart()
+        msg['From'] = from_email
+        msg['To'] = mail
+        msg['Subject'] = subject
+        # Attach the message
+        msg.attach(MIMEText(message, 'plain'))
+
+        try:
+            # Connect to the SMTP server and send the email
+            with smtplib.SMTP('smtp.gmail.com', 587) as server:
+                server.starttls()  # Secure the connection
+                server.login(from_email, from_password)
+                server.send_message(msg)
+            print(f"Email sent to {mail} successfully!")
+            return jsonify({'success': True, 'message': 'Ride request created'})
+        except Exception as e:
+            print(f"Error sending email to {mail}: {e}")
+            return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
+
+    except Exception as e:
+         return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
+
+
 
 # @app.route("/api/acceptriderequest", methods=["POST"])
 # def acceptriderequest():

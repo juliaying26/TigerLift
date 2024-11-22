@@ -3,6 +3,7 @@ import psycopg2
 import json
 from dotenv import load_dotenv
 load_dotenv()
+from datetime import datetime
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
@@ -206,9 +207,14 @@ def create_ride_request(netid, full_name, mail, ride_id):
 
     status = 'pending'
     
+    # check whether exists
+    sql_exists_check = """
+        SELECT 1 FROM RideRequests WHERE netid = %s AND ride_id = %s;
+    """
+
     sql_command = f"""
-        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status) VALUES (%s, %s, %s, 
-        %s, %s);
+        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status, request_time) VALUES (%s, %s, %s, 
+        %s, %s, CURRENT_TIMESTAMP);
     """
 
     values = (netid, full_name, mail, ride_id, status)
@@ -219,9 +225,18 @@ def create_ride_request(netid, full_name, mail, ride_id):
     if conn:
         try:
             with conn.cursor() as cursor:
+                # check if exists
+                cursor.execute(sql_exists_check, (netid, ride_id))
+                if cursor.fetchone() is not None:
+                    print("Request already exists.")
+                    return
+
+                # else execute
                 cursor.execute(sql_command, values)
                 conn.commit()
                 print("Ride request addded successfully!")
+
+
         except Exception as e:
             print(f"Error adding ride request: {e}")
         finally:
@@ -258,6 +273,58 @@ def update_ride_request(request_id, status):
             conn.close()
     else:
         print("Connection not established.")
+
+
+def update_capacity(rideid, new_capacity):
+    """
+    Updates the capacity of a ride
+    """
+
+    sql_command = f"""
+        UPDATE Rides
+        SET max_capacity = %s
+        WHERE id = %s;
+    """
+
+    values = (new_capacity, rideid)
+
+    conn = connect()
+
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride capacity updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride capacity: {e}")
+        finally:
+            conn.close()
+
+
+def update_arrival_time(rideid, new_arrival_time):
+    """
+    Updates the arrival time of a ride
+    """
+    sql_command = f"""
+        UPDATE Rides
+        SET arrival_time = %s
+        WHERE id = %s;
+    """
+    values = (new_arrival_time, rideid)
+    conn = connect()
+    # if it was successful connection, execute SQL commands to database & commit
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Ride arrival time updated successfully!")
+        except Exception as e:
+            print(f"Error updating ride arrival time: {e}")
+        finally:
+            conn.close()
 
 
 def create_notification(netid, message, type):
@@ -462,20 +529,39 @@ def get_all_locations():
 
     return locations
 
-def search_rides(origin, destination, arrival_time=None):
+def search_rides(origin, destination, arrival_time=None, start_search_time=None):
     query = """
         SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides
-        WHERE origin = %s AND destination = %s
+        WHERE 1=1
     """
 
     conn = connect()
-    values = [origin, destination]
+    values = []
 
-    # if user also searched for arrival_time
+    if origin:
+        query += " AND origin = %s"
+        values.append(origin)
+    if destination:
+        query += " AND destination = %s"
+        values.append(destination)
+
+    # start_search_time is arrive after
+    # arrival_time is arrive before
+
+    if start_search_time:
+        query += " AND arrival_time >= %s"
+        values.append(start_search_time)
+    else:
+        query += " AND arrival_time >= %s"
+        values.append(datetime.now())
+
     if arrival_time:
-        # for now: searching for EARLIER arrival time than given
         query += " AND arrival_time <= %s"
         values.append(arrival_time)
+
+
+    if not (origin or destination):
+        raise ValueError("At least one of 'origin' or 'destination' must be provided.")
 
     if conn:
         try: 
@@ -556,7 +642,10 @@ def delete_ride_request(netid, ride_id):
 
 def accept_ride_request(user_netid, full_name, mail, ride_id):
     """
-    Accepts a ride request and updates current_riders in Rides
+    Accepts a ride request and updates current_riders in Rides.
+    Returns False if user with user_netid already has a ride
+    request in that ride. Else returns True if new ride_request
+    is successfully created for user with
     """
 
     # checks status of ride request
@@ -577,6 +666,8 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
                 result = cursor.fetchone()
                 if result:
                     request_status = result[0]
+                    if request_status == 'accepted':
+                        return False
         except Exception as e:
             print(f"Error checking ride request status: {e}")
         finally:
@@ -593,7 +684,8 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
 
         update_rides_sql_command = """
             UPDATE Rides
-            SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]])
+            SET current_riders = array_cat(current_riders, ARRAY[ARRAY[%s, %s, %s]]), 
+            updated_at = CURRENT_TIMESTAMP
             WHERE id = %s;
         """
 
@@ -609,12 +701,14 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
                     cursor.execute(update_rides_sql_command, ride_values)
                     conn.commit()
                     print("RideRequest accepted successfully!")
+                                        
             except Exception as e:
                 print(f"Error accepting ride request: {e}")
             finally:
                 conn.close()
         else:
             print("Connection not established.")
+    return True
 
 # SHOULD THIS AUTO DELETE AFTER A WHILE??? OR ACTUALLY DELETE THE REQUEST INSTEAD OF REJECTING?
 #  OR IS A USER WHO IS REJECTED THEREFORE BANNED FROM REQUESTING AGAIN
@@ -736,6 +830,9 @@ def remove_rider(requester_id, full_name, mail, ride_id):
 
 
 def location_to_id(location):    
+    """
+    given location name, returns ID from PredefinedLocations
+    """
     sql_command = "SELECT id FROM PredefinedLocations WHERE name = %s"
     values = (location,)
     id_result = None
@@ -763,6 +860,9 @@ def location_to_id(location):
     return int(id_result)
 
 def id_to_location(id):
+    """
+     Given id, returns location name from PredefinedLocations
+    """
     sql_command = "SELECT name FROM PredefinedLocations WHERE id = %s"
     values = (id,)
     location_result=None
@@ -788,6 +888,37 @@ def id_to_location(id):
     print("ID corresponding to num is", location_result)
     return int(location_result)
 
+
+def rideid_to_admin_id_email(ride_id):
+    """
+    Given a rideid, returns admin_netid and email
+    """
+    sql_command = "SELECT admin_netid, admin_email FROM Rides WHERE id = %s"
+    values = (ride_id,)
+    admin_netid_result = None
+    admin_mail_result = None
+
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                result = cursor.fetchone()
+                if result:
+                    admin_netid_result = result[0]
+                    admin_mail_result = result[1]
+                    print("Admin_netid retrieved successfully:", admin_netid_result)
+                else:
+                    print("No matching admin_netid found.")
+        except Exception as e:
+            print(f"Error retrieving admin_netid: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    print("Admin_netid corresponding to ride_id is", admin_netid_result)
+    return (admin_netid_result, admin_mail_result) if admin_netid_result else None
 
 if __name__ == "__main__":
     database_setup()

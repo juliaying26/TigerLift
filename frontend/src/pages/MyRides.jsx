@@ -1,25 +1,62 @@
 import React, { useState, useEffect } from "react"; // Added React for consistency
-import Navbar from "../components/Navbar";
 import RideCard from "../components/RideCard";
-import MyDateTimePicker from "../components/DateTimePicker";
+import DateTimePicker from "../components/DateTimePicker";
 import Modal from "../components/Modal";
 import Button from "../components/Button";
 import Pill from "../components/Pill";
 import IconButton from "../components/IconButton";
 import { useNavigate } from "react-router-dom";
+import Dropdown from "../components/Dropdown";
+import dayjs from "dayjs";
+import WarningModal from "../components/WarningModal";
+import Input from "../components/Input";
+import TextArea from "../components/TextArea";
+import CopyEmailButton from "../components/CopyEmailButton";
+import PopUpMessage from "../components/PopUpMessage";
 
-export default function MyRides({ netid }) {
+export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
+
+  const [userInfo, setUserInfo] = useState({});
   const [myRidesData, setMyRidesData] = useState([]);
   const [viewType, setViewType] = useState("posted");
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [selectedRide, setSelectedRide] = useState(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
+  const [warningModalInfo, setWarningModalInfo] = useState({
+    title: "",
+    buttonText: "",
+  });
+  const [deleteRideMessage, setDeleteRideMessage] = useState("");
+
+  const [popupMessageInfo, setPopupMessageInfo] = useState({
+    status: "",
+    message: "",
+  });
 
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
+
+  const [isEditingCapacity, setIsEditingCapacity] = useState(false);
+  const [newCapacity, setNewCapacity] = useState(null);
+
+  const [isEditingArrivalTime, setIsEditingArrivalTime] = useState(false);
+  const [newArrivalDate, setNewArrivalDate] = useState(null);
+  const [newArrivalTime, setNewArrivalTime] = useState(null);
+
+  function capitalizeFirstLetter(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+  }
+
+  const handleShowPopupMessage = (status, message) => {
+    setPopupMessageInfo({ status: status, message: message });
+    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
+  };
 
   const fetchMyRidesData = async () => {
     setLoading(true);
@@ -33,12 +70,19 @@ export default function MyRides({ netid }) {
       }
       const data = await response.json();
 
-      const ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
+      let ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
       console.log(ride_data);
+      if (viewType === "requested") {
+        console.log("efjsefojio");
+        ride_data = ride_data.filter(
+          (entry) => new Date(entry.arrival_time) >= new Date()
+        );
+      }
       ride_data.sort(
         (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
       );
       setMyRidesData(ride_data);
+      setUserInfo(data.user_info);
     } catch (error) {
       console.error("Error fetching rides:", error);
     } finally {
@@ -50,6 +94,17 @@ export default function MyRides({ netid }) {
     fetchMyRidesData();
   }, [viewType]);
 
+  useEffect(() => {
+    if (selectedRide) {
+      setNewCapacity({
+        value: selectedRide.max_capacity,
+        label: selectedRide.max_capacity,
+      });
+      setNewArrivalDate(dayjs(selectedRide.arrival_time));
+      setNewArrivalTime(dayjs(selectedRide.arrival_time));
+    }
+  }, [selectedRide]);
+
   // states for modal
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);
@@ -59,15 +114,51 @@ export default function MyRides({ netid }) {
   };
 
   const handleCloseModal = () => {
+    if (hasRideChanges()) {
+      setIsWarningModalOpen(true);
+      setWarningModalInfo({
+        title: "Unsaved Changes",
+        buttonText: "Discard Changes",
+      });
+    } else {
+      closeModal();
+    }
+  };
+
+  const closeModal = () => {
+    if (isWarningModalOpen) {
+      handleCloseWarningModal();
+    }
     setIsModalOpen(false);
     setSelectedRide(null);
     setModalCurrentRiders([]);
     setModalRequestedRiders([]);
     setModalRejectedRiders([]);
+    setIsEditingCapacity(false);
+    setNewCapacity(null);
+    setIsEditingArrivalTime(false);
+    setNewArrivalDate(null);
+    setNewArrivalTime(null);
   };
 
-  // if Delete clicked on Modal popup
-  const handleDeleteRide = async (rideId) => {
+  const handleCloseWarningModal = () => {
+    setIsWarningModalOpen(false);
+    setWarningModalInfo({
+      title: "",
+      buttonText: "",
+    });
+    setDeleteRideMessage("");
+  };
+
+  const handleDeleteRide = () => {
+    setIsWarningModalOpen(true);
+    setWarningModalInfo({
+      title: "Delete this Rideshare?",
+      buttonText: "Delete Rideshare",
+    });
+  };
+
+  const deleteRide = async (rideId) => {
     try {
       const response = await fetch("/api/deleteride", {
         method: "POST",
@@ -78,15 +169,84 @@ export default function MyRides({ netid }) {
           rideid: rideId,
         }),
       });
-      handleCloseModal();
-      await fetchMyRidesData();
+
+      const responseData = await response.json();
+
+      // Email all riders whose ride was cancelled
+      // Extract and format ride date
+      const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        }
+      );
+
+      // Email notification details
+      const subj = "Ride Cancellation Notification";
+      const mess = `The ride scheduled for ${rideDate} has been canceled. Reason: ${
+        deleteRideMessage || "No reason provided."
+      }`;
+
+      for (const rider of selectedRide.current_riders) {
+        try {
+          const response_email = await fetch("/api/sendemailnotifs", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              full_name: rider[1],
+              netid: rider[0],
+              mail: rider[2],
+              subject: subj,
+              message: mess,
+            }),
+          });
+          if (!response_email.ok) {
+            console.error(
+              `Failed to send email notification to ${rider[0]}:`,
+              response_email.statusText
+            );
+          }
+        } catch (error) {
+          console.error(
+            `Error sending email notification to ${rider[0]}:`,
+            error
+          );
+        }
+      }
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
+      closeModal();
+      handleShowPopupMessage(responseData.success, responseData.message);
+      await fetchMyRidesData();
     } catch (error) {
       console.error("Error during fetch:", error);
     }
   };
+
+  const hasRideChanges = () => {
+    if (
+      (newCapacity && newCapacity.label !== selectedRide.max_capacity) ||
+      !dayjs(newArrivalDate).isSame(dayjs(selectedRide.arrival_time), "day") ||
+      !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time") ||
+      modalCurrentRiders?.length !== selectedRide.current_riders.length ||
+      modalRequestedRiders?.length !== selectedRide.requested_riders.length ||
+      modalRejectedRiders?.length !== 0
+    ) {
+      return true;
+    } else return false;
+  };
+
+  useEffect(() => {
+    console.log(deleteRideMessage);
+  }, [deleteRideMessage]);
 
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
@@ -100,7 +260,6 @@ export default function MyRides({ netid }) {
         requester_id: requester_id,
         full_name: fullName,
         mail: mail,
-        rideid: rideId,
       };
       accepting_riders.push(rider);
     });
@@ -108,7 +267,6 @@ export default function MyRides({ netid }) {
     modalRejectedRiders.forEach(([requester_id, fullName, mail]) => {
       const rider = {
         requester_id: requester_id,
-        rideid: rideId,
       };
       rejecting_riders.push(rider);
     });
@@ -118,7 +276,6 @@ export default function MyRides({ netid }) {
         requester_id: requester_id,
         full_name: fullName,
         mail: mail,
-        rideid: rideId,
       };
       pending_riders.push(rider);
     });
@@ -127,6 +284,20 @@ export default function MyRides({ netid }) {
     console.log("Rejecting riders:", rejecting_riders);
     console.log("Pending riders:", pending_riders);
 
+    const new_arrival_time_string = `${newArrivalDate.format(
+      "YYYY-MM-DD"
+    )}T${newArrivalTime.format("HH:mm:ss")}`;
+    const new_arrival_time_iso = new Date(
+      new_arrival_time_string
+    ).toISOString();
+
+    console.log(new_arrival_time_iso);
+
+    if (!hasRideChanges()) {
+      handleCloseModal();
+      return;
+    }
+
     try {
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
@@ -134,13 +305,71 @@ export default function MyRides({ netid }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          rideid: rideId,
           accepting_riders: accepting_riders,
           rejecting_riders: rejecting_riders,
           pending_riders: pending_riders,
+          new_capacity: newCapacity?.label,
+          new_arrival_time: new_arrival_time_iso,
         }),
       });
-      handleCloseModal();
+
+      if (
+        !dayjs(newArrivalDate).isSame(
+          dayjs(selectedRide.arrival_time),
+          "day"
+        ) ||
+        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
+      ) {
+        try {
+          const subj = "A rideshare you're in has changed time!";
+          const mess = `Your rideshare has changed time to ${newArrivalDate.format(
+            "YYYY-MM-DD"
+          )} on ${newArrivalTime.format(
+            "HH:mm"
+          )}. Please see details at tigerlift.onrender.com`;
+          for (const rider of accepting_riders) {
+            // console.log("rider's name is", rider.full_name)
+            // console.log("rider's mail is", rider.mail)
+            // console.log("rider's mail is", subject_a)
+            // console.log("message is", message_a)
+
+            try {
+              const response_1 = await fetch("/api/sendemailnotifs", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  full_name: rider.full_name,
+                  netid: rider.requester_id,
+                  mail: rider.mail,
+                  subject: subj,
+                  message: mess,
+                }),
+              });
+
+              if (!response_1.ok) {
+                console.error(
+                  `Failed to send email notification to ${rider.requester_id}:`,
+                  response_1.statusText
+                );
+              }
+            } catch (error) {
+              console.error(
+                `Error sending email notification to ${rider.requester_id}:`,
+                error
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error during fetch sendemailnotifs:", error);
+        }
+      }
+
+      closeModal();
       await fetchMyRidesData();
+
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -151,15 +380,26 @@ export default function MyRides({ netid }) {
 
   // Accepts rider in modal
   const handleAcceptRider = async (netid, fullName, email, rideId) => {
-    setModalCurrentRiders((prevCurrentRiders) => [
-      ...prevCurrentRiders,
-      [netid, fullName, email],
-    ]);
+    if (
+      (newCapacity && modalCurrentRiders.length >= newCapacity.label) ||
+      (!newCapacity && modalCurrentRiders.length >= selectedRide.max_capacity)
+    ) {
+      setWarningModalInfo({
+        title: "Capacity Full",
+        buttonText: "Okay",
+      });
+      setIsWarningModalOpen(true);
+    } else {
+      setModalCurrentRiders((prevCurrentRiders) => [
+        ...prevCurrentRiders,
+        [netid, fullName, email],
+      ]);
 
-    setModalRequestedRiders((prevRequestedRiders) => {
-      // Remove requested rider from requested_riders
-      return prevRequestedRiders.filter(([n, name, mail]) => n !== netid);
-    });
+      setModalRequestedRiders((prevRequestedRiders) => {
+        // Remove requested rider from requested_riders
+        return prevRequestedRiders.filter(([n, name, mail]) => n !== netid);
+      });
+    }
   };
 
   // Rejects rider in modal
@@ -210,52 +450,78 @@ export default function MyRides({ netid }) {
 
   console.log("my rides data is", myRidesData);
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex gap-2">
+    <div className="flex flex-col gap-6 p-8">
+      {popupMessageInfo.message && (
+        <PopUpMessage
+          status={popupMessageInfo.status}
+          message={popupMessageInfo.message}
+        />
+      )}
+      <div className="flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
           className={`${
-            viewType == "posted" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-medium`}
+            viewType == "posted"
+              ? "bg-theme_dark_1 font-medium"
+              : "bg-theme_medium_1"
+          } text-white px-4 py-2 hover:bg-theme_dark_1`}
           onClick={() => setViewType("posted")}
         >
-          My Posted Rides
+          My Posted Rideshares
         </Button>
         <Button
           className={`${
-            viewType == "requested" ? "bg-theme_dark_1" : "bg-theme_medium_1"
-          } text-white font-medium`}
+            viewType == "requested"
+              ? "bg-theme_dark_1 font-medium"
+              : "bg-theme_medium_1"
+          } text-white px-4 py-2 hover:bg-theme_dark_1`}
           onClick={() => setViewType("requested")}
         >
-          My Requested Rides
+          My Requested Rideshares
         </Button>
       </div>
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : Object.keys(myRidesData).length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {myRidesData.map((ride) => (
             <RideCard
               key={ride.id}
               buttonText={
-                viewType === "posted" ? "Manage Ride" : "Cancel Request"
+                new Date(ride.arrival_time) > new Date() &&
+                (viewType === "posted"
+                  ? "Manage Rideshare"
+                  : ride.request_status !== "accepted" && "Cancel Request")
               }
               buttonOnClick={
                 viewType === "posted"
                   ? () => handleManageRideClick(ride)
+                  : ride.request_status === "accepted"
+                  ? () => {}
                   : () => handleCancelRideRequest(ride.id)
               }
-              buttonClassName="bg-theme_medium_1 text-white font-medium hover:bg-theme_dark_1"
+              buttonClassName={`${
+                ride.request_status === "accepted" ||
+                new Date(ride.arrival_time) <= new Date()
+                  ? "cursor-auto"
+                  : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
+              }`}
+              secondaryButtonText={
+                viewType === "requested" &&
+                "Status: " + capitalizeFirstLetter(ride.request_status)
+              }
+              secondaryButtonOnClick={() => {}}
+              secondaryButtonClassName="cursor-auto"
+              secondaryButtonStatus={ride.request_status}
             >
-              <div className="flex flex-col gap-1">
-                <p>
-                  <strong>Origin:</strong> {ride.origin_name}
+              <div>
+                <p className="text-xl text-center">
+                  <strong>
+                    {ride.origin_name} → {ride.destination_name}
+                  </strong>
                 </p>
-                <p>
-                  <strong>Destination:</strong> {ride.destination_name}
-                </p>
-                <p>
-                  <strong>Arrival Time:</strong>{" "}
+                <p className="text-center mb-2">
+                  Arrive by{" "}
                   {new Date(ride.arrival_time).toLocaleString("en-US", {
                     year: "numeric",
                     month: "numeric",
@@ -265,85 +531,263 @@ export default function MyRides({ netid }) {
                     hour12: true,
                   })}
                 </p>
+                <hr className="border-1 my-3 border-theme_medium_1" />
                 <p>
-                  <strong>Admin Name:</strong> {ride.admin_name}
+                  <span className="font-semibold">Posted by:</span>{" "}
+                  {ride.admin_name}, {ride.admin_email}
                 </p>
                 <p>
-                  <strong>Admin Email:</strong> {ride.admin_email}
+                  <span className="font-semibold">Seats Taken:</span>{" "}
+                  {ride.current_riders.length}/{ride.max_capacity}
                 </p>
-                <p>
-                  <strong>Seats Taken:</strong> {ride.current_riders.length}/
-                  {ride.max_capacity}
-                </p>
-                <p>
-                  <strong>Current Riders:</strong>
-                  {Array.isArray(ride.current_riders) &&
-                  ride.current_riders.length > 0 ? (
-                    <div className="flex flex-col gap-2">
-                      {ride.current_riders.map((rider) => (
-                        <Pill>
-                          {rider[0] + " " + rider[1] + " " + rider[2]}
-                        </Pill>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>No current riders.</p>
-                  )}
-                </p>
+                {viewType === "posted" && (
+                  <div>
+                    <p>
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">
+                          {new Date(ride.arrival_time) > new Date()
+                            ? "Current Riders:"
+                            : "Rode with:"}
+                        </span>
+                        {ride.current_riders.length > 0 && (
+                          <CopyEmailButton
+                            copy={ride.current_riders.map((rider) => rider[2])}
+                            text="Copy All Rider Emails"
+                            className="text-theme_medium_2 hover:text-theme_dark_2"
+                          />
+                        )}
+                      </div>
+                    </p>
+                    {Array.isArray(ride.current_riders) &&
+                    ride.current_riders.length > 0 ? (
+                      <div className="flex flex-col gap-2 mt-1">
+                        {ride.current_riders.map((rider, index) => {
+                          const [netid, fullName, email] = rider;
+                          return (
+                            <Pill email={email} key={index}>
+                              <div className="w-full flex items-center justify-between">
+                                {`${fullName}`}
+                                <CopyEmailButton
+                                  copy={[email]}
+                                  text="Copy Email"
+                                />
+                              </div>
+                            </Pill>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p>
+                        {new Date(ride.arrival_time) > new Date()
+                          ? "No current riders."
+                          : "None."}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </RideCard>
           ))}
         </div>
       ) : (
-        <p className="text-center">No rides available in this category.</p>
+        <p className="text-center">
+          {viewType === "posted" ? "No posted rides." : "No requested rides."}
+        </p>
+      )}
+
+      {isWarningModalOpen && (
+        <WarningModal
+          isOpen={isWarningModalOpen}
+          title={warningModalInfo.title}
+        >
+          <div className="flex flex-col gap-3">
+            <p>
+              {warningModalInfo.title === "Unsaved Changes"
+                ? "You have unsaved changes. Do you want to discard them?"
+                : warningModalInfo.title === "Delete this Rideshare?"
+                ? "Are you sure you want to delete this rideshare?"
+                : "The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum 5)."}
+            </p>
+            {warningModalInfo.title === "Delete this Rideshare?" &&
+              selectedRide.current_riders.length != 0 && (
+                <div className="flex flex-col gap-4">
+                  <p>
+                    Please give a reason for deleting this rideshare. The riders
+                    you have currently accepted will be notified that this
+                    rideshare was deleted.
+                  </p>
+                  <TextArea
+                    placeholder={"List reason here."}
+                    inputValue={deleteRideMessage}
+                    setInputValue={setDeleteRideMessage}
+                  />
+                </div>
+              )}
+            <div className="flex items-center self-end gap-2">
+              {warningModalInfo.title !== "Capacity Full" && (
+                <Button
+                  className="border-[1px] border-gray-300 text-theme_dark_1 hover:bg-zinc-100"
+                  onClick={handleCloseWarningModal}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button
+                className={`${
+                  warningModalInfo.title !== "Capacity Full"
+                    ? "bg-red-400 text-white hover:bg-red-500"
+                    : "bg-theme_medium_2 text-white hover:bg-theme_dark_2"
+                }`}
+                onClick={
+                  warningModalInfo.title === "Unsaved Changes"
+                    ? closeModal
+                    : warningModalInfo.title === "Delete this Rideshare?"
+                    ? () => deleteRide(selectedRide.id)
+                    : handleCloseWarningModal
+                }
+              >
+                {warningModalInfo.buttonText}
+              </Button>
+            </div>
+          </div>
+        </WarningModal>
       )}
 
       {isModalOpen && (
         <Modal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          title={"Manage this Ride"}
+          title={"Manage this Rideshare"}
         >
           <div className="flex flex-col gap-1">
-            <p>
-              <strong>Origin:</strong> {selectedRide.origin_name}
+            <p className="text-sm text-zinc-700 mb-2 rounded-md bg-info_light p-2">
+              Any changes you make in this pop up will remain unsaved until you
+              click "Save".
             </p>
-            <p>
-              <strong>Destination:</strong> {selectedRide.destination_name}
+            <p className="text-xl my-1">
+              <strong>
+                {selectedRide.origin_name} → {selectedRide.destination_name}
+              </strong>
             </p>
+            <div className="flex items-center gap-1">
+              <p>
+                <span className="font-semibold">Arrive by:</span>{" "}
+              </p>
+              {isEditingArrivalTime ? (
+                <DateTimePicker
+                  date={newArrivalDate}
+                  setDate={setNewArrivalDate}
+                  time={newArrivalTime}
+                  setTime={setNewArrivalTime}
+                  allowClear={false}
+                />
+              ) : newArrivalDate || newArrivalTime ? (
+                new Date(
+                  `${newArrivalDate.format(
+                    "YYYY-MM-DD"
+                  )}T${newArrivalTime.format("HH:mm:ss")}`
+                ).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                })
+              ) : (
+                new Date(selectedRide.arrival_time).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                })
+              )}
+              {isEditingArrivalTime ? (
+                <Button
+                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => setIsEditingArrivalTime(false)}
+                >
+                  {!dayjs(newArrivalDate).isSame(
+                    dayjs(selectedRide.arrival_time),
+                    "day"
+                  ) ||
+                  !dayjs(newArrivalTime).isSame(
+                    dayjs(selectedRide.arrival_time),
+                    "time"
+                  )
+                    ? "Save"
+                    : "Cancel"}
+                </Button>
+              ) : (
+                <Button
+                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => setIsEditingArrivalTime(true)}
+                >
+                  Edit
+                </Button>
+              )}
+            </div>
             <p>
-              <strong>Arrival Time:</strong>{" "}
-              {new Date(selectedRide.arrival_time).toLocaleString("en-US", {
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "numeric",
-                minute: "numeric",
-                hour12: true,
-              })}
+              <span className="font-semibold">Posted by:</span>{" "}
+              {selectedRide.admin_name}, {selectedRide.admin_email}
             </p>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold">Seats Taken:</span>{" "}
+              {modalCurrentRiders.length || 0}
+              {"/"}
+              {isEditingCapacity ? (
+                <Dropdown
+                  inputValue={newCapacity}
+                  setInputValue={setNewCapacity}
+                  options={Array.from({ length: 5 }, (_, i) => {
+                    const start =
+                      modalCurrentRiders?.length > 1
+                        ? modalCurrentRiders.length
+                        : 1;
+                    const value = i + start;
+                    return {
+                      value,
+                      label: value,
+                    };
+                  }).slice(0, 6 - (modalCurrentRiders?.length || 0))}
+                  isClearable
+                ></Dropdown>
+              ) : (
+                newCapacity?.label || selectedRide.max_capacity
+              )}
+              {isEditingCapacity ? (
+                <Button
+                  className="text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => setIsEditingCapacity(false)}
+                >
+                  {newCapacity?.label !== selectedRide.max_capacity
+                    ? "Save"
+                    : "Cancel"}
+                </Button>
+              ) : (
+                <Button
+                  className="text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => setIsEditingCapacity(true)}
+                >
+                  Edit
+                </Button>
+              )}
+            </div>
             <p>
-              <strong>Admin Name:</strong> {selectedRide.admin_name}
+              <span className="font-semibold">Current Riders:</span>
             </p>
-            <p>
-              <strong>Admin Email:</strong> {selectedRide.admin_email}
-            </p>
-            <p>
-              <strong>Seats Taken:</strong>{" "}
-              {selectedRide.current_riders?.length || 0}/
-              {selectedRide.max_capacity}
-            </p>
-            <p>
-              <strong>Current Riders:</strong>
-              {Array.isArray(modalCurrentRiders) &&
-              modalCurrentRiders.length > 0 ? (
-                <div className="flex flex-col gap-2">
-                  {modalCurrentRiders.map((rider, index) => {
-                    const [netid, fullName, email] = rider;
-                    return (
-                      <Pill key={index}>
-                        <div className="flex items-center justify-between">
-                          <div>{`${netid} ${fullName} ${email}`}</div>
+            {Array.isArray(modalCurrentRiders) &&
+            modalCurrentRiders.length > 0 ? (
+              <div className="flex flex-col gap-2 mt-1">
+                {modalCurrentRiders.map((rider, index) => {
+                  const [netid, fullName, email] = rider;
+                  return (
+                    <Pill email={email} key={index}>
+                      <div className="flex items-center justify-between w-full">
+                        <div>{fullName}</div>
+                        <div className="flex items-center gap-2 ml-auto">
                           <IconButton
                             type="xmark"
                             onClick={() =>
@@ -354,30 +798,30 @@ export default function MyRides({ netid }) {
                                 selectedRide.id
                               )
                             }
+                            className="text-zinc-700 hover:text-zinc-500"
                           />
                         </div>
-                      </Pill>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p>No current riders.</p>
-              )}
-            </p>
-
-            <div className="flex flex-col gap-2">
-              <p>
-                <strong>Requests to Join:</strong>
+                      </div>
+                    </Pill>
+                  );
+                })}
+              </div>
+            ) : (
+              <p>No current riders.</p>
+            )}
+            <div className="flex flex-col gap-2 mt-1 mb-4">
+              <p className="-mb-1">
+                <span className="font-semibold">Requests to Join:</span>
               </p>
-              <div className="overflow-y-auto bg-neutral-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
+              <div className="overflow-y-auto bg-zinc-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
                 {Array.isArray(modalRequestedRiders) &&
                 modalRequestedRiders.length > 0 ? (
                   modalRequestedRiders.map((requested_rider, index) => {
                     const [netid, fullName, email] = requested_rider;
                     return (
-                      <Pill key={index}>
-                        <div className="p-1 flex justify-between items-center">
-                          <div>{`${netid} ${fullName} ${email}`}</div>
+                      <Pill email={email} key={index}>
+                        <div className="flex justify-between items-center">
+                          <div>{`${fullName}`}</div>
                           <div className="flex items-center gap-2">
                             <IconButton
                               type="checkmark"
@@ -389,6 +833,7 @@ export default function MyRides({ netid }) {
                                   selectedRide.id
                                 )
                               }
+                              className="bg-theme_medium_2 text-theme_dark_2 hover:bg-theme_light_2"
                             />
                             <IconButton
                               type="xmark"
@@ -400,6 +845,7 @@ export default function MyRides({ netid }) {
                                   selectedRide.id
                                 )
                               }
+                              className="bg-theme_medium_1 text-theme_dark_1 hover:bg-theme_light_1"
                             />
                           </div>
                         </div>
@@ -414,13 +860,13 @@ export default function MyRides({ netid }) {
             <div className="flex justify-between">
               <Button
                 onClick={() => handleDeleteRide(selectedRide.id)}
-                className="hover:bg-red-600 border border-gray-300"
+                className="hover:bg-red-300 border border-zinc-300 text-zinc-700"
               >
-                Delete this Ride
+                Delete this Rideshare
               </Button>
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
-                className="hover:bg-green-600 border border-gray-300"
+                className="hover:bg-theme_light_2 border border-zinc-300 text-zinc-700"
               >
                 Save
               </Button>
