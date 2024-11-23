@@ -232,8 +232,8 @@ export default function MyRides() {
       );
 
       // Email notification details
-      const subj = "Ride Cancellation Notification";
-      const mess = `The ride scheduled for ${rideDate} has been canceled. Reason: ${
+      const subj = "🚗 Your Rideshare Has been Cancelled ";
+      const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
         deleteRideMessage || "No reason provided."
       }`;
 
@@ -368,7 +368,7 @@ export default function MyRides() {
         !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
       ) {
         try {
-          const subj = "A rideshare you're in has changed time!";
+          const subj = "🚗 A rideshare you're in has changed time!";
           const mess = `Your ride from ${selectedRide.origin_name} to ${
             selectedRide.destination_name
           } 
