@@ -6,6 +6,7 @@ export default function Dropdown({
   inputValue,
   setInputValue,
   placeholder,
+  isClearable = false,
 }) {
   const handleChange = (e) => {
     setInputValue(e || null);
@@ -17,7 +18,7 @@ export default function Dropdown({
       onChange={handleChange}
       options={options}
       placeholder={placeholder}
-      isClearable={true}
+      isClearable={isClearable}
     />
   );
 }

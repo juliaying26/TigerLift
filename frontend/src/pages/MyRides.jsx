@@ -19,8 +19,13 @@ export default function MyRides() {
   const navigate = useNavigate();
 
   const [userInfo, setUserInfo] = useState({});
-  const [myUpcomingRidesData, setMyUpcomingRidesData] = useState([]);
-  const [myPastRidesData, setMyPastRidesData] = useState([]);
+  const [myUpcomingPostedRidesData, setMyUpcomingPostedRidesData] = useState(
+    []
+  );
+  const [myPastPostedRidesData, setMyPastPostedRidesData] = useState([]);
+  const [myUpcomingRequestedRidesData, setMyUpcomingRequestedRidesData] =
+    useState([]);
+  const [myPastRequestedRidesData, setMyPastRequestedRidesData] = useState([]);
   const [viewType, setViewType] = useState("posted");
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +55,8 @@ export default function MyRides() {
   const [newArrivalDate, setNewArrivalDate] = useState(null);
   const [newArrivalTime, setNewArrivalTime] = useState(null);
 
+  const [cancelRequestRideId, setCancelRequestRideId] = useState(null);
+
   function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
   }
@@ -60,10 +67,7 @@ export default function MyRides() {
   };
 
   const fetchMyRidesData = async () => {
-    setLoading(true);
-
-    const endpoint =
-      viewType === "posted" ? "/api/mypostedrides" : "/api/myrequestedrides";
+    const endpoint = "/api/myrides";
     try {
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -71,44 +75,68 @@ export default function MyRides() {
       }
       const data = await response.json();
 
-      let ride_data = viewType === "posted" ? data.myrides : data.myreqrides;
-      console.log(ride_data);
-      const upcoming_rides = [];
-      const past_rides = [];
+      let posted_ride_data = data.myrides;
+      let requested_ride_data = data.myreqrides;
+      console.log(posted_ride_data);
+      const upcoming_posted_rides = [];
+      const past_posted_rides = [];
+      const upcoming_requested_rides = [];
+      const past_requested_rides = [];
       const now = new Date();
-      ride_data.forEach((ride) => {
+      posted_ride_data.forEach((ride) => {
         if (new Date(ride.arrival_time) > now) {
-          upcoming_rides.push(ride);
+          upcoming_posted_rides.push(ride);
         } else {
-          past_rides.push(ride);
+          past_posted_rides.push(ride);
+        }
+      });
+      requested_ride_data.forEach((ride) => {
+        if (new Date(ride.arrival_time) > now) {
+          upcoming_requested_rides.push(ride);
+        } else {
+          past_requested_rides.push(ride);
         }
       });
       // Sort upcoming rides in ascending order (by arrival time)
-      upcoming_rides.sort(
+      upcoming_posted_rides.sort(
         (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
       );
       // Sort past rides in descending order (by arrival time)
-      past_rides.sort(
+      past_posted_rides.sort(
         (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
       );
-      setMyUpcomingRidesData(upcoming_rides);
-      if (viewType === "requested") {
-        setMyPastRidesData(
-          past_rides.filter((ride) => ride.request_status === "accepted")
-        );
-      } else {
-        setMyPastRidesData(past_rides);
-      }
+      upcoming_requested_rides.sort(
+        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
+      );
+      past_requested_rides.sort(
+        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
+      );
+      setMyUpcomingPostedRidesData(upcoming_posted_rides);
+      setMyPastRequestedRidesData(
+        past_requested_rides.filter(
+          (ride) => ride.request_status === "accepted"
+        )
+      );
+      setMyUpcomingRequestedRidesData(upcoming_requested_rides);
+      setMyPastPostedRidesData(past_posted_rides);
+
       setUserInfo(data.user_info);
     } catch (error) {
       console.error("Error fetching rides:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMyRidesData();
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await fetchMyRidesData();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [viewType]);
 
   useEffect(() => {
@@ -455,6 +483,7 @@ export default function MyRides() {
   };
 
   const handleCancelRideRequest = async (rideid) => {
+    setCancelRequestRideId(rideid);
     try {
       const response = await fetch("/api/cancelriderequest", {
         method: "POST",
@@ -474,9 +503,132 @@ export default function MyRides() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+    setCancelRequestRideId(null);
   };
 
-  console.log("my rides data is", myUpcomingRidesData, myPastRidesData);
+  const renderRideCards = (rides, isUpcoming) => {
+    return rides.length > 0 ? (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+        {rides.map((ride) => (
+          <RideCard
+            key={ride.id}
+            buttonText={
+              new Date(ride.arrival_time) > new Date() &&
+              (viewType === "posted"
+                ? "Manage Rideshare"
+                : ride.request_status !== "accepted" && "Cancel Request")
+            }
+            buttonOnClick={
+              viewType === "posted"
+                ? () => handleManageRideClick(ride)
+                : ride.request_status === "accepted"
+                ? () => {}
+                : () => handleCancelRideRequest(ride.id)
+            }
+            buttonClassName={`${
+              ride.request_status === "accepted" ||
+              new Date(ride.arrival_time) <= new Date()
+                ? "cursor-auto"
+                : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
+            }`}
+            buttonDisabled={ride.id === cancelRequestRideId}
+            secondaryButtonText={
+              viewType === "requested" &&
+              "Status: " + capitalizeFirstLetter(ride.request_status)
+            }
+            secondaryButtonOnClick={() => {}}
+            secondaryButtonClassName="cursor-auto"
+            secondaryButtonStatus={ride.request_status}
+          >
+            <div>
+              <p className="text-xl text-center">
+                <strong>
+                  {ride.origin_name} → {ride.destination_name}
+                </strong>
+              </p>
+              <p className="text-center mb-2">
+                Arrive by{" "}
+                {new Date(ride.arrival_time).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                })}
+              </p>
+              <hr className="border-1 my-3 border-theme_medium_1" />
+              <p>
+                <span className="font-semibold">Posted by:</span>{" "}
+                {ride.admin_name}, {ride.admin_email}
+              </p>
+              <p>
+                <span className="font-semibold">Seats Taken:</span>{" "}
+                {ride.current_riders.length}/{ride.max_capacity}
+              </p>
+              {viewType === "posted" && (
+                <div>
+                  <p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">
+                        {new Date(ride.arrival_time) > new Date()
+                          ? "Current Riders:"
+                          : "Rode with:"}
+                      </span>
+                      {isUpcoming && ride.current_riders.length > 0 && (
+                        <CopyEmailButton
+                          copy={ride.current_riders.map((rider) => rider[2])}
+                          text="Copy All Rider Emails"
+                          className="text-theme_medium_2 hover:text-theme_dark_2"
+                        />
+                      )}
+                    </div>
+                  </p>
+                  {Array.isArray(ride.current_riders) &&
+                  ride.current_riders.length > 0 ? (
+                    <div className="flex flex-col gap-2 mt-1">
+                      {ride.current_riders.map((rider, index) => {
+                        const [netid, fullName, email] = rider;
+                        return (
+                          <Pill email={email} key={index}>
+                            <div className="w-full flex items-center justify-between">
+                              {`${fullName}`}
+                              {isUpcoming && (
+                                <CopyEmailButton
+                                  copy={[email]}
+                                  text="Copy Email"
+                                  className="text-zinc-800 hover:text-zinc-600"
+                                />
+                              )}
+                            </div>
+                          </Pill>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p>
+                      {new Date(ride.arrival_time) > new Date()
+                        ? "No current riders."
+                        : "None."}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </RideCard>
+        ))}
+      </div>
+    ) : (
+      <p className="text-center">
+        {loading
+          ? "Loading..."
+          : viewType === "posted"
+          ? "No upcoming posted rides."
+          : "No upcoming requested rides."}
+      </p>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-6 p-8">
       {popupMessageInfo.message && (
@@ -508,242 +660,25 @@ export default function MyRides() {
           My Requested Rideshares
         </Button>
       </div>
-      {loading ? (
-        <div className="text-center">Loading...</div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          <h3 className="text-lg font-medium">
-            {viewType === "posted"
-              ? "Upcoming posted rides"
-              : "Upcoming requested rides"}
-          </h3>
-          {Object.keys(myUpcomingRidesData).length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {myUpcomingRidesData.map((ride) => (
-                <RideCard
-                  key={ride.id}
-                  buttonText={
-                    new Date(ride.arrival_time) > new Date() &&
-                    (viewType === "posted"
-                      ? "Manage Rideshare"
-                      : ride.request_status !== "accepted" && "Cancel Request")
-                  }
-                  buttonOnClick={
-                    viewType === "posted"
-                      ? () => handleManageRideClick(ride)
-                      : ride.request_status === "accepted"
-                      ? () => {}
-                      : () => handleCancelRideRequest(ride.id)
-                  }
-                  buttonClassName={`${
-                    ride.request_status === "accepted" ||
-                    new Date(ride.arrival_time) <= new Date()
-                      ? "cursor-auto"
-                      : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
-                  }`}
-                  secondaryButtonText={
-                    viewType === "requested" &&
-                    "Status: " + capitalizeFirstLetter(ride.request_status)
-                  }
-                  secondaryButtonOnClick={() => {}}
-                  secondaryButtonClassName="cursor-auto"
-                  secondaryButtonStatus={ride.request_status}
-                >
-                  <div>
-                    <p className="text-xl text-center">
-                      <strong>
-                        {ride.origin_name} → {ride.destination_name}
-                      </strong>
-                    </p>
-                    <p className="text-center mb-2">
-                      Arrive by{" "}
-                      {new Date(ride.arrival_time).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      })}
-                    </p>
-                    <hr className="border-1 my-3 border-theme_medium_1" />
-                    <p>
-                      <span className="font-semibold">Posted by:</span>{" "}
-                      {ride.admin_name}, {ride.admin_email}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Seats Taken:</span>{" "}
-                      {ride.current_riders.length}/{ride.max_capacity}
-                    </p>
-                    {viewType === "posted" && (
-                      <div>
-                        <p>
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold">
-                              {new Date(ride.arrival_time) > new Date()
-                                ? "Current Riders:"
-                                : "Rode with:"}
-                            </span>
-                            {ride.current_riders.length > 0 && (
-                              <CopyEmailButton
-                                copy={ride.current_riders.map(
-                                  (rider) => rider[2]
-                                )}
-                                text="Copy All Rider Emails"
-                                className="text-theme_medium_2 hover:text-theme_dark_2"
-                              />
-                            )}
-                          </div>
-                        </p>
-                        {Array.isArray(ride.current_riders) &&
-                        ride.current_riders.length > 0 ? (
-                          <div className="flex flex-col gap-2 mt-1">
-                            {ride.current_riders.map((rider, index) => {
-                              const [netid, fullName, email] = rider;
-                              return (
-                                <Pill email={email} key={index}>
-                                  <div className="w-full flex items-center justify-between">
-                                    {`${fullName}`}
-                                    <CopyEmailButton
-                                      copy={[email]}
-                                      text="Copy Email"
-                                    />
-                                  </div>
-                                </Pill>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p>
-                            {new Date(ride.arrival_time) > new Date()
-                              ? "No current riders."
-                              : "None."}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </RideCard>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center">
-              {viewType === "posted"
-                ? "No upcoming posted rides."
-                : "No upcoming requested rides."}
-            </p>
-          )}
-          <h3 className="text-lg font-medium">
-            {viewType === "posted"
-              ? "Past posted rides"
-              : "Previously accepted rides"}
-          </h3>
-          {/* past rides do not have copy email buttons */}
-          {Object.keys(myPastRidesData).length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {myPastRidesData.map((ride) => (
-                <RideCard
-                  key={ride.id}
-                  buttonText={
-                    new Date(ride.arrival_time) > new Date() &&
-                    (viewType === "posted"
-                      ? "Manage Rideshare"
-                      : ride.request_status !== "accepted" && "Cancel Request")
-                  }
-                  buttonOnClick={
-                    viewType === "posted"
-                      ? () => handleManageRideClick(ride)
-                      : ride.request_status === "accepted"
-                      ? () => {}
-                      : () => handleCancelRideRequest(ride.id)
-                  }
-                  buttonClassName={`${
-                    ride.request_status === "accepted" ||
-                    new Date(ride.arrival_time) <= new Date()
-                      ? "cursor-auto"
-                      : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
-                  }`}
-                  secondaryButtonText={
-                    viewType === "requested" &&
-                    "Status: " + capitalizeFirstLetter(ride.request_status)
-                  }
-                  secondaryButtonOnClick={() => {}}
-                  secondaryButtonClassName="cursor-auto"
-                  secondaryButtonStatus={ride.request_status}
-                >
-                  <div>
-                    <p className="text-xl text-center">
-                      <strong>
-                        {ride.origin_name} → {ride.destination_name}
-                      </strong>
-                    </p>
-                    <p className="text-center mb-2">
-                      Arrive by{" "}
-                      {new Date(ride.arrival_time).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      })}
-                    </p>
-                    <hr className="border-1 my-3 border-theme_medium_1" />
-                    <p>
-                      <span className="font-semibold">Posted by:</span>{" "}
-                      {ride.admin_name}, {ride.admin_email}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Seats Taken:</span>{" "}
-                      {ride.current_riders.length}/{ride.max_capacity}
-                    </p>
-                    {viewType === "posted" && (
-                      <div>
-                        <p>
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold">
-                              {new Date(ride.arrival_time) > new Date()
-                                ? "Current Riders:"
-                                : "Rode with:"}
-                            </span>
-                          </div>
-                        </p>
-                        {Array.isArray(ride.current_riders) &&
-                        ride.current_riders.length > 0 ? (
-                          <div className="flex flex-col gap-2 mt-1">
-                            {ride.current_riders.map((rider, index) => {
-                              const [netid, fullName, email] = rider;
-                              return (
-                                <Pill email={email} key={index}>
-                                  <div className="w-full flex items-center justify-between">
-                                    {`${fullName}`}
-                                  </div>
-                                </Pill>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p>
-                            {new Date(ride.arrival_time) > new Date()
-                              ? "No current riders."
-                              : "None."}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </RideCard>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center">
-              {viewType === "posted"
-                ? "No past posted rides."
-                : "No previously accepted rides."}
-            </p>
-          )}
-        </div>
-      )}
+      <div className="flex flex-col gap-4">
+        <h3 className="text-lg font-medium">
+          {viewType === "posted"
+            ? "Upcoming posted rides"
+            : "Upcoming requested rides"}
+        </h3>
+        {viewType === "posted"
+          ? renderRideCards(myUpcomingPostedRidesData, true)
+          : renderRideCards(myUpcomingRequestedRidesData, true)}
+        <h3 className="text-lg font-medium">
+          {viewType === "posted"
+            ? "Past posted rides"
+            : "Previously accepted rides"}
+        </h3>
+        {/* past rides do not have copy email buttons */}
+        {viewType === "posted"
+          ? renderRideCards(myPastPostedRidesData, false)
+          : renderRideCards(myPastRequestedRidesData, false)}
+      </div>
 
       {isWarningModalOpen && (
         <WarningModal
@@ -909,7 +844,6 @@ export default function MyRides() {
                       label: value,
                     };
                   }).slice(0, 6 - (modalCurrentRiders?.length || 0))}
-                  isClearable
                 ></Dropdown>
               ) : (
                 newCapacity?.label || selectedRide.max_capacity
@@ -928,7 +862,7 @@ export default function MyRides() {
                   className="text-theme_medium_2 hover:text-theme_dark_2"
                   onClick={() => setIsEditingCapacity(true)}
                 >
-                  Edit
+                  Edit capacity
                 </Button>
               )}
             </div>

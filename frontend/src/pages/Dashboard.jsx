@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
@@ -9,12 +9,11 @@ import Button from "../components/Button.jsx";
 import Modal from "../components/Modal.jsx";
 import Dropdown from "../components/Dropdown.jsx";
 import IconButton from "../components/IconButton.jsx";
-import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const [pendingRideId, setPendingRideId] = useState(null);
 
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
@@ -274,7 +273,7 @@ export default function Dashboard() {
 
   const handleRideRequest = async (rideid) => {
     console.log("IN HANDLE RIDE REQUEST");
-
+    setPendingRideId(rideid);
     try {
       const response = await fetch("/api/requestride", {
         method: "POST",
@@ -292,6 +291,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+    setPendingRideId(null);
   };
 
   const resetSearch = async () => {
@@ -309,8 +309,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-    //setOrigin("")
-    //setDest("")
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -329,7 +327,7 @@ export default function Dashboard() {
             to="/myrides"
             className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
           >
-            My Rides
+            My Rideshares
           </Link>
 
           <Button
@@ -440,6 +438,7 @@ export default function Dashboard() {
                       : "bg-theme_dark_1 text-white hover:bg-theme_medium_1"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
+                  buttonDisabled={pendingRideId === ride.id}
                 >
                   <p className="text-xl text-center">
                     <strong>
