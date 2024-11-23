@@ -91,18 +91,18 @@ def api_dashboard():
         'ridereqs': ridereqs_map
     })
 
-@app.route('/api/mypostedrides', methods=['GET'])
-def api_my_posted_rides():
+@app.route('/api/myrides', methods=['GET'])
+def get_my_rides():
     user_info = _cas.authenticate()
     myrides = database.get_users_rides(user_info['netid'])
-    print(myrides)
+    myreqrides = database.get_users_requested_rides(user_info['netid'])
     locations = database.get_all_locations()
 
     # mapping for location
     location_map = {location[0]: location[1] for location in locations}
     
     # mapping for rides array 
-    updated_rides = []
+    my_rides = []
     for ride in myrides:
         updated_ride = {
             'id': ride[0],
@@ -120,25 +120,9 @@ def api_my_posted_rides():
             'current_riders': ride[10],
             'requested_riders':ride[11]
         }
-        updated_rides.append(updated_ride)
-    
-    return jsonify({
-        'user_info': user_info,
-        'myrides': updated_rides,
-    })
+        my_rides.append(updated_ride)
 
-@app.route('/api/myrequestedrides', methods=['GET'])
-def api_my_requested_rides():
-    user_info = _cas.authenticate()
-    myreqrides = database.get_users_requested_rides(user_info['netid'])
-
-    locations = database.get_all_locations()
-    # mapping for location --- want to save this as a global variable later?
-    location_map = {location[0]: location[1] for location in locations}
-    
-    # mapping for rides array 
-    updated_rides = []
-    print(myreqrides)
+    my_req_rides = []
     for ride in myreqrides:
         updated_ride = {
             'id': ride[0],
@@ -156,11 +140,12 @@ def api_my_requested_rides():
             'current_riders': ride[10],
             'request_status': ride[11]
         }
-        updated_rides.append(updated_ride)
-
+        my_req_rides.append(updated_ride)
+    
     return jsonify({
         'user_info': user_info,
-        'myreqrides': updated_rides
+        'myrides': my_rides,
+        'myreqrides': my_req_rides,
     })
 
 @app.route("/api/addride", methods=["POST"])
@@ -282,6 +267,7 @@ def requestride():
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
+    print("REQUESTING RIDE")
     if not rideid:
         return jsonify({'success': False, 'message': 'Ride ID is required'}), 400
 
