@@ -25,7 +25,7 @@ function App() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="w-screen">
+    <div className="flex flex-col">
       {user ? (
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

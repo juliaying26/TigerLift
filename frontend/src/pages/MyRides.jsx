@@ -56,7 +56,7 @@ export default function MyRides() {
 
   const handleShowPopupMessage = (status, message) => {
     setPopupMessageInfo({ status: status, message: message });
-    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
+    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
   };
 
   const fetchMyRidesData = async () => {
@@ -330,6 +330,7 @@ export default function MyRides() {
           new_arrival_time: new_arrival_time_iso,
         }),
       });
+      const responseData = await response.json();
 
       if (
         !dayjs(newArrivalDate).isSame(
@@ -391,6 +392,8 @@ export default function MyRides() {
       }
 
       closeModal();
+      console.log(responseData);
+      handleShowPopupMessage(responseData.success, responseData.message);
       await fetchMyRidesData();
 
       if (!response.ok) {
@@ -462,6 +465,8 @@ export default function MyRides() {
           rideid: rideid,
         }),
       });
+      const responseData = await response.json();
+      handleShowPopupMessage(responseData.success, responseData.message);
       await fetchMyRidesData();
       if (!response.ok) {
         console.error("Request failed:", response.status);

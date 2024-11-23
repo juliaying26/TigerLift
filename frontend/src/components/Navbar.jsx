@@ -10,7 +10,7 @@ export default function Navbar({ user_info }) {
   return (
     <nav className="bg-theme_medium_1">
       <div className="w-full">
-        <div className="relative flex h-16 items-center justify-between px-8">
+        <div className="flex h-16 items-center justify-between px-8">
           {/* Left Side - Dashboard and Logo */}
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div className="flex shrink-0 items-center"></div>
