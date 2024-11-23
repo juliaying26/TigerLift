@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import MyRides from "./pages/MyRides";
 import Navbar from "./components/Navbar";
 import Button from "./components/Button";
+import LoadingIcon from "./components/LoadingIcon";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -22,32 +23,21 @@ function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return <LoadingIcon carColor="bg-theme_medium_2" />;
+  }
 
   return (
     <div className="flex flex-col">
       {user ? (
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route
-            path="/dashboard"
-            element={
-              <div>
-                <Navbar user_info={user} />
-                <Dashboard />
-              </div>
-            }
-          />
-          <Route
-            path="/myrides"
-            element={
-              <div>
-                <Navbar user_info={user} />
-                <MyRides />
-              </div>
-            }
-          />
-        </Routes>
+        <div>
+          <Navbar user_info={user} />
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/myrides" element={<MyRides />} />
+          </Routes>
+        </div>
       ) : (
         <div className="text-center h-screen flex items-center justify-center">
           <div className="bg-white py-20 w-1/2 rounded">

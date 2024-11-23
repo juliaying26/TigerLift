@@ -11,6 +11,7 @@ import Dropdown from "../components/Dropdown.jsx";
 import IconButton from "../components/IconButton.jsx";
 import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
+import LoadingIcon from "../components/LoadingIcon.jsx";
 
 export default function Dashboard() {
   const [pendingRideId, setPendingRideId] = useState(null);
@@ -311,8 +312,6 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-
   return (
     <div className="p-8">
       {popupMessageInfo.message && (
@@ -392,7 +391,7 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <div className="text-center">Loading...</div>
+        <LoadingIcon carColor="bg-theme_medium_2" />
       ) : (
         <div>
           {inSearch && (
