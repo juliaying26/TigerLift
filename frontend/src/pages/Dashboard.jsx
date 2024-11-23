@@ -65,7 +65,7 @@ export default function Dashboard() {
 
   const handleShowPopupMessage = (status, message) => {
     setPopupMessageInfo({ status: status, message: message });
-    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
+    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
   };
 
   const flipCreateRideFields = () => {
@@ -84,39 +84,36 @@ export default function Dashboard() {
     return;
   };
 
-
   const searchRide = async () => {
     console.log(dashboardData);
 
     if (!searchOrigin && !searchDest) {
-      alert("You must provide at least one of 'starting point' or 'destination'.");
+      alert(
+        "You must provide at least one of 'starting point' or 'destination'."
+      );
       return;
     }
-  
+
     try {
+      console.log("test, am in dashboard searchride");
 
-      console.log("test, am in dashboard searchride")
-
-      console.log("startSearchDate: " + startSearchDate)
-      console.log("endSearchDate: " + endSearchDate)
-
+      console.log("startSearchDate: " + startSearchDate);
+      console.log("endSearchDate: " + endSearchDate);
 
       let start_search_time_string = null;
       let arrival_time_string = null;
       let start_search_time_iso = null;
       let arrival_time_iso = null;
 
-
       if (startSearchDate != null) {
         start_search_time_string = `${startSearchDate.format(
           "YYYY-MM-DD"
         )}T${startSearchTime.format("HH:mm:ss")}`;
-      
+
         start_search_time_iso = new Date(
           start_search_time_string
         ).toISOString();
       }
-
 
       if (endSearchDate != null) {
         arrival_time_string = `${endSearchDate.format(
@@ -126,8 +123,8 @@ export default function Dashboard() {
         arrival_time_iso = new Date(arrival_time_string).toISOString();
       }
 
-      console.log("arrive after iso: " + start_search_time_iso)
-      console.log("arrive before iso: " + arrival_time_iso)
+      console.log("arrive after iso: " + start_search_time_iso);
+      console.log("arrive before iso: " + arrival_time_iso);
 
       //console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
       //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
@@ -135,11 +132,13 @@ export default function Dashboard() {
       const params = new URLSearchParams({
         ...(searchOrigin && { origin: searchOrigin.label }),
         ...(searchDest && { destination: searchDest.label }),
-        ...(start_search_time_string && { start_search_time: start_search_time_iso }),
+        ...(start_search_time_string && {
+          start_search_time: start_search_time_iso,
+        }),
         ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
 
-      console.log("params: " + params.toString())
+      console.log("params: " + params.toString());
 
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
         method: "GET",
@@ -147,7 +146,7 @@ export default function Dashboard() {
       });
 
       if (!response.ok) {
-          throw new Error(`Failed to fetch rides: ${response.status}`);
+        throw new Error(`Failed to fetch rides: ${response.status}`);
       }
 
       const data = await response.json();
@@ -155,14 +154,12 @@ export default function Dashboard() {
 
       setRidesData(data.rides);
       setInSearch(true);
-      } catch (error) {
-          console.error("Error during fetch:", error);
-      } //finally {
-          //handleCloseSearchRideModal();
-      //}
-    };
-
-
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    } //finally {
+    //handleCloseSearchRideModal();
+    //}
+  };
 
   const checkCreateRideParams = async () => {
     // const now = dayjs();
@@ -326,8 +323,6 @@ export default function Dashboard() {
           message={popupMessageInfo.message}
         />
       )}
-
-
       <div className="flex flex-col space-y-6">
         <div className="flex justify-between items-center">
           <Link
@@ -345,8 +340,6 @@ export default function Dashboard() {
           </Button>
         </div>
 
-
-
         <div className="flex items-center justify-between space-x-3">
           <Dropdown
             inputValue={searchOrigin}
@@ -356,11 +349,7 @@ export default function Dashboard() {
             placeholder="Select starting point"
           />
 
-          <IconButton
-            type="flip"
-            onClick={flipSearchFields}
-            disabled={false}
-          />
+          <IconButton type="flip" onClick={flipSearchFields} disabled={false} />
 
           <Dropdown
             inputValue={searchDest}
@@ -370,7 +359,10 @@ export default function Dashboard() {
             placeholder="Select destination"
           />
 
-          <div className="flex flex-col items-center" style={{ transform: 'translateY(-12px)' }}>
+          <div
+            className="flex flex-col items-center"
+            style={{ transform: "translateY(-12px)" }}
+          >
             <label>Arrive After:</label>
             <DateTimePicker
               date={startSearchDate}
@@ -380,7 +372,10 @@ export default function Dashboard() {
             />
           </div>
 
-          <div className="flex flex-col items-center" style={{ transform: 'translateY(-12px)' }}>
+          <div
+            className="flex flex-col items-center"
+            style={{ transform: "translateY(-12px)" }}
+          >
             <label>Arrive Before:</label>
             <DateTimePicker
               date={endSearchDate}
@@ -397,7 +392,6 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
-
 
       {loading ? (
         <div className="text-center">Loading...</div>
@@ -544,7 +538,6 @@ export default function Dashboard() {
           </div>
         </Modal>
       )}
-
     </div>
   );
 }
