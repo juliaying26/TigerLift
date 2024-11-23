@@ -18,7 +18,7 @@ print("flask env " + FLASK_ENV)
 print("frontend url " + FRONTEND_URL)
 
 # FOR TESTING -- change to False if you don't want emails sent
-EMAILS_ON = False
+app.EMAILS_ON = os.environ.get('EMAILS_ON')
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -315,7 +315,7 @@ def batchupdateriderequest():
             # if status is True (meaning new ride request was created)
             if status:
                 # send email to accepted rider
-                if EMAILS_ON:
+                if app.EMAILS_ON:
                     send_email_notification(requester_id, mail, "Your ride request was accepted", 
                         "Your ride request was recently accepted. Please see details at tigerlift.onrender.com")
 
@@ -323,7 +323,7 @@ def batchupdateriderequest():
             requester_id = rider.get('requester_id')
             database.reject_ride_request(requester_id, rideid)
 
-            if EMAILS_ON:
+            if app.EMAILS_ON:
                     send_email_notification(requester_id, mail, "Your ride request was rejected", 
                         "Your ride request was recently rejected. Please see details at tigerlift.onrender.com")
 
