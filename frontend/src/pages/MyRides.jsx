@@ -13,6 +13,7 @@ import Input from "../components/Input";
 import TextArea from "../components/TextArea";
 import CopyEmailButton from "../components/CopyEmailButton";
 import PopUpMessage from "../components/PopUpMessage";
+import LoadingIcon from "../components/LoadingIcon";
 
 export default function MyRides() {
   // myRidesData = array of dictionaries
@@ -620,11 +621,15 @@ export default function MyRides() {
       </div>
     ) : (
       <p className="text-center">
-        {loading
-          ? "Loading..."
-          : viewType === "posted"
-          ? "No upcoming posted rides."
-          : "No upcoming requested rides."}
+        {loading ? (
+          <LoadingIcon
+            carColor={isUpcoming ? "bg-theme_medium_2" : "bg-theme_medium_1"}
+          />
+        ) : viewType === "posted" ? (
+          "No upcoming posted rides."
+        ) : (
+          "No upcoming requested rides."
+        )}
       </p>
     );
   };
