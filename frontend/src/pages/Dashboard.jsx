@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
@@ -9,12 +9,12 @@ import Button from "../components/Button.jsx";
 import Modal from "../components/Modal.jsx";
 import Dropdown from "../components/Dropdown.jsx";
 import IconButton from "../components/IconButton.jsx";
-import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
+import LoadingIcon from "../components/LoadingIcon.jsx";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const [pendingRideId, setPendingRideId] = useState(null);
 
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
@@ -40,6 +40,8 @@ export default function Dashboard() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
 
+  const [searchOrigin, setSearchOrigin] = useState("");
+  const [searchDest, setSearchDest] = useState("");
   const [startSearchDate, setStartSearchDate] = useState();
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
@@ -63,10 +65,10 @@ export default function Dashboard() {
 
   const handleShowPopupMessage = (status, message) => {
     setPopupMessageInfo({ status: status, message: message });
-    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 3000);
+    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
   };
 
-  const flipSearchFields = () => {
+  const flipCreateRideFields = () => {
     let prevDest = dest;
     let prevOrigin = origin;
     setOrigin(prevDest);
@@ -74,38 +76,44 @@ export default function Dashboard() {
     return;
   };
 
+  const flipSearchFields = () => {
+    let prevDest = searchDest;
+    let prevOrigin = searchOrigin;
+    setSearchOrigin(prevDest);
+    setSearchDest(prevOrigin);
+    return;
+  };
+
   const searchRide = async () => {
     console.log(dashboardData);
 
-    if (!origin && !dest) {
-      alert("You must provide at least one of 'starting point' or 'destination'.");
+    if (!searchOrigin && !searchDest) {
+      alert(
+        "You must provide at least one of 'starting point' or 'destination'."
+      );
       return;
     }
-  
+
     try {
+      console.log("test, am in dashboard searchride");
 
-      console.log("test, am in dashboard searchride")
-
-      console.log("startSearchDate: " + startSearchDate)
-      console.log("endSearchDate: " + endSearchDate)
-
+      console.log("startSearchDate: " + startSearchDate);
+      console.log("endSearchDate: " + endSearchDate);
 
       let start_search_time_string = null;
       let arrival_time_string = null;
       let start_search_time_iso = null;
       let arrival_time_iso = null;
 
-
       if (startSearchDate != null) {
         start_search_time_string = `${startSearchDate.format(
           "YYYY-MM-DD"
         )}T${startSearchTime.format("HH:mm:ss")}`;
-      
+
         start_search_time_iso = new Date(
           start_search_time_string
         ).toISOString();
       }
-
 
       if (endSearchDate != null) {
         arrival_time_string = `${endSearchDate.format(
@@ -115,20 +123,22 @@ export default function Dashboard() {
         arrival_time_iso = new Date(arrival_time_string).toISOString();
       }
 
-      console.log("arrive after iso: " + start_search_time_iso)
-      console.log("arrive before iso: " + arrival_time_iso)
+      console.log("arrive after iso: " + start_search_time_iso);
+      console.log("arrive before iso: " + arrival_time_iso);
 
       //console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
       //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 
       const params = new URLSearchParams({
-        ...(origin && { origin: origin.label }),
-        ...(dest && { destination: dest.label }),
-        ...(start_search_time_string && { start_search_time: start_search_time_iso }),
+        ...(searchOrigin && { origin: searchOrigin.label }),
+        ...(searchDest && { destination: searchDest.label }),
+        ...(start_search_time_string && {
+          start_search_time: start_search_time_iso,
+        }),
         ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
 
-      console.log("params: " + params.toString())
+      console.log("params: " + params.toString());
 
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
         method: "GET",
@@ -136,7 +146,7 @@ export default function Dashboard() {
       });
 
       if (!response.ok) {
-          throw new Error(`Failed to fetch rides: ${response.status}`);
+        throw new Error(`Failed to fetch rides: ${response.status}`);
       }
 
       const data = await response.json();
@@ -144,14 +154,12 @@ export default function Dashboard() {
 
       setRidesData(data.rides);
       setInSearch(true);
-      } catch (error) {
-          console.error("Error during fetch:", error);
-      } //finally {
-          //handleCloseSearchRideModal();
-      //}
-    };
-
-
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    } //finally {
+    //handleCloseSearchRideModal();
+    //}
+  };
 
   const checkCreateRideParams = async () => {
     // const now = dayjs();
@@ -266,7 +274,7 @@ export default function Dashboard() {
 
   const handleRideRequest = async (rideid) => {
     console.log("IN HANDLE RIDE REQUEST");
-
+    setPendingRideId(rideid);
     try {
       const response = await fetch("/api/requestride", {
         method: "POST",
@@ -284,6 +292,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+    setPendingRideId(null);
   };
 
   const resetSearch = async () => {
@@ -291,8 +300,8 @@ export default function Dashboard() {
     setInSearch(false);
     await fetchDashboardData();
     setLoading(false);
-    setOrigin("");
-    setDest("");
+    setSearchOrigin("");
+    setSearchDest("");
     setStartSearchDate(null);
     setStartSearchTime(null);
     setEndSearchDate(null);
@@ -301,11 +310,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-    //setOrigin("")
-    //setDest("")
   }, []);
-
-  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="p-8">
@@ -315,41 +320,46 @@ export default function Dashboard() {
           message={popupMessageInfo.message}
         />
       )}
-      <div className="flex justify-between items-center">
-        <Link
-          to="/myrides"
-          className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
-        >
-          My Rides
-        </Link>
+      <div className="flex flex-col space-y-6">
+        <div className="flex justify-between items-center">
+          <Link
+            to="/myrides"
+            className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
+          >
+            My Rideshares
+          </Link>
 
+          <Button
+            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2 rounded-md"
+            onClick={() => handleOpenRideModal()}
+          >
+            Create a Rideshare
+          </Button>
+        </div>
 
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="flex items-center space-x-4">
-            <Dropdown
-              inputValue={origin}
-              setInputValue={setOrigin}
-              options={locations}
-              isClearable
-              placeholder="Select starting point"
-            />
-    
-            <IconButton
-              type="flip"
-              onClick={flipSearchFields}
-              disabled={false}
-            />
-            
-            <Dropdown
-              inputValue={dest}
-              setInputValue={setDest}
-              options={locations}
-              isClearable
-              placeholder="Select destination"
-            />
-          </div>
-        <div className="flex items-center space-x-10">
-          <div className="flex flex-col items-center">
+        <div className="flex items-center justify-between space-x-3">
+          <Dropdown
+            inputValue={searchOrigin}
+            setInputValue={setSearchOrigin}
+            options={locations}
+            isClearable
+            placeholder="Select starting point"
+          />
+
+          <IconButton type="flip" onClick={flipSearchFields} disabled={false} />
+
+          <Dropdown
+            inputValue={searchDest}
+            setInputValue={setSearchDest}
+            options={locations}
+            isClearable
+            placeholder="Select destination"
+          />
+
+          <div
+            className="flex flex-col items-center"
+            style={{ transform: "translateY(-12px)" }}
+          >
             <label>Arrive After:</label>
             <DateTimePicker
               date={startSearchDate}
@@ -358,7 +368,11 @@ export default function Dashboard() {
               setTime={setStartSearchTime}
             />
           </div>
-          <div className="flex flex-col items-center">
+
+          <div
+            className="flex flex-col items-center"
+            style={{ transform: "translateY(-12px)" }}
+          >
             <label>Arrive Before:</label>
             <DateTimePicker
               date={endSearchDate}
@@ -367,30 +381,17 @@ export default function Dashboard() {
               setTime={setEndSearchTime}
             />
           </div>
-        </div>
-      </div>
-
-
-        <div className="flex flex-col gap-4">
           <Button
             className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
             onClick={searchRide}
           >
             Search
           </Button>
-          <Button
-            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2"
-            onClick={() => handleOpenRideModal()}
-          >
-            Create a Rideshare
-          </Button>
         </div>
       </div>
 
-      <br />
-
       {loading ? (
-        <div className="text-center">Loading...</div>
+        <LoadingIcon carColor="bg-theme_medium_2" />
       ) : (
         <div>
           {inSearch && (
@@ -399,7 +400,7 @@ export default function Dashboard() {
                 onClick={resetSearch}
                 className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
               >
-                Back to All Rides
+                Clear Search Filters
               </Button>
               <br />
               <br />
@@ -436,6 +437,7 @@ export default function Dashboard() {
                       : "bg-theme_dark_1 text-white hover:bg-theme_medium_1"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
+                  buttonDisabled={pendingRideId === ride.id}
                 >
                   <p className="text-xl text-center">
                     <strong>
@@ -501,7 +503,7 @@ export default function Dashboard() {
                   ></Dropdown>
                   <IconButton
                     type="flip"
-                    onClick={flipSearchFields}
+                    onClick={flipCreateRideFields}
                     disabled={false}
                   ></IconButton>
                   <Dropdown
@@ -534,64 +536,6 @@ export default function Dashboard() {
           </div>
         </Modal>
       )}
-
-
-
-      {/*{searchRideModal && (
-        <Modal
-          isOpen={searchRideModal}
-          onClose={handleCloseSearchRideModal}
-          title={"Search"}
-        >
-          <div>
-            <Dropdown
-              inputValue={origin}
-              setInputValue={setOrigin}
-              options={locations}
-              isClearable
-              placeholder="Select starting point"
-            ></Dropdown>
-
-            <IconButton
-              type="flip"
-              onClick={flipSearchFields}
-              disabled={false}
-            ></IconButton>
-
-            <Dropdown
-              inputValue={dest}
-              setInputValue={setDest}
-              options={locations}
-              isClearable
-              placeholder="Select destination"
-            ></Dropdown>
-            Arrive After:
-            <DateTimePicker
-              date={startSearchDate}
-              setDate={setStartSearchDate}
-              time={startSearchTime}
-              setTime={setStartSearchTime}
-            />
-
-            Arrive Before:
-            <DateTimePicker
-              date={endSearchDate}
-              setDate={setEndSearchDate}
-              time={endSearchTime}
-              setTime={setEndSearchTime}
-            />
-            <br />
-            <Button
-              className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-              onClick={searchRide}
-            >
-              Search
-            </Button>
-          </div>
-        </Modal>
-      )}
-      */}
-
     </div>
   );
 }

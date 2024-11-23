@@ -13,13 +13,16 @@ export default function Button({
   } else if (status === "accepted") {
     buttonStyling = "px-3 rounded-full bg-theme_light_2 text-theme_dark_2";
   }
+
+  const disabledStyling = "bg-zinc-100 text-zinc-300 cursor-wait";
+
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
-      className={`py-1 font-medium ${className} ${
+      className={`py-1 font-medium ${
         buttonStyling ? buttonStyling : "px-2.5 rounded-md"
-      }`}
+      } ${disabled ? disabledStyling : className}`}
+      disabled={disabled}
     >
       {children}
     </button>

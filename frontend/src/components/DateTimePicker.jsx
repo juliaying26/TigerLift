@@ -29,7 +29,7 @@ export default function MyDateTimePicker({
       <DatePicker
         onChange={handleDateChange}
         placeholder="Select date"
-        style={{ marginRight: "8px" }}
+        style={{ marginRight: "8px", height: "38px" }}
         value={date}
         disabledDate={disabledDate}
         allowClear={allowClear}
@@ -38,6 +38,7 @@ export default function MyDateTimePicker({
         format="h:mm a"
         onChange={handleTimeChange}
         placeholder="Select time"
+        style={{ height: "38px" }}
         value={time}
         allowClear={allowClear}
       />
