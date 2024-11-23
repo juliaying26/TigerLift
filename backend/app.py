@@ -275,7 +275,7 @@ def requestride():
         # send
         try: 
             admin_info = database.rideid_to_admin_id_email(rideid)
-            subject = str(user_info['displayname']) + ' requested to join your Rideshare! 🚗'
+            subject = '🚗' + str(user_info['displayname']) + ' requested to join your Rideshare!'
             send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, "Please see it on tigerlift.onrender.com")
         except:
             return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
@@ -299,7 +299,7 @@ def batchupdateriderequest():
             # if status is True (meaning new ride request was created)
             if status:
                 # send email to accepted rider
-                send_email_notification(requester_id, mail, "Your ride request was accepted", 
+                send_email_notification(requester_id, mail, "🚗 Your ride request was accepted!", 
                     "Your ride request was recently accepted. Please see details at tigerlift.onrender.com")
 
         for rider in data.get('rejecting_riders', []):
