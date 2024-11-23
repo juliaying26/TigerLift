@@ -62,7 +62,7 @@ function App() {
             </Button> */}
             <a
               href="/api/login"
-              className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
+              className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded hover:bg-theme_medium_1 hover:text-white"
             >
               Login with CAS
             </a>
