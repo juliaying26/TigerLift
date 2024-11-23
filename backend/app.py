@@ -14,11 +14,9 @@ _cas = CASClient()
 
 FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
-print("flask env " + FLASK_ENV)
-print("frontend url " + FRONTEND_URL)
 
 # FOR TESTING -- change to False if you don't want emails sent
-app.EMAILS_ON = os.environ.get('EMAILS_ON')
+app.EMAILS_ON = os.environ.get('EMAILS_ON', "False").lower() == "true"
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -277,7 +275,7 @@ def requestride():
         # send
         try: 
             admin_info = database.rideid_to_admin_id_email(rideid)
-            subject = 'You have a new riderequest from ' + str(user_info['displayname']) + '!'
+            subject = str(user_info['displayname']) + ' requested to join your Rideshare! 🚗'
             send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, "Please see it on tigerlift.onrender.com")
         except:
             return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
@@ -301,17 +299,15 @@ def batchupdateriderequest():
             # if status is True (meaning new ride request was created)
             if status:
                 # send email to accepted rider
-                if app.EMAILS_ON:
-                    send_email_notification(requester_id, mail, "Your ride request was accepted", 
-                        "Your ride request was recently accepted. Please see details at tigerlift.onrender.com")
+                send_email_notification(requester_id, mail, "Your ride request was accepted", 
+                    "Your ride request was recently accepted. Please see details at tigerlift.onrender.com")
 
         for rider in data.get('rejecting_riders', []):
             requester_id = rider.get('requester_id')
             database.reject_ride_request(requester_id, rideid)
 
-            if app.EMAILS_ON:
-                    send_email_notification(requester_id, mail, "Your ride request was rejected", 
-                        "Your ride request was recently rejected. Please see details at tigerlift.onrender.com")
+        # send_email_notification(requester_id, mail, "Your ride request was rejected", 
+        #     "Your ride request was recently rejected. Please see details at tigerlift.onrender.com")
 
         for rider in data.get('pending_riders', []):
             requester_id = rider.get('requester_id')
@@ -331,10 +327,14 @@ def batchupdateriderequest():
     
 @app.route("/api/sendemailnotifs", methods=["POST"])
 def send_email_notification():
-    print("EMAIL NOTIF!!")
     """
     Sends email notifications
     """
+    if not app.EMAILS_ON:
+        return jsonify({'success': True, 'message': 'EMAIL_ON set to False!'})
+
+    print("EMAIL NOTIF!!")
+
     try:
         data = request.get_json()        
         netid = data.get('netid')
@@ -378,6 +378,9 @@ def send_email_notification(netid, mail, subject, message):
     """
     Sends email notifications
     """
+    if not app.EMAILS_ON:
+        return jsonify({'success': True, 'message': 'EMAILS_ON set to False'})
+
     try:
         if not mail:
             mail = netid + "@princeton.edu"
