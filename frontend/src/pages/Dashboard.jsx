@@ -33,7 +33,6 @@ export default function Dashboard() {
     message: "",
   });
 
-  const [createRideNotif, setCreateRideNotif] = useState([false, ""]);
   const [capacity, setCapacity] = useState("");
   const [origin, setOrigin] = useState("");
   const [dest, setDest] = useState("");
@@ -174,11 +173,11 @@ export default function Dashboard() {
       date === "" ||
       time === ""
     ) {
-      setCreateRideNotif([true, "Please enter all fields!"]);
-      // } else if (time.isBefore(now, "minute")) {
-      //   setCreateRideNotif([true, "Cannot enter a time in the past!"]);
+      alert(
+        "You must provide all fields."
+      );
+      return;
     } else {
-      setCreateRideNotif([false, ""]);
       createRide();
     }
   };
@@ -531,8 +530,6 @@ export default function Dashboard() {
             >
               Submit
             </Button>
-
-            {createRideNotif[0] && <p> {createRideNotif[1]} </p>}
           </div>
         </Modal>
       )}
