@@ -1,4 +1,4 @@
-import { useState, useEffect, useTransition } from "react";
+import { useRef, useState, useEffect, useTransition } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
@@ -12,8 +12,12 @@ import IconButton from "../components/IconButton.jsx";
 import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
+import Autocomplete from "react-google-autocomplete";
 
 export default function Dashboard() {
+
+  const google_api_key = "AIzaSyC3RVqi0C4zF1Wfv_WeA8rAHY_o36jO7v8";
+
   const [pendingRideId, setPendingRideId] = useState(null);
 
   const [dashboardData, setDashboardData] = useState({
@@ -34,8 +38,10 @@ export default function Dashboard() {
   });
 
   const [capacity, setCapacity] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [dest, setDest] = useState("");
+  const originRef = useRef(null);
+  const destinationRef = useRef(null);
+  const [origin, setOrigin] = useState(null);
+  const [dest, setDest] = useState(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
 
@@ -45,6 +51,12 @@ export default function Dashboard() {
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
+
+  const autocompleteOptions = {
+    fields: ["formatted_address", "geometry", "name", "place_id"],
+    types: ["establishment", "geocode"]  // This will show both businesses and addresses
+}
+
 
   const [inSearch, setInSearch] = useState(false);
 
@@ -68,11 +80,19 @@ export default function Dashboard() {
   };
 
   const flipCreateRideFields = () => {
-    let prevDest = dest;
-    let prevOrigin = origin;
-    setOrigin(prevDest);
-    setDest(prevOrigin);
-    return;
+    
+    const tempOrigin = origin;
+    
+    setOrigin(dest);
+    setDest(tempOrigin);
+    
+    if (originRef.current && destinationRef.current) {
+      const tempOriginValue = originRef.current.value;
+      originRef.current.value = destinationRef.current.value;
+      destinationRef.current.value = tempOriginValue;
+    }
+    
+    console.log("Locations flipped!");
   };
 
   const flipSearchFields = () => {
@@ -161,10 +181,9 @@ export default function Dashboard() {
   };
 
   const checkCreateRideParams = async () => {
-    // const now = dayjs();
 
-    // console.log("current time = ", now);
-    // console.log("time = ", time);
+    console.log(origin.formatted_address)
+    console.log(dest.formatted_address)
 
     if (
       capacity === "" ||
@@ -183,6 +202,7 @@ export default function Dashboard() {
   };
 
   const createRide = async () => {
+    
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -195,8 +215,8 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           capacity: capacity["label"],
-          origin: origin["label"],
-          destination: dest["label"],
+          origin: origin.name,
+          destination: dest.name,
           arrival_time: arrival_time_iso,
         }),
       });
@@ -491,27 +511,40 @@ export default function Dashboard() {
                 ></Dropdown>
               </div>
               <div>
+                
                 <p className="font-medium">Origin & Destination</p>
                 <div className="flex items-center gap-2">
-                  <Dropdown
-                    inputValue={origin}
-                    setInputValue={setOrigin}
-                    options={locations}
-                    isClearable
-                    placeholder="Select an origin"
-                  ></Dropdown>
+
+                    <Autocomplete
+                        apiKey={google_api_key}
+                        onPlaceSelected={(place) => {
+                          console.log("Selected Place Details:", place);
+                          console.log("Formatted Address:", place.formatted_address);
+                          console.log("Coordinates:", place.geometry.location.lat(), place.geometry.location.lng());
+                          setOrigin(place); // Store selected place details in state
+                        }}
+                        options={autocompleteOptions}
+                        ref={originRef}
+                    />
+
                   <IconButton
                     type="flip"
                     onClick={flipCreateRideFields}
                     disabled={false}
                   ></IconButton>
-                  <Dropdown
-                    inputValue={dest}
-                    setInputValue={setDest}
-                    options={locations}
-                    isClearable
-                    placeholder="Select a destination"
-                  ></Dropdown>
+
+                  <Autocomplete
+                        apiKey={google_api_key}
+                        onPlaceSelected={(place) => {
+                          console.log("Selected Place Details:", place);
+                          console.log("Formatted Address:", place.formatted_address);
+                          console.log("Coordinates:", place.geometry.location.lat(), place.geometry.location.lng());
+                          setDest(place); // Store selected place details in state
+                        }}
+                        options={autocompleteOptions}
+                        ref={destinationRef}
+                  />
+
                 </div>
               </div>
               <div>
