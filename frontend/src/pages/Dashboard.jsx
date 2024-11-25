@@ -16,7 +16,7 @@ import Autocomplete from "react-google-autocomplete";
 
 export default function Dashboard() {
 
-  const google_api_key = "AIzaSyC3RVqi0C4zF1Wfv_WeA8rAHY_o36jO7v8";
+  const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
 
   const [pendingRideId, setPendingRideId] = useState(null);
 
