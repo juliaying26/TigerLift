@@ -4,7 +4,8 @@ Julia Ying, Grace Kim, Ritika Bhatnagar, Aasha Jain
 
 ### Setting up
 
-- Create .env with the `DATABASE_URL="EXTERNAL DATABASE URL FROM RENDER"`
+- Create `.env` with our env variables (database, secret key, email info)
+- Create `.env` in the `frontend` folder with the Google API key
 - `cd backend`, activate your COS333 virtual environment, and `pip install -r requirements.txt`
 - `cd frontend`, and run `npm install`.
 - To run the application, make two terminals:
