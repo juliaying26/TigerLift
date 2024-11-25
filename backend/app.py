@@ -151,11 +151,25 @@ def addride():
     user_info = _cas.authenticate()
     data = request.get_json()
     capacity = data.get('capacity')
-    origin = database.location_to_id(data.get('origin'))
-    dest = database.location_to_id(data.get('destination'))
+
+    originID = database.location_to_id(data.get('origin'))
+    if originID == -1:
+        print("HERE")
+        database.create_location(data.get('origin'))
+        originID = database.location_to_id(data.get('origin'))
+    
+    destID = database.location_to_id(data.get('destination'))
+    if destID == -1:
+        database.create_location(data.get('destination'))
+        destID = database.location_to_id(data.get('destination'))
+
+    print(originID)
+    print(destID)
+
     arrival_time = data.get('arrival_time')
+
     try:
-        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, dest, arrival_time)
+        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, originID, destID, arrival_time)
         return jsonify({'success': True, 'message': 'Ride successfully created!'})
     except:
         return jsonify({'success': False, 'message': 'Failed to create ride.'}), 400
