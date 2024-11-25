@@ -356,32 +356,59 @@ def create_notification(netid, message, type):
         print("Connection not established.")
 
 
-def create_location(id, name):
+# def create_location(id, name):
+#     """
+#     Adds a location in the Locations database
+#     """
+
+#     sql_command = f"""
+#         INSERT INTO PredefinedLocations (id, name) VALUES (%s, %s);        
+#     """
+
+#     values = (id, name)
+    
+#     conn = connect()
+    
+#     # if it was successful connection, execute SQL commands to database & commit
+#     if conn:
+#         try:
+#             with conn.cursor() as cursor:
+#                 cursor.execute(sql_command, values)
+#                 conn.commit()
+#                 print("Location created successfully!")
+#         except Exception as e:
+#             print(f"Error creating location: {e}")
+#         finally:
+#             conn.close()
+#     else:
+#         print("Connection not established.")
+
+def create_location(name):
     """
     Adds a location in the Locations database
     """
-
-    sql_command = f"""
-        INSERT INTO PredefinedLocations (id, name) VALUES (%s, %s);        
+    sql_command = """
+    INSERT INTO PredefinedLocations (name) VALUES (%s) RETURNING id;
     """
-
-    values = (id, name)
-    
+    values = (name,)
     conn = connect()
-    
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
             with conn.cursor() as cursor:
                 cursor.execute(sql_command, values)
+                new_id = cursor.fetchone()[0]  # Retrieve the auto-generated ID
                 conn.commit()
-                print("Location created successfully!")
+                print(f"Location created successfully with ID: {new_id}!")
+                return new_id
         except Exception as e:
             print(f"Error creating location: {e}")
+            return None
         finally:
             conn.close()
     else:
         print("Connection not established.")
+        return None
 
 def delete_all_locations():
     sql_command = "DELETE FROM PredefinedLocations"
@@ -827,7 +854,7 @@ def remove_rider(requester_id, full_name, mail, ride_id):
 
 def location_to_id(location):    
     """
-    given location name, returns ID from PredefinedLocations
+    given location name, returns ID from PredefinedLocations.
     """
     sql_command = "SELECT id FROM PredefinedLocations WHERE name = %s"
     values = (location,)
@@ -845,6 +872,7 @@ def location_to_id(location):
                     print("id retrieved successfully:", id_result)
                 else:
                     print("No matching location found.")
+                    return -1
         except Exception as e:
             print(f"Error retrieving requests: {e}")
         finally:
