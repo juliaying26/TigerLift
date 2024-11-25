@@ -53,7 +53,7 @@ export default function MyDateTimePicker({
         allowClear={allowClear}
       />
       <TimePicker
-        format="h:mm a"
+        format="h:mm A"
         onChange={handleTimeChange}
         placeholder="Select time"
         style={{ height: "38px" }}
