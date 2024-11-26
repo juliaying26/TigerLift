@@ -499,6 +499,7 @@ export default function Dashboard() {
           title={"Create a Rideshare"}
         >
           <div className="flex flex-col gap-4">
+            
             <div className="flex flex-col gap-3">
               <div>
                 <p className="font-medium">Capacity </p>
@@ -510,13 +511,15 @@ export default function Dashboard() {
                   placeholder="Select capacity"
                 ></Dropdown>
               </div>
-              <div>
-                
+
+              <div className="flex flex-col gap-3">
                 <p className="font-medium">Origin & Destination</p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center space-x-2 w-full">
 
                     <Autocomplete
+                        className="flex-grow max-w-[45%]"
                         apiKey={google_api_key}
+                        placeholder="Enter starting point"
                         onPlaceSelected={(place) => {
                           console.log("Selected Place Details:", place);
                           console.log("Formatted Address:", place.formatted_address);
@@ -528,13 +531,17 @@ export default function Dashboard() {
                     />
 
                   <IconButton
+                    className="flex-none"
                     type="flip"
                     onClick={flipCreateRideFields}
                     disabled={false}
                   ></IconButton>
 
                   <Autocomplete
+                        className="flex-grow max-w-[44%]"
+                        wrapperClassName="w-full"
                         apiKey={google_api_key}
+                        placeholder="Enter destination"
                         onPlaceSelected={(place) => {
                           console.log("Selected Place Details:", place);
                           console.log("Formatted Address:", place.formatted_address);
@@ -544,9 +551,9 @@ export default function Dashboard() {
                         options={autocompleteOptions}
                         ref={destinationRef}
                   />
-
                 </div>
               </div>
+              
               <div>
                 <p className="font-medium">Arrival Time</p>
                 <DateTimePicker
@@ -557,12 +564,14 @@ export default function Dashboard() {
                 />
               </div>
             </div>
+
             <Button
               className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:text-theme_medium_1"
               onClick={checkCreateRideParams}
             >
               Submit
             </Button>
+
           </div>
         </Modal>
       )}
