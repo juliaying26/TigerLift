@@ -492,7 +492,6 @@ export default function Dashboard() {
           title={"Create a Rideshare"}
         >
           <div className="flex flex-col gap-4">
-            
             <div className="flex flex-col gap-3">
               <div>
                 <p className="font-medium">Capacity </p>
@@ -507,20 +506,26 @@ export default function Dashboard() {
               <div className="flex flex-col gap-3">
                 <p className="font-medium">Origin & Destination</p>
                 <div className="flex items-center space-x-2 w-full">
-
-                    <Autocomplete
-                        className="flex-grow max-w-[45%]"
-                        apiKey={google_api_key}
-                        placeholder="Enter starting point"
-                        onPlaceSelected={(place) => {
-                          console.log("Selected Place Details:", place);
-                          console.log("Formatted Address:", place.formatted_address);
-                          console.log("Coordinates:", place.geometry.location.lat(), place.geometry.location.lng());
-                          setOrigin(place); // Store selected place details in state
-                        }}
-                        options={autocompleteOptions}
-                        ref={originRef}
-                    />
+                  <Autocomplete
+                    className="flex-grow max-w-[45%]"
+                    apiKey={google_api_key}
+                    placeholder="Enter starting point"
+                    onPlaceSelected={(place) => {
+                      console.log("Selected Place Details:", place);
+                      console.log(
+                        "Formatted Address:",
+                        place.formatted_address
+                      );
+                      console.log(
+                        "Coordinates:",
+                        place.geometry.location.lat(),
+                        place.geometry.location.lng()
+                      );
+                      setOrigin(place); // Store selected place details in state
+                    }}
+                    options={autocompleteOptions}
+                    ref={originRef}
+                  />
                   <IconButton
                     className="flex-none"
                     type="flip"
@@ -529,22 +534,29 @@ export default function Dashboard() {
                   ></IconButton>
 
                   <Autocomplete
-                        className="flex-grow max-w-[44%]"
-                        wrapperClassName="w-full"
-                        apiKey={google_api_key}
-                        placeholder="Enter destination"
-                        onPlaceSelected={(place) => {
-                          console.log("Selected Place Details:", place);
-                          console.log("Formatted Address:", place.formatted_address);
-                          console.log("Coordinates:", place.geometry.location.lat(), place.geometry.location.lng());
-                          setDest(place); // Store selected place details in state
-                        }}
-                        options={autocompleteOptions}
-                        ref={destinationRef}
-                        />
+                    className="flex-grow max-w-[44%]"
+                    wrapperClassName="w-full"
+                    apiKey={google_api_key}
+                    placeholder="Enter destination"
+                    onPlaceSelected={(place) => {
+                      console.log("Selected Place Details:", place);
+                      console.log(
+                        "Formatted Address:",
+                        place.formatted_address
+                      );
+                      console.log(
+                        "Coordinates:",
+                        place.geometry.location.lat(),
+                        place.geometry.location.lng()
+                      );
+                      setDest(place); // Store selected place details in state
+                    }}
+                    options={autocompleteOptions}
+                    ref={destinationRef}
+                  />
                 </div>
               </div>
-              
+
               <div>
                 <p className="font-medium">Arrival Time</p>
                 <DateTimePicker
@@ -562,7 +574,6 @@ export default function Dashboard() {
             >
               Submit
             </Button>
-
           </div>
         </Modal>
       )}
