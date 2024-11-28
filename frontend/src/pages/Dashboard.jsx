@@ -15,7 +15,6 @@ import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
 
 export default function Dashboard() {
-
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
 
   const [pendingRideId, setPendingRideId] = useState(null);
@@ -54,9 +53,8 @@ export default function Dashboard() {
 
   const autocompleteOptions = {
     fields: ["formatted_address", "geometry", "name", "place_id"],
-    types: ["establishment", "geocode"]  // This will show both businesses and addresses
-}
-
+    types: ["establishment", "geocode"], // This will show both businesses and addresses
+  };
 
   const [inSearch, setInSearch] = useState(false);
 
@@ -80,18 +78,17 @@ export default function Dashboard() {
   };
 
   const flipCreateRideFields = () => {
-    
     const tempOrigin = origin;
-    
+
     setOrigin(dest);
     setDest(tempOrigin);
-    
+
     if (originRef.current && destinationRef.current) {
       const tempOriginValue = originRef.current.value;
       originRef.current.value = destinationRef.current.value;
       destinationRef.current.value = tempOriginValue;
     }
-    
+
     console.log("Locations flipped!");
   };
 
@@ -181,9 +178,8 @@ export default function Dashboard() {
   };
 
   const checkCreateRideParams = async () => {
-
-    console.log(origin.formatted_address)
-    console.log(dest.formatted_address)
+    console.log(origin.formatted_address);
+    console.log(dest.formatted_address);
 
     if (
       capacity === "" ||
@@ -192,9 +188,7 @@ export default function Dashboard() {
       date === "" ||
       time === ""
     ) {
-      alert(
-        "You must provide all fields."
-      );
+      alert("You must provide all fields.");
       return;
     } else {
       createRide();
@@ -202,7 +196,6 @@ export default function Dashboard() {
   };
 
   const createRide = async () => {
-    
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -343,7 +336,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center">
           <Link
             to="/myrides"
-            className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
+            className="hidden md:inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
           >
             My Rideshares
           </Link>
@@ -511,7 +504,6 @@ export default function Dashboard() {
                   placeholder="Select capacity"
                 ></Dropdown>
               </div>
-
               <div className="flex flex-col gap-3">
                 <p className="font-medium">Origin & Destination</p>
                 <div className="flex items-center space-x-2 w-full">
@@ -529,7 +521,6 @@ export default function Dashboard() {
                         options={autocompleteOptions}
                         ref={originRef}
                     />
-
                   <IconButton
                     className="flex-none"
                     type="flip"
@@ -550,7 +541,7 @@ export default function Dashboard() {
                         }}
                         options={autocompleteOptions}
                         ref={destinationRef}
-                  />
+                        />
                 </div>
               </div>
               

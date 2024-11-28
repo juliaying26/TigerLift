@@ -14,7 +14,7 @@ export default function Button({
     buttonStyling = "px-3 rounded-full bg-theme_light_2 text-theme_dark_2";
   }
 
-  const disabledStyling = "bg-zinc-100 text-zinc-300 cursor-wait";
+  const disabledStyling = "bg-zinc-100 text-zinc-400 cursor-wait";
 
   return (
     <button
