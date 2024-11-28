@@ -1,4 +1,4 @@
-import { useState, useEffect, useTransition } from "react";
+import { useRef, useState, useEffect, useTransition } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
@@ -12,8 +12,11 @@ import IconButton from "../components/IconButton.jsx";
 import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
+import Autocomplete from "react-google-autocomplete";
 
 export default function Dashboard() {
+  const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
+
   const [pendingRideId, setPendingRideId] = useState(null);
 
   const [dashboardData, setDashboardData] = useState({
@@ -33,10 +36,11 @@ export default function Dashboard() {
     message: "",
   });
 
-  const [createRideNotif, setCreateRideNotif] = useState([false, ""]);
   const [capacity, setCapacity] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [dest, setDest] = useState("");
+  const originRef = useRef(null);
+  const destinationRef = useRef(null);
+  const [origin, setOrigin] = useState(null);
+  const [dest, setDest] = useState(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
 
@@ -46,6 +50,11 @@ export default function Dashboard() {
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
+
+  const autocompleteOptions = {
+    fields: ["formatted_address", "geometry", "name", "place_id"],
+    types: ["establishment", "geocode"], // This will show both businesses and addresses
+  };
 
   const [inSearch, setInSearch] = useState(false);
 
@@ -69,11 +78,18 @@ export default function Dashboard() {
   };
 
   const flipCreateRideFields = () => {
-    let prevDest = dest;
-    let prevOrigin = origin;
-    setOrigin(prevDest);
-    setDest(prevOrigin);
-    return;
+    const tempOrigin = origin;
+
+    setOrigin(dest);
+    setDest(tempOrigin);
+
+    if (originRef.current && destinationRef.current) {
+      const tempOriginValue = originRef.current.value;
+      originRef.current.value = destinationRef.current.value;
+      destinationRef.current.value = tempOriginValue;
+    }
+
+    console.log("Locations flipped!");
   };
 
   const flipSearchFields = () => {
@@ -162,10 +178,8 @@ export default function Dashboard() {
   };
 
   const checkCreateRideParams = async () => {
-    // const now = dayjs();
-
-    // console.log("current time = ", now);
-    // console.log("time = ", time);
+    console.log(origin.formatted_address);
+    console.log(dest.formatted_address);
 
     if (
       capacity === "" ||
@@ -174,11 +188,9 @@ export default function Dashboard() {
       date === "" ||
       time === ""
     ) {
-      setCreateRideNotif([true, "Please enter all fields!"]);
-      // } else if (time.isBefore(now, "minute")) {
-      //   setCreateRideNotif([true, "Cannot enter a time in the past!"]);
+      alert("You must provide all fields.");
+      return;
     } else {
-      setCreateRideNotif([false, ""]);
       createRide();
     }
   };
@@ -196,8 +208,8 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           capacity: capacity["label"],
-          origin: origin["label"],
-          destination: dest["label"],
+          origin: origin.name,
+          destination: dest.name,
           arrival_time: arrival_time_iso,
         }),
       });
@@ -324,7 +336,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center">
           <Link
             to="/myrides"
-            className="inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
+            className="hidden md:inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
           >
             My Rideshares
           </Link>
@@ -491,30 +503,60 @@ export default function Dashboard() {
                   placeholder="Select capacity"
                 ></Dropdown>
               </div>
-              <div>
+              <div className="flex flex-col gap-3">
                 <p className="font-medium">Origin & Destination</p>
-                <div className="flex items-center gap-2">
-                  <Dropdown
-                    inputValue={origin}
-                    setInputValue={setOrigin}
-                    options={locations}
-                    isClearable
-                    placeholder="Select an origin"
-                  ></Dropdown>
+                <div className="flex items-center space-x-2 w-full">
+                  <Autocomplete
+                    className="flex-grow max-w-[45%]"
+                    apiKey={google_api_key}
+                    placeholder="Enter starting point"
+                    onPlaceSelected={(place) => {
+                      console.log("Selected Place Details:", place);
+                      console.log(
+                        "Formatted Address:",
+                        place.formatted_address
+                      );
+                      console.log(
+                        "Coordinates:",
+                        place.geometry.location.lat(),
+                        place.geometry.location.lng()
+                      );
+                      setOrigin(place); // Store selected place details in state
+                    }}
+                    options={autocompleteOptions}
+                    ref={originRef}
+                  />
                   <IconButton
+                    className="flex-none"
                     type="flip"
                     onClick={flipCreateRideFields}
                     disabled={false}
                   ></IconButton>
-                  <Dropdown
-                    inputValue={dest}
-                    setInputValue={setDest}
-                    options={locations}
-                    isClearable
-                    placeholder="Select a destination"
-                  ></Dropdown>
+
+                  <Autocomplete
+                    className="flex-grow max-w-[44%]"
+                    wrapperClassName="w-full"
+                    apiKey={google_api_key}
+                    placeholder="Enter destination"
+                    onPlaceSelected={(place) => {
+                      console.log("Selected Place Details:", place);
+                      console.log(
+                        "Formatted Address:",
+                        place.formatted_address
+                      );
+                      console.log(
+                        "Coordinates:",
+                        place.geometry.location.lat(),
+                        place.geometry.location.lng()
+                      );
+                      setDest(place); // Store selected place details in state
+                    }}
+                    options={autocompleteOptions}
+                    ref={destinationRef}
+                  />
                 </div>
               </div>
+
               <div>
                 <p className="font-medium">Arrival Time</p>
                 <DateTimePicker
@@ -525,14 +567,13 @@ export default function Dashboard() {
                 />
               </div>
             </div>
+
             <Button
               className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:text-theme_medium_1"
               onClick={checkCreateRideParams}
             >
               Submit
             </Button>
-
-            {createRideNotif[0] && <p> {createRideNotif[1]} </p>}
           </div>
         </Modal>
       )}

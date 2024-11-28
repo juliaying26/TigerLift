@@ -24,6 +24,24 @@ export default function MyDateTimePicker({
     return current && current < dayjs().startOf("day");
   };
 
+  const disabledTime = () => {
+    if (date && date.isSame(dayjs(), "day")) {
+      const now = dayjs();
+      return {
+        disabledHours: () => Array.from({ length: now.hour() }, (_, i) => i),
+        disabledMinutes: (selectedHour) =>
+          selectedHour === now.hour()
+            ? Array.from({ length: now.minute() }, (_, i) => i)
+            : [],
+        disabledSeconds: (selectedHour, selectedMinute) =>
+          selectedHour === now.hour() && selectedMinute === now.minute()
+            ? Array.from({ length: now.second() }, (_, i) => i)
+            : [],
+      };
+    }
+    return {};
+  };
+
   return (
     <div>
       <DatePicker
@@ -35,12 +53,13 @@ export default function MyDateTimePicker({
         allowClear={allowClear}
       />
       <TimePicker
-        format="h:mm a"
+        format="h:mm A"
         onChange={handleTimeChange}
         placeholder="Select time"
         style={{ height: "38px" }}
         value={time}
         allowClear={allowClear}
+        disabledTime={disabledTime}
       />
     </div>
   );
