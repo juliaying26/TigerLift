@@ -284,10 +284,14 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  const handleRideRequest = async (rideid) => {
+  const handleRideRequest = async (rideid, origin_name, destination_name, arrival_time) => {
     console.log("IN HANDLE RIDE REQUEST");
     setPendingRideId(rideid);
-    try {
+    try {            
+      console.log("ARRIVAL TIME DASHBOARD ", arrival_time)
+
+      const formattedArrivalTime = dayjs(arrival_time).format("MMMM D, YYYY, h:mm A");
+
       const response = await fetch("/api/requestride", {
         method: "POST",
         headers: {
@@ -295,6 +299,9 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           rideid: rideid,
+          origin_name: origin_name,
+          destination_name: destination_name,
+          arrival_time: formattedArrivalTime
         }),
       });
       await fetchDashboardData();
@@ -439,7 +446,7 @@ export default function Dashboard() {
                     ride.admin_netid === dashboardData.user_info.netid ||
                     ride.current_riders.length === ride.max_capacity
                       ? () => {}
-                      : () => handleRideRequest(ride.id)
+                      : () => handleRideRequest(ride.id, ride.origin_name, ride.destination_name, ride.arrival_time)
                   }
                   buttonClassName={`${
                     ride.admin_netid === dashboardData.user_info.netid

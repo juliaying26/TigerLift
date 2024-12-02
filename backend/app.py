@@ -279,6 +279,9 @@ def requestride():
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
+    origin_name = data.get('origin_name')
+    destination_name = data.get('destination_name')
+    arrival_time = data.get('arrival_time')
     print("REQUESTING RIDE")
     if not rideid:
         return jsonify({'success': False, 'message': 'Ride ID is required'}), 400
@@ -289,8 +292,10 @@ def requestride():
         # send
         try: 
             admin_info = database.rideid_to_admin_id_email(rideid)
+            print("Admin info is", admin_info)
             subject = '🚗' + str(user_info['displayname']) + ' requested to join your Rideshare!'
-            send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, "Please see it on tigerlift.onrender.com")
+            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + arrival_time + '! Please see it on tigerlift.onrender.com'
+            send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, message)
         except:
             return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
 
@@ -300,21 +305,30 @@ def requestride():
     
 @app.route("/api/batchupdateriderequest", methods=["POST"])
 def batchupdateriderequest():
+    print("IN BATCH UPDATE RIDE REQUEST")
     try:
         data = request.get_json()
         rideid = data.get('rideid')
         print(data)
+
+        new_arrival_time = data.get('new_arrival_time')
+        origin_name = data.get('origin_name')
+        destination_name = data.get('destination_name')
+
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
             status = database.accept_ride_request(requester_id, full_name, mail, rideid)
-
+            print("status is: " , status)
             # if status is True (meaning new ride request was created)
             if status:
                 # send email to accepted rider
-                send_email_notification(requester_id, mail, "🚗 Your ride request was accepted!", 
-                    "Your ride request was recently accepted. Please see details at tigerlift.onrender.com")
+                subject = "🚗 Your Request to Join the Rideshare from " + origin_name + " to " + destination_name + " Was Accepted!"
+                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + new_arrival_time + " was recently accepted! Please see details at tigerlift.onrender.com"
+                send_email_notification(requester_id, mail, subject, message)
+                # PRINT
+                print("SENT EMAIL NOTIF BATCH UPDATE")
 
         for rider in data.get('rejecting_riders', []):
             requester_id = rider.get('requester_id')
