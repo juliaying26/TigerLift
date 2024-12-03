@@ -16,8 +16,8 @@ import PopUpMessage from "../components/PopUpMessage";
 import LoadingIcon from "../components/LoadingIcon";
 
 // For parsing date
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -63,10 +63,11 @@ export default function MyRides() {
   const [newArrivalTime, setNewArrivalTime] = useState(null);
 
   const [cancelRequestRideId, setCancelRequestRideId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  function capitalizeFirstLetter(val) {
+  const capitalizeFirstLetter = (val) => {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-  }
+  };
 
   const handleShowPopupMessage = (status, message) => {
     setPopupMessageInfo({ status: status, message: message });
@@ -302,6 +303,7 @@ export default function MyRides() {
 
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
+    setIsSaving(true);
     // POST for any states that were changed
     let accepting_riders = [];
     let rejecting_riders = [];
@@ -347,11 +349,11 @@ export default function MyRides() {
         .hour(newArrivalTime.hour())
         .minute(newArrivalTime.minute())
         .second(newArrivalTime.second())
-        .tz('America/New_York') // Convert to EST
-        .format('MMMM D, YYYY, h:mm A');
+        .tz("America/New_York") // Convert to EST
+        .format("MMMM D, YYYY, h:mm A");
 
-      console.log(new_arrival_time, "is new arrival time"); 
-      
+      console.log(new_arrival_time, "is new arrival time");
+
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
         headers: {
@@ -365,7 +367,7 @@ export default function MyRides() {
           new_capacity: newCapacity?.label,
           new_arrival_time: new_arrival_time,
           origin_name: selectedRide.origin_name,
-          destination_name : selectedRide.destination_name
+          destination_name: selectedRide.destination_name,
         }),
       });
       const responseData = await response.json();
@@ -379,9 +381,7 @@ export default function MyRides() {
       ) {
         try {
           const subj = "🚗 A rideshare you're in has changed time!";
-          const mess = `Your ride from ${selectedRide.origin_name} to ${
-            selectedRide.destination_name
-          } 
+          const mess = `Your ride from ${selectedRide.origin_name} to ${selectedRide.destination_name} 
           has changed time
           to ${new_arrival_time}. 
           Please see details at tigerlift.onrender.com.`;
@@ -436,6 +436,7 @@ export default function MyRides() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+    setIsSaving(false);
   };
 
   // Accepts rider in modal
@@ -968,6 +969,7 @@ export default function MyRides() {
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
                 className="hover:bg-theme_light_2 border border-zinc-300 text-zinc-700"
+                disabled={isSaving}
               >
                 Save
               </Button>
