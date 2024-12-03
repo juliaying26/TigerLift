@@ -86,47 +86,56 @@ export default function MyRides() {
       let posted_ride_data = data.myrides;
       let requested_ride_data = data.myreqrides;
       console.log(posted_ride_data);
-      const upcoming_posted_rides = [];
-      const past_posted_rides = [];
-      const upcoming_requested_rides = [];
-      const past_requested_rides = [];
-      const now = new Date();
-      posted_ride_data.forEach((ride) => {
-        if (new Date(ride.arrival_time) > now) {
-          upcoming_posted_rides.push(ride);
-        } else {
-          past_posted_rides.push(ride);
-        }
-      });
-      requested_ride_data.forEach((ride) => {
-        if (new Date(ride.arrival_time) > now) {
-          upcoming_requested_rides.push(ride);
-        } else {
-          past_requested_rides.push(ride);
-        }
-      });
-      // Sort upcoming rides in ascending order (by arrival time)
-      upcoming_posted_rides.sort(
-        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
-      );
-      // Sort past rides in descending order (by arrival time)
-      past_posted_rides.sort(
-        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
-      );
-      upcoming_requested_rides.sort(
-        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
-      );
-      past_requested_rides.sort(
-        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
-      );
+      
+      const upcoming_posted_rides = data.upcoming_posted_rides;
+      const past_posted_rides = data.past_posted_rides;
+      const upcoming_requested_rides = data.upcoming_requested_rides;
+      const past_requested_rides = data.past_requested_rides;
+
       setMyUpcomingPostedRidesData(upcoming_posted_rides);
-      setMyPastRequestedRidesData(
-        past_requested_rides.filter(
-          (ride) => ride.request_status === "accepted"
-        )
-      );
-      setMyUpcomingRequestedRidesData(upcoming_requested_rides);
       setMyPastPostedRidesData(past_posted_rides);
+      setMyUpcomingRequestedRidesData(upcoming_requested_rides);
+      setMyPastRequestedRidesData(past_requested_rides);
+
+      // const now = new Date();
+      // posted_ride_data.forEach((ride) => {
+      //   if (new Date(ride.arrival_time) > now) {
+      //     upcoming_posted_rides.push(ride);
+      //   } else {
+      //     past_posted_rides.push(ride);
+      //   }
+      // });
+      // requested_ride_data.forEach((ride) => {
+      //   if (new Date(ride.arrival_time) > now) {
+      //     upcoming_requested_rides.push(ride);
+      //   } else {
+      //     past_requested_rides.push(ride);
+      //   }
+      // });
+      // Sort upcoming rides in ascending order (by arrival time)
+      // upcoming_posted_rides.sort(
+      //   (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
+      // );
+      // // Sort past rides in descending order (by arrival time)
+      // past_posted_rides.sort(
+      //   (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
+      // );
+      // upcoming_requested_rides.sort(
+      //   (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
+      // );
+      // past_requested_rides.sort(
+      //   (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
+      // );
+
+      // setMyUpcomingPostedRidesData(upcoming_posted_rides);
+      // setMyPastRequestedRidesData(
+      //   past_requested_rides.filter(
+      //     (ride) => ride.request_status === "accepted"
+      //   )
+      // );
+
+      // setMyUpcomingRequestedRidesData(upcoming_requested_rides);
+      // setMyPastPostedRidesData(past_posted_rides);
 
       setUserInfo(data.user_info);
     } catch (error) {
