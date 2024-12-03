@@ -1,6 +1,7 @@
 import React from "react";
+import IconButton from "./IconButton";
 
-export default function NotificationsModal({ isOpen, onClose, notifications }){
+export default function NotificationsModal({ isOpen, onClose, notifications }) {
   if (!isOpen) return null;
 
   // If click outside Notifications modal, automatically close it
@@ -12,24 +13,23 @@ export default function NotificationsModal({ isOpen, onClose, notifications }){
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-end items-start p-6"
+      className="fixed inset-0 z-50 flex justify-end bg-zinc-800 bg-opacity-20"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white w-80 max-h-full rounded-lg shadow-lg overflow-y-auto border-2 border-theme_medium_2">
+      <div className="absolute top-16 right-24 w-80 bg-white rounded-xl shadow-lg overflow-y-auto border-2 border-theme_medium_2">
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-lg font-bold">Notifications</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            ✕
-          </button>
+          <IconButton
+            type="xmark"
+            onClick={onClose}
+            className="text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100"
+          ></IconButton>
         </div>
         <div className="p-4">
           {notifications.length > 0 ? (
             <ul className="space-y-4">
               {notifications.map((notification) => (
-                <li 
-                key =""
-                  className="border-b pb-2 border-gray-300"
-                >
+                <li key="" className="border-b pb-2 border-gray-300">
                   <p className="font-bold">{notification.subject}</p>
                   <p>{notification.message}</p>
                   <p className="text-sm text-gray-500">
@@ -45,4 +45,4 @@ export default function NotificationsModal({ isOpen, onClose, notifications }){
       </div>
     </div>
   );
-};
+}

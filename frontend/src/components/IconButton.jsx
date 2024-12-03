@@ -89,15 +89,20 @@ export default function IconButton({ type, onClick, disabled, className }) {
           </svg>
         );
       case "notification":
-        return(
-          <svg xmlns="http://www.w3.org/2000/svg" 
-          width="25"
-          className="bi bi-bell" viewBox="0 0 16 16">
-            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2z" />
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
+          >
             <path
-               fillRule="evenodd"
-                d="M8 1a4 4 0 0 0-4 4c0 1.098-.628 2.163-1.217 3.019C2.23 8.347 2 8.962 2 9.586V10a1 1 0 0 0 .293.707l.853.853c.047.047.074.109.115.16C3.738 12.22 5.163 14 8 14s4.262-1.78 4.739-2.28c.041-.051.068-.113.115-.16l.853-.853A1 1 0 0 0 14 10v-.414c0-.624-.23-1.239-.783-1.567C12.628 7.163 12 6.098 12 5a4 4 0 0 0-4-4zM4.5 5c0-1.657 1.343-3 3-3s3 1.343 3 3c0 1.364.518 2.418 1.061 3.19.461.683.939 1.278.939 1.396V10h-1.732l-.875.875a.5.5 0 0 1-.354.146h-5.34a.5.5 0 0 1-.354-.146L3.732 10H2v-.414c0-.118.478-.713.939-1.396C3.982 7.418 4.5 6.364 4.5 5z"
-             />
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+            />
           </svg>
         );
       default:
