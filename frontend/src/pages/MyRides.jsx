@@ -383,8 +383,7 @@ export default function MyRides() {
           const subj = "🚗 A rideshare you're in has changed time!";
           const mess = `Your ride from ${selectedRide.origin_name} to ${selectedRide.destination_name} 
           has changed time
-          to ${new_arrival_time}. 
-          Please see details at tigerlift.onrender.com.`;
+          to ${new_arrival_time}.`;
 
           for (const rider of accepting_riders) {
             // console.log("rider's name is", rider.full_name)

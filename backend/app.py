@@ -294,7 +294,7 @@ def requestride():
             admin_info = database.rideid_to_admin_id_email(rideid)
             print("Admin info is", admin_info)
             subject = '🚗' + str(user_info['displayname']) + ' requested to join your Rideshare!'
-            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + arrival_time + '! Please see it on tigerlift.onrender.com'
+            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + arrival_time + '!'
             send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, message)
         except:
             return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
@@ -325,7 +325,7 @@ def batchupdateriderequest():
             if status:
                 # send email to accepted rider
                 subject = "🚗 Your Request to Join the Rideshare from " + origin_name + " to " + destination_name + " Was Accepted!"
-                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + new_arrival_time + " was recently accepted! Please see details at tigerlift.onrender.com"
+                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + new_arrival_time + " was recently accepted!"
                 send_email_notification(requester_id, mail, subject, message)
                 # PRINT
                 print("SENT EMAIL NOTIF BATCH UPDATE")
@@ -371,6 +371,12 @@ def send_email_notification():
         message = data.get('message')
         # if mail is empty for some reason, use netid @ princeton.edu
 
+        # Add this message to notifications table
+        try:
+            database.add_notification(netid, subject, message)
+        except Exception as e:
+            print(f"Error adding to notifications table: {e}")
+
         if not mail:
             mail = netid + "@princeton.edu"
 
@@ -383,6 +389,7 @@ def send_email_notification():
         msg['To'] = mail
         msg['Subject'] = subject
         # Attach the message
+        message = message + " Please see details on tigerlift.onrender.com"
         msg.attach(MIMEText(message, 'plain'))
 
         try:
@@ -416,12 +423,19 @@ def send_email_notification(netid, mail, subject, message):
         from_email = os.environ.get('EMAIL_ADDRESS')
         from_password = os.environ.get('EMAIL_PASSWORD')
 
+        # Add this message to notifications table
+        try:
+            database.add_notification(netid, subject, message)
+        except Exception as e:
+            print(f"Error adding to notifications table: {e}")
+
         # Set up the email
         msg = MIMEMultipart()
         msg['From'] = from_email
         msg['To'] = mail
         msg['Subject'] = subject
         # Attach the message
+        message = message + " Please see details on tigerlift.onrender.com"
         msg.attach(MIMEText(message, 'plain'))
 
         try:
@@ -442,8 +456,8 @@ def send_email_notification(netid, mail, subject, message):
 
 @app.route("/api/notifications", methods=["POST"])
 def notifications():
-    request_data = request.get_json()
-    netid = request_data.get("netid")
+    user_info = _cas.authenticate() 
+    netid = user_info['netid']
     print("notifications sees that netid is ", netid)
 
     if not netid:
