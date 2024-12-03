@@ -166,14 +166,6 @@ def get_my_rides():
 
         # my_req_rides.append(updated_ride)
 
-    def safe_parse_datetime(time_str):
-        try:
-            return datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S")
-        except (ValueError, TypeError):
-            # Return a default datetime or handle the error as needed
-            return datetime.min
-
-
     my_rides.sort(key=lambda ride: ride['arrival_time'])
     past_my_rides.sort(key=lambda ride: ride['arrival_time'], reverse=True)
     my_req_rides.sort(key=lambda ride: ride['arrival_time'])
@@ -181,7 +173,6 @@ def get_my_rides():
 
     past_my_req_rides = [ride for ride in past_my_req_rides if ride['request_status'] == 'accepted']
 
-    
     return jsonify({
         'user_info': user_info,
         'upcoming_posted_rides': my_rides,
