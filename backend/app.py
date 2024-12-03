@@ -440,6 +440,21 @@ def send_email_notification(netid, mail, subject, message):
          return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
 
 
+@app.route("/api/notifications", methods=["POST"])
+def notifications():
+    request_data = request.get_json()
+    netid = request_data.get("netid")
+    print("notifications sees that netid is ", netid)
+
+    if not netid:
+        return jsonify({"error": "Missing netid parameter"}), 400
+    
+    try: 
+        response = database.get_user_notifs(netid)
+        return jsonify({"notifications": response}), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # @app.route("/api/acceptriderequest", methods=["POST"])
 # def acceptriderequest():

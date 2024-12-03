@@ -912,7 +912,6 @@ def id_to_location(id):
     print("ID corresponding to num is", location_result)
     return int(location_result)
 
-
 def rideid_to_admin_id_email(ride_id):
     """
     Given a rideid, returns admin_netid and email
@@ -943,6 +942,35 @@ def rideid_to_admin_id_email(ride_id):
 
     print("Admin_netid corresponding to ride_id is", admin_netid_result)
     return (admin_netid_result, admin_mail_result) if admin_netid_result else None
+
+def get_user_notifs(netid):
+    """
+    Given user's netid, finds that user's notifs
+    """
+    sql_command =  """
+            SELECT id, message, notification_time, subject 
+            FROM Notifications 
+            WHERE netid = %s
+            ORDER BY notification_time DESC
+        """
+    values = (netid,)
+    
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                result = cursor.fetchall()
+                print(result, " is result")
+                return result
+        except Exception as e:
+            print(f"Error fetching notifications: {e}")
+            return None # meaning error
+        finally:
+            conn.close()
+    else:
+        print("Failed to establish a database connection.")
+        return None
 
 if __name__ == "__main__":
     database_setup()
