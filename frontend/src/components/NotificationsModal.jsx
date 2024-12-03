@@ -28,8 +28,8 @@ export default function NotificationsModal({ isOpen, onClose, notifications }) {
         <div className="p-4">
           {notifications.length > 0 ? (
             <ul className="space-y-4">
-              {notifications.map((notification) => (
-                <li key="" className="border-b pb-2 border-gray-300">
+              {notifications.map((notification, index) => (
+                <li key={index} className="border-b pb-2 border-gray-300">
                   <p className="font-bold">{notification.subject}</p>
                   <p>{notification.message}</p>
                   <p className="text-sm text-gray-500">

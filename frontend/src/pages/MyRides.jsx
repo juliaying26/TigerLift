@@ -5,7 +5,7 @@ import Modal from "../components/Modal";
 import Button from "../components/Button";
 import Pill from "../components/Pill";
 import IconButton from "../components/IconButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
 import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
@@ -24,6 +24,7 @@ dayjs.extend(timezone);
 export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [userInfo, setUserInfo] = useState({});
   const [myUpcomingPostedRidesData, setMyUpcomingPostedRidesData] = useState(
@@ -146,6 +147,12 @@ export default function MyRides() {
 
     loadData();
   }, [viewType]);
+
+  useEffect(() => {
+    if (location.state?.viewType) {
+      setViewType(location.state.viewType);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (selectedRide) {
@@ -647,7 +654,7 @@ export default function MyRides() {
           message={popupMessageInfo.message}
         />
       )}
-      <div className="flex gap-4">
+      <div className="hidden md:flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
           className={`${
