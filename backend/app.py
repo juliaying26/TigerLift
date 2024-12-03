@@ -81,12 +81,9 @@ def api_dashboard():
             'current_riders': ride[10]
         }
 
-        print(updated_ride['arrival_time'])
-
         if updated_ride['arrival_time'] > current_time:
             updated_rides.append(updated_ride)
 
-        # updated_rides.append(updated_ride)
     
     ridereqs_map = {}
     for ridereq in ridereqs:
@@ -109,8 +106,13 @@ def get_my_rides():
     # mapping for location
     location_map = {location[0]: location[1] for location in locations}
     
+    current_time = datetime.now(timezone.utc)
+    current_time = current_time.replace(tzinfo=None)
+
     # mapping for rides array 
     my_rides = []
+    past_my_rides = []
+
     for ride in myrides:
         updated_ride = {
             'id': ride[0],
@@ -128,9 +130,17 @@ def get_my_rides():
             'current_riders': ride[10],
             'requested_riders':ride[11]
         }
-        my_rides.append(updated_ride)
+        
+        if updated_ride['arrival_time'] > current_time:
+            my_rides.append(updated_ride)
+        else:
+            past_my_rides.append(updated_ride)
+
+        # my_rides.append(updated_ride)
 
     my_req_rides = []
+    past_my_req_rides = []
+
     for ride in myreqrides:
         updated_ride = {
             'id': ride[0],
@@ -148,12 +158,20 @@ def get_my_rides():
             'current_riders': ride[10],
             'request_status': ride[11]
         }
-        my_req_rides.append(updated_ride)
+
+        if updated_ride['arrival_time'] > current_time:
+            my_req_rides.append(updated_ride)
+        else:
+            past_my_req_rides.append(updated_ride)
+
+        # my_req_rides.append(updated_ride)
     
     return jsonify({
         'user_info': user_info,
-        'myrides': my_rides,
-        'myreqrides': my_req_rides,
+        'upcoming_posted_rides': my_rides,
+        'past_posted_rides': past_my_rides,
+        'upcoming_requested_rides': my_req_rides,
+        'past_requested_rides': past_my_req_rides,
     })
 
 @app.route("/api/addride", methods=["POST"])
