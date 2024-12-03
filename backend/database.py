@@ -326,36 +326,6 @@ def update_arrival_time(rideid, new_arrival_time):
         finally:
             conn.close()
 
-
-def create_notification(netid, message, type):
-    """
-    Adds a notifiction in the Notifications database
-    """
-
-    sql_command = f"""
-        INSERT INTO Notifications (netid, message, type) VALUES 
-        (%s, %s, %s);        
-    """
-    
-    values = (netid, message, type)
-    
-    conn = connect()
-    
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
-                conn.commit()
-                print("Notification addded successfully!")
-        except Exception as e:
-            print(f"Error adding notification: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
-
-
 # def create_location(id, name):
 #     """
 #     Adds a location in the Locations database
@@ -965,6 +935,33 @@ def get_user_notifs(netid):
                 return result
         except Exception as e:
             print(f"Error fetching notifications: {e}")
+            return None # meaning error
+        finally:
+            conn.close()
+    else:
+        print("Failed to establish a database connection.")
+        return None
+    
+def add_notification(netid, subject, message):
+    """
+    Adds the relevant message to notification table
+    """
+    sql_command =  """
+            INSERT INTO Notifications (netid, message, notification_time, subject)
+            VALUES (%s, %s, CURRENT_TIMESTAMP, %s)
+        """
+    values = (netid, message, subject)
+    
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Notification added successfully.")
+                return True 
+        except Exception as e:
+            print(f"Error adding to notifications: {e}")
             return None # meaning error
         finally:
             conn.close()
