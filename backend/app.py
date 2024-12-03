@@ -7,7 +7,7 @@ load_dotenv() # load vars in .env file
 import smtplib # library for emails
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime
+from datetime import datetime, timezone
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
@@ -59,7 +59,8 @@ def api_dashboard():
     # mapping for location
     location_map = {location[0]: location[1] for location in locations}
 
-    current_time = datetime.now()
+    current_time = datetime.now(timezone.utc)
+    current_time = current_time.replace(tzinfo=None)
     
     # mapping for rides array 
     updated_rides = []
@@ -80,7 +81,7 @@ def api_dashboard():
             'current_riders': ride[10]
         }
 
-        # print(type(updated_ride['arrival_time']))
+        print(updated_ride['arrival_time'])
 
         if updated_ride['arrival_time'] > current_time:
             updated_rides.append(updated_ride)
