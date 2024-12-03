@@ -15,6 +15,12 @@ import CopyEmailButton from "../components/CopyEmailButton";
 import PopUpMessage from "../components/PopUpMessage";
 import LoadingIcon from "../components/LoadingIcon";
 
+// For parsing date
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
@@ -330,21 +336,22 @@ export default function MyRides() {
     console.log("Rejecting riders:", rejecting_riders);
     console.log("Pending riders:", pending_riders);
 
-    const new_arrival_time_string = `${newArrivalDate.format(
-      "YYYY-MM-DD"
-    )}T${newArrivalTime.format("HH:mm:ss")}`;
-    const new_arrival_time_iso = new Date(
-      new_arrival_time_string
-    ).toISOString();
-
-    console.log(new_arrival_time_iso);
-
     if (!hasRideChanges()) {
       handleCloseModal();
       return;
     }
 
     try {
+      // Parse arrival time for sending email purposes
+      const new_arrival_time = dayjs(newArrivalDate)
+        .hour(newArrivalTime.hour())
+        .minute(newArrivalTime.minute())
+        .second(newArrivalTime.second())
+        .tz('America/New_York') // Convert to EST
+        .format('MMMM D, YYYY, h:mm A');
+
+      console.log(new_arrival_time, "is new arrival time"); 
+      
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
         headers: {
@@ -356,7 +363,9 @@ export default function MyRides() {
           rejecting_riders: rejecting_riders,
           pending_riders: pending_riders,
           new_capacity: newCapacity?.label,
-          new_arrival_time: new_arrival_time_iso,
+          new_arrival_time: new_arrival_time,
+          origin_name: selectedRide.origin_name,
+          destination_name : selectedRide.destination_name
         }),
       });
       const responseData = await response.json();
@@ -373,12 +382,8 @@ export default function MyRides() {
           const mess = `Your ride from ${selectedRide.origin_name} to ${
             selectedRide.destination_name
           } 
-          has changed time from ${dayjs(selectedRide.arrival_time).format(
-            "YYYY-MM-DD HH:mm"
-          )} 
-          to ${newArrivalDate.format("YYYY-MM-DD")} at ${newArrivalTime.format(
-            "HH:mm"
-          )}. 
+          has changed time
+          to ${new_arrival_time}. 
           Please see details at tigerlift.onrender.com.`;
 
           for (const rider of accepting_riders) {
