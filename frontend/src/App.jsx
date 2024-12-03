@@ -5,6 +5,7 @@ import MyRides from "./pages/MyRides";
 import Navbar from "./components/Navbar";
 import Button from "./components/Button";
 import LoadingIcon from "./components/LoadingIcon";
+import NotificationsPage from "../src/pages/NotificationsPage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -36,6 +37,7 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/myrides" element={<MyRides />} />
+            <Route path="/notifications" element={<NotificationsPage />} />;
           </Routes>
         </div>
       ) : (

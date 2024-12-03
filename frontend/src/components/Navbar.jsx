@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import IconButton from "./IconButton";
+import { Link } from "react-router-dom";
+import NotificationsModal from "./NotificationsModal";
 
 export default function Navbar({ user_info }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -21,6 +25,45 @@ export default function Navbar({ user_info }) {
   };
 
   const isActive = (path) => location.pathname === path;
+
+  const handleOpenNotificationsModal = async () => {
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          netid: user_info.netid
+        }),
+      });
+
+      console.log(response, "is response")
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch notifications: ${response.status}`);
+      }
+
+      const data_response = await response.json();
+      console.log("Raw data response:", data_response);
+
+      // Make each array into dictionary
+      const data = data_response.notifications.map((row) => ({
+        id: row[0],
+        message: row[1],
+        notification_time: row[2],
+        subject: row[3],
+      }));
+    
+      setNotifications(data || []);
+      setShowNotificationsModal(true); // Show the modal
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      alert("Failed to load notifications.");
+    }
+  };
+
+  const handleCloseNotificationsModal = () => {
+    setShowNotificationsModal(false);
+  };
 
   return (
     <div>
@@ -95,8 +138,21 @@ export default function Navbar({ user_info }) {
             </div>
 
             {/* Right Side */}
-            <div className="hidden md:flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-4">
+              <IconButton
+                    onClick={handleOpenNotificationsModal}
+                    type="notification"
+              >
+              </IconButton>
+
+              <NotificationsModal
+                isOpen={showNotificationsModal}
+                onClose={handleCloseNotificationsModal}
+                notifications={notifications}
+              />
+
               <p className="font-medium text-lg">{user_info.displayname}</p>
+
               <a
                 href="/api/logout"
                 className="bg-theme_dark_1 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_1"
