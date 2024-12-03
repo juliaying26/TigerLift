@@ -43,6 +43,7 @@ export default function Dashboard() {
   const [dest, setDest] = useState(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [isCreatingRide, setIsCreatingRide] = useState(false);
 
   const [searchOrigin, setSearchOrigin] = useState("");
   const [searchDest, setSearchDest] = useState("");
@@ -63,9 +64,9 @@ export default function Dashboard() {
   const max_capacity_option = 5;
   const capacity_options = [];
 
-  function capitalizeFirstLetter(val) {
+  const capitalizeFirstLetter = (val) => {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-  }
+  };
 
   for (let i = 1; i < max_capacity_option + 1; i++) {
     let dict = { value: i, label: i };
@@ -196,6 +197,7 @@ export default function Dashboard() {
   };
 
   const createRide = async () => {
+    setIsCreatingRide(true);
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -226,6 +228,7 @@ export default function Dashboard() {
       console.error("Error during fetch:", error);
     }
     setLoading(false);
+    setIsCreatingRide(false);
   };
 
   const handleOpenRideModal = async () => {
@@ -284,13 +287,20 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  const handleRideRequest = async (rideid, origin_name, destination_name, arrival_time) => {
+  const handleRideRequest = async (
+    rideid,
+    origin_name,
+    destination_name,
+    arrival_time
+  ) => {
     console.log("IN HANDLE RIDE REQUEST");
     setPendingRideId(rideid);
-    try {            
-      console.log("ARRIVAL TIME DASHBOARD ", arrival_time)
+    try {
+      console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
 
-      const formattedArrivalTime = dayjs(arrival_time).format("MMMM D, YYYY, h:mm A");
+      const formattedArrivalTime = dayjs(arrival_time).format(
+        "MMMM D, YYYY, h:mm A"
+      );
 
       const response = await fetch("/api/requestride", {
         method: "POST",
@@ -301,7 +311,7 @@ export default function Dashboard() {
           rideid: rideid,
           origin_name: origin_name,
           destination_name: destination_name,
-          arrival_time: formattedArrivalTime
+          arrival_time: formattedArrivalTime,
         }),
       });
       await fetchDashboardData();
@@ -446,7 +456,13 @@ export default function Dashboard() {
                     ride.admin_netid === dashboardData.user_info.netid ||
                     ride.current_riders.length === ride.max_capacity
                       ? () => {}
-                      : () => handleRideRequest(ride.id, ride.origin_name, ride.destination_name, ride.arrival_time)
+                      : () =>
+                          handleRideRequest(
+                            ride.id,
+                            ride.origin_name,
+                            ride.destination_name,
+                            ride.arrival_time
+                          )
                   }
                   buttonClassName={`${
                     ride.admin_netid === dashboardData.user_info.netid
@@ -576,8 +592,9 @@ export default function Dashboard() {
             </div>
 
             <Button
-              className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:text-theme_medium_1"
+              className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1"
               onClick={checkCreateRideParams}
+              disabled={isCreatingRide}
             >
               Submit
             </Button>
