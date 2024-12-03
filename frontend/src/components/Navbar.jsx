@@ -27,6 +27,7 @@ export default function Navbar({ user_info }) {
   const isActive = (path) => location.pathname === path;
 
   const handleOpenNotificationsModal = async () => {
+    setShowNotificationsModal(true);
     try {
       const response = await fetch("/api/notifications", {
         method: "POST",
@@ -52,9 +53,7 @@ export default function Navbar({ user_info }) {
         notification_time: row[2],
         subject: row[3],
       }));
-
       setNotifications(data || []);
-      setShowNotificationsModal(true); // Show the modal
     } catch (error) {
       console.error("Error fetching notifications:", error);
       alert("Failed to load notifications.");
@@ -142,16 +141,16 @@ export default function Navbar({ user_info }) {
               <IconButton
                 onClick={handleOpenNotificationsModal}
                 type="notification"
+                className={`${
+                  showNotificationsModal ? "bg-theme_light_1" : ""
+                } hover:bg-theme_light_1`}
               ></IconButton>
-
               <NotificationsModal
                 isOpen={showNotificationsModal}
                 onClose={handleCloseNotificationsModal}
                 notifications={notifications}
               />
-
               <p className="font-medium text-lg">{user_info.displayname}</p>
-
               <a
                 href="/api/logout"
                 className="bg-theme_dark_1 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_1"
