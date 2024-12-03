@@ -263,14 +263,15 @@ export default function Dashboard() {
 
       console.log(data.rides);
 
-      const currentTime = new Date();
-      data.rides = data.rides.filter(
-        (entry) => new Date(entry.arrival_time) >= currentTime
-      );
-      console.log(currentTime);
-      data.rides.sort(
-        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
-      );
+      // const currentTime = new Date();
+      // data.rides = data.rides.filter(
+      //   (entry) => new Date(entry.arrival_time) >= currentTime
+      // );
+      // console.log(currentTime);
+      // data.rides.sort(
+      //   (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
+      // );
+      
       setRidesData(data.rides);
       const tempLocations = [];
       for (const loc of data.locations) {
