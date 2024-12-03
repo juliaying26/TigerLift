@@ -32,11 +32,11 @@ export default function Navbar({ user_info }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          netid: user_info.netid
+          netid: user_info.netid,
         }),
       });
 
-      console.log(response, "is response")
+      console.log(response, "is response");
 
       if (!response.ok) {
         throw new Error(`Failed to fetch notifications: ${response.status}`);
@@ -52,7 +52,7 @@ export default function Navbar({ user_info }) {
         notification_time: row[2],
         subject: row[3],
       }));
-    
+
       setNotifications(data || []);
       setShowNotificationsModal(true); // Show the modal
     } catch (error) {
@@ -88,7 +88,7 @@ export default function Navbar({ user_info }) {
                   isActive("/dashboard") ? "bg-theme_light_1 font-medium" : ""
                 } text-lg rounded-md py-3 hover:bg-theme_light_1`}
               >
-                All Rides
+                All Rideshares
               </button>
               <button
                 onClick={() => navigateTo("/myrides")}
@@ -96,7 +96,7 @@ export default function Navbar({ user_info }) {
                   isActive("/myrides") ? "bg-theme_light_1 font-medium" : ""
                 } text-lg rounded-md py-3 hover:bg-theme_light_1`}
               >
-                My Rides
+                My Rideshares
               </button>
             </div>
           </div>
@@ -138,12 +138,11 @@ export default function Navbar({ user_info }) {
             </div>
 
             {/* Right Side */}
-              <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
               <IconButton
-                    onClick={handleOpenNotificationsModal}
-                    type="notification"
-              >
-              </IconButton>
+                onClick={handleOpenNotificationsModal}
+                type="notification"
+              ></IconButton>
 
               <NotificationsModal
                 isOpen={showNotificationsModal}
