@@ -90,7 +90,6 @@ def api_dashboard():
     return jsonify({
         'user_info': user_info,
         'rides': updated_rides,
-        'locations': locations,
         'ridereqs': ridereqs_map
     })
 
@@ -183,7 +182,7 @@ def addride():
     capacity = data.get('capacity')
 
     origin_obj = data.get('origin')
-    dest_obj = data.get('dest')
+    dest_obj = data.get('destination')
 
     note = ""
     
@@ -307,7 +306,6 @@ def searchrides():
     return jsonify({
         'user_info': user_info,
         'rides': updated_rides,
-        'locations': locations,
         'ridereqs': ridereqs_map
     })
 
