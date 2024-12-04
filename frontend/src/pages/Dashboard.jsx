@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
+import CopyEmailButton from "../components/CopyEmailButton";
 
 export default function Dashboard() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -498,8 +499,12 @@ export default function Dashboard() {
                   </div>
                   <hr className="border-1 my-3 border-theme_medium_1" />
                   <p>
-                    <span className="font-semibold">Posted by:</span>{" "}
-                    {ride.admin_name}, {ride.admin_email}
+                    <span className="font-semibold">Posted by:</span> {ride.admin_name}, 
+                    <CopyEmailButton
+                      copy={[ride.admin_email]}
+                      text="Copy Email"
+                      className="text-zinc-800 hover:text-zinc-600"
+                    />
                   </p>
                   <p>
                     <span className="font-semibold">Seats Taken:</span>{" "}
