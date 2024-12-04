@@ -431,6 +431,9 @@ export default function Dashboard() {
           {ridesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {ridesData.map((ride) => (
+
+                ride.current_riders.length < ride.max_capacity && (
+
                 <RideCard
                   key={ride.id}
                   buttonText={
@@ -510,7 +513,7 @@ export default function Dashboard() {
                     <span className="font-semibold">Seats Taken:</span>{" "}
                     {ride.current_riders.length}/{ride.max_capacity}
                   </p>
-                </RideCard>
+                </RideCard>)
               ))}
             </div>
           ) : (
