@@ -13,19 +13,6 @@ def database_setup():
     """
 
     sql_commands = """
-        CREATE TABLE IF NOT EXISTS Users (
-            id SERIAL PRIMARY KEY,
-            netid VARCHAR(10) UNIQUE NOT NULL,
-            name VARCHAR(50) NOT NULL,
-            email VARCHAR(50) UNIQUE NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE TABLE IF NOT EXISTS PredefinedLocations (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
-        );
 
         CREATE TABLE IF NOT EXISTS Rides (
             id SERIAL PRIMARY KEY,
@@ -33,12 +20,13 @@ def database_setup():
             admin_name VARCHAR(50),
             admin_email VARCHAR(50),
             max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 20) NOT NULL,
-            origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
-            destination INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
+            origin_dict JSONB NOT NULL,
+            destination_dict JSONB NOT NULL,
             arrival_time TIMESTAMP NOT NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             current_riders TEXT[][]
+            note VARCHAR(250)
         );
 
         CREATE TABLE IF NOT EXISTS RideRequests (
@@ -55,8 +43,8 @@ def database_setup():
         CREATE TABLE IF NOT EXISTS Notifications (
             id SERIAL PRIMARY KEY,
             netid VARCHAR(10),
+            subject TEXT NOT NULL,
             message TEXT NOT NULL,
-            type VARCHAR(50) CHECK (type IN ('ride update', 'request made', 'request accepted', 'request rejected')) NOT NULL,
             notification_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         
