@@ -519,14 +519,16 @@ export default function MyRides() {
                   <div className="flex flex-col">
                     <strong>{ride.origin["name"]}</strong>
                     <div className="text-sm font-light">
-                      {ride.origin["address"]}
+                      {ride.origin["address"].split(' ').slice(0, -2).join(' ')}
+                      {/* {ride.origin["address"]} */}
                     </div>
                   </div>
                   →
                   <div className="flex flex-col">
                     <strong>{ride.destination["name"]}</strong>
                     <div className="text-sm font-light">
-                      {ride.destination["address"]}
+                      {ride.destination["address"].split(' ').slice(0, -2).join(' ')}
+                      {/* {ride.destination["address"]} */}
                     </div>
                   </div>
                 </p>
