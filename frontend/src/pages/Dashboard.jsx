@@ -179,7 +179,6 @@ export default function Dashboard() {
   };
 
   const checkCreateRideParams = async () => {
-    
     console.log(origin);
     console.log(dest);
 
@@ -282,8 +281,8 @@ export default function Dashboard() {
 
   const handleRideRequest = async (
     rideid,
-    origin_name,
-    destination_name,
+    origin,
+    destination,
     arrival_time
   ) => {
     console.log("IN HANDLE RIDE REQUEST");
@@ -302,8 +301,8 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           rideid: rideid,
-          origin_name: origin_name,
-          destination_name: destination_name,
+          origin: origin,
+          destination: destination,
           arrival_time: formattedArrivalTime,
         }),
       });
@@ -452,8 +451,8 @@ export default function Dashboard() {
                       : () =>
                           handleRideRequest(
                             ride.id,
-                            ride.origin_name,
-                            ride.destination_name,
+                            ride.origin,
+                            ride.destination,
                             ride.arrival_time
                           )
                   }
@@ -469,7 +468,8 @@ export default function Dashboard() {
                 >
                   <p className="text-xl text-center">
                     <strong>
-                      {ride.origin_name} → {ride.destination_name}
+                      {ride.origin["name"]} → {ride.destination["name"]}
+                      {ride.origin["address"]} → {ride.destination["address"]}
                     </strong>
                   </p>
                   <p className="text-center mb-2">
