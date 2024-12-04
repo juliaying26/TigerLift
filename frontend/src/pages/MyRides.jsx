@@ -753,14 +753,16 @@ export default function MyRides() {
                   <div className="flex flex-col">
                     <strong>{selectedRide.origin["name"]}</strong>
                     <div className="text-sm font-light">
-                      {selectedRide.origin["address"]}
+                      {selectedRide.origin["address"].split(' ').slice(0, -2).join(' ')}
+                      {/* {selectedRide.origin["address"]} */}
                     </div>
                   </div>
                   →
                   <div className="flex flex-col">
                     <strong>{selectedRide.destination["name"]}</strong>
                     <div className="text-sm font-light">
-                      {selectedRide.destination["address"]}
+                      {selectedRide.destination["address"].split(' ').slice(0, -2).join(' ')}
+                      {/* {selectedRide.destination["address"]} */}
                     </div>
                   </div>
                 </p>
