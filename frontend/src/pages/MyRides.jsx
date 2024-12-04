@@ -333,8 +333,8 @@ export default function MyRides() {
           pending_riders: pending_riders,
           new_capacity: newCapacity?.label,
           new_arrival_time: new_arrival_time,
-          origin_name: selectedRide.origin_name,
-          destination_name: selectedRide.destination_name,
+          origin_name: selectedRide.origin["name"],
+          destination_name: selectedRide.destination["name"],
         }),
       });
       const responseData = await response.json();
@@ -514,22 +514,34 @@ export default function MyRides() {
             secondaryButtonStatus={ride.request_status}
           >
             <div>
-              <p className="text-xl text-center">
-                <strong>
-                  {ride.origin_name} → {ride.destination_name}
-                </strong>
-              </p>
-              <p className="text-center mb-2">
-                Arrive by{" "}
-                {new Date(ride.arrival_time).toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                  hour12: true,
-                })}
-              </p>
+              <div className="flex flex-col gap-2">
+                <p className="text-xl text-center flex gap-2">
+                  <div className="flex flex-col">
+                    <strong>{ride.origin["name"]}</strong>
+                    <div className="text-sm font-light">
+                      {ride.origin["address"]}
+                    </div>
+                  </div>
+                  →
+                  <div className="flex flex-col">
+                    <strong>{ride.destination["name"]}</strong>
+                    <div className="text-sm font-light">
+                      {ride.destination["address"]}
+                    </div>
+                  </div>
+                </p>
+                <p className="text-center">
+                  Arrive by{" "}
+                  {new Date(ride.arrival_time).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
+                </p>
+              </div>
               <hr className="border-1 my-3 border-theme_medium_1" />
               <p>
                 <span className="font-semibold">Posted by:</span>{" "}
@@ -734,9 +746,23 @@ export default function MyRides() {
               </span>
             </p>
             <p className="text-xl my-1">
-              <strong>
-                {selectedRide.origin_name} → {selectedRide.destination_name}
-              </strong>
+              <div className="flex flex-col gap-2">
+                <p className="text-xl text-center flex gap-2">
+                  <div className="flex flex-col">
+                    <strong>{selectedRide.origin["name"]}</strong>
+                    <div className="text-sm font-light">
+                      {selectedRide.origin["address"]}
+                    </div>
+                  </div>
+                  →
+                  <div className="flex flex-col">
+                    <strong>{selectedRide.destination["name"]}</strong>
+                    <div className="text-sm font-light">
+                      {selectedRide.destination["address"]}
+                    </div>
+                  </div>
+                </p>
+              </div>
             </p>
             <div className="flex items-center gap-1">
               <p>
