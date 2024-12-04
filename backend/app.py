@@ -8,6 +8,7 @@ import smtplib # library for emails
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
+import json
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
@@ -204,8 +205,11 @@ def addride():
 
     arrival_time = data.get('arrival_time')
 
+    origin_json = json.dumps(origin)
+    dest_json = json.dumps(dest)
+
     try:
-        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, dest, arrival_time, note)
+        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin_json, dest_json, arrival_time, note)
         return jsonify({'success': True, 'message': 'Ride successfully created!'})
     except:
         return jsonify({'success': False, 'message': 'Failed to create ride.'}), 400
