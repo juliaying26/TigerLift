@@ -32,11 +32,8 @@ export default function Navbar({ user_info }) {
     setShowNotificationsModal(true);
     try {
       const response = await fetch("/api/notifications", {
-        method: "POST",
+        method: "GET",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          netid: user_info.netid,
-        }),
       });
 
       console.log(response, "is response");

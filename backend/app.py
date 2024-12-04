@@ -489,7 +489,7 @@ def send_email_notification(netid, mail, subject, message):
          return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
 
 
-@app.route("/api/notifications", methods=["POST"])
+@app.route("/api/notifications", methods=["GET"])
 def notifications():
     user_info = _cas.authenticate() 
     netid = user_info['netid']
