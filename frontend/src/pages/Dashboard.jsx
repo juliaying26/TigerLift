@@ -179,8 +179,9 @@ export default function Dashboard() {
   };
 
   const checkCreateRideParams = async () => {
-    console.log(origin.formatted_address);
-    console.log(dest.formatted_address);
+    
+    console.log(origin);
+    console.log(dest);
 
     if (
       capacity === "" ||
@@ -210,8 +211,8 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           capacity: capacity["label"],
-          origin: origin.name,
-          destination: dest.name,
+          origin: origin, // .name,
+          destination: dest, // .name,
           arrival_time: arrival_time_iso,
         }),
       });

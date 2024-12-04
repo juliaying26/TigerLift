@@ -187,19 +187,35 @@ def addride():
     data = request.get_json()
     capacity = data.get('capacity')
 
-    originID = database.location_to_id(data.get('origin'))
-    if originID == -1:
-        print("HERE")
-        database.create_location(data.get('origin'))
-        originID = database.location_to_id(data.get('origin'))
+    origin_obj = data.get('origin')
+    dest_obj = data.get('dest')
     
-    destID = database.location_to_id(data.get('destination'))
-    if destID == -1:
-        database.create_location(data.get('destination'))
-        destID = database.location_to_id(data.get('destination'))
+    origin_addr = origin_obj['formatted_address']
+    origin_name = origin_obj['name']
+    origin_id = origin_obj['place_id']
 
-    print(originID)
-    print(destID)
+    dest_addr = dest_obj['formatted_address']
+    dest_name = dest_obj['name']
+    dest_id = dest_obj['place_id']
+
+    origin = {'address': origin_addr,
+              'name': origin_name,
+              'id': origin_id}
+    
+    dest = {'address': dest_addr,
+            'name': dest_name,
+            'id': dest_id}
+
+    # originID = database.location_to_id(data.get('origin'))
+    # if originID == -1:
+    #     print("HERE")
+    #     database.create_location(data.get('origin'))
+    #     originID = database.location_to_id(data.get('origin'))
+    
+    # destID = database.location_to_id(data.get('destination'))
+    # if destID == -1:
+    #     database.create_location(data.get('destination'))
+    #     destID = database.location_to_id(data.get('destination'))
 
     arrival_time = data.get('arrival_time')
 
