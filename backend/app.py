@@ -316,8 +316,8 @@ def requestride():
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
-    origin_name = data.get('origin_name')
-    destination_name = data.get('destination_name')
+    origin = data.get('origin')
+    destination = data.get('destination')
     arrival_time = data.get('arrival_time')
     print("REQUESTING RIDE")
     if not rideid:
@@ -331,7 +331,7 @@ def requestride():
             admin_info = database.rideid_to_admin_id_email(rideid)
             print("Admin info is", admin_info)
             subject = '🚗' + str(user_info['displayname']) + ' requested to join your Rideshare!'
-            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + arrival_time + '!'
+            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin['name'] + ' to ' + destination['name'] + ' on ' + arrival_time + '!'
             send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, message)
         except:
             return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
