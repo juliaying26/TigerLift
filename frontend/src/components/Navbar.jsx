@@ -10,6 +10,8 @@ export default function Navbar({ user_info }) {
   const navigate = useNavigate();
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
+  const [myRidesViewType, setMyRidesViewType] = useState("");
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -27,13 +29,14 @@ export default function Navbar({ user_info }) {
   const isActive = (path) => location.pathname === path;
 
   const handleOpenNotificationsModal = async () => {
+    setShowNotificationsModal(true);
     try {
       const response = await fetch("/api/notifications", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
 
-      console.log(response, "is response")
+      console.log(response, "is response");
 
       if (!response.ok) {
         throw new Error(`Failed to fetch notifications: ${response.status}`);
@@ -49,9 +52,7 @@ export default function Navbar({ user_info }) {
         notification_time: row[2],
         subject: row[3],
       }));
-    
       setNotifications(data || []);
-      setShowNotificationsModal(true); // Show the modal
     } catch (error) {
       console.error("Error fetching notifications:", error);
       alert("Failed to load notifications.");
@@ -80,21 +81,93 @@ export default function Navbar({ user_info }) {
             <hr className="py-1" />
             <div className="flex flex-col gap-5">
               <button
-                onClick={() => navigateTo("/dashboard")}
+                onClick={() => {
+                  setMyRidesViewType("");
+                  navigateTo("/dashboard");
+                }}
                 className={`${
                   isActive("/dashboard") ? "bg-theme_light_1 font-medium" : ""
                 } text-lg rounded-md py-3 hover:bg-theme_light_1`}
               >
-                All Rides
+                All Rideshares
               </button>
               <button
-                onClick={() => navigateTo("/myrides")}
+                onClick={() => setIsSubMenuOpen(!isSubMenuOpen)}
                 className={`${
                   isActive("/myrides") ? "bg-theme_light_1 font-medium" : ""
                 } text-lg rounded-md py-3 hover:bg-theme_light_1`}
               >
-                My Rides
+                <div className="relative items-center">
+                  My Rideshares
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    {isSubMenuOpen ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </div>
               </button>
+              {isSubMenuOpen && (
+                <div className="flex flex-col gap-4 pl-8">
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setMyRidesViewType("posted");
+                      navigate("/myrides", { state: { viewType: "posted" } });
+                    }}
+                    className={`${
+                      isActive("/myrides") && myRidesViewType === "posted"
+                        ? "bg-theme_light_2 font-medium"
+                        : ""
+                    } text-lg rounded-md py-3 hover:bg-theme_light_2`}
+                  >
+                    My Posted Rideshares
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setMyRidesViewType("requested");
+                      navigate("/myrides", {
+                        state: { viewType: "requested" },
+                      });
+                    }}
+                    className={`${
+                      isActive("/myrides") && myRidesViewType === "requested"
+                        ? "bg-theme_light_2 font-medium"
+                        : ""
+                    } text-lg rounded-md py-3 hover:bg-theme_light_2`}
+                  >
+                    My Requested Rideshares
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-4">
@@ -114,7 +187,7 @@ export default function Navbar({ user_info }) {
         <div className="w-full">
           <div className="flex h-16 items-center justify-between px-4 md:px-8">
             {/* Left Side - Dashboard and Logo */}
-            <div className="md:hidden">
+            <div className="md:hidden absolute">
               <IconButton
                 type="hamburger"
                 onClick={() => setIsMobileMenuOpen(true)}
@@ -135,21 +208,20 @@ export default function Navbar({ user_info }) {
             </div>
 
             {/* Right Side */}
-              <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
               <IconButton
-                    onClick={handleOpenNotificationsModal}
-                    type="notification"
-              >
-              </IconButton>
-
+                onClick={handleOpenNotificationsModal}
+                type="notification"
+                className={`${
+                  showNotificationsModal ? "bg-theme_light_1" : ""
+                } hover:bg-theme_light_1`}
+              ></IconButton>
               <NotificationsModal
                 isOpen={showNotificationsModal}
                 onClose={handleCloseNotificationsModal}
                 notifications={notifications}
               />
-
               <p className="font-medium text-lg">{user_info.displayname}</p>
-
               <a
                 href="/api/logout"
                 className="bg-theme_dark_1 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_1"

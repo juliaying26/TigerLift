@@ -5,7 +5,7 @@ import Modal from "../components/Modal";
 import Button from "../components/Button";
 import Pill from "../components/Pill";
 import IconButton from "../components/IconButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
 import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
@@ -24,6 +24,7 @@ dayjs.extend(timezone);
 export default function MyRides() {
   // myRidesData = array of dictionaries
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [userInfo, setUserInfo] = useState({});
   const [myUpcomingPostedRidesData, setMyUpcomingPostedRidesData] = useState(
@@ -83,50 +84,10 @@ export default function MyRides() {
       }
       const data = await response.json();
 
-      let posted_ride_data = data.myrides;
-      let requested_ride_data = data.myreqrides;
-      console.log(posted_ride_data);
-      const upcoming_posted_rides = [];
-      const past_posted_rides = [];
-      const upcoming_requested_rides = [];
-      const past_requested_rides = [];
-      const now = new Date();
-      posted_ride_data.forEach((ride) => {
-        if (new Date(ride.arrival_time) > now) {
-          upcoming_posted_rides.push(ride);
-        } else {
-          past_posted_rides.push(ride);
-        }
-      });
-      requested_ride_data.forEach((ride) => {
-        if (new Date(ride.arrival_time) > now) {
-          upcoming_requested_rides.push(ride);
-        } else {
-          past_requested_rides.push(ride);
-        }
-      });
-      // Sort upcoming rides in ascending order (by arrival time)
-      upcoming_posted_rides.sort(
-        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
-      );
-      // Sort past rides in descending order (by arrival time)
-      past_posted_rides.sort(
-        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
-      );
-      upcoming_requested_rides.sort(
-        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
-      );
-      past_requested_rides.sort(
-        (a, b) => new Date(b.arrival_time) - new Date(a.arrival_time)
-      );
-      setMyUpcomingPostedRidesData(upcoming_posted_rides);
-      setMyPastRequestedRidesData(
-        past_requested_rides.filter(
-          (ride) => ride.request_status === "accepted"
-        )
-      );
-      setMyUpcomingRequestedRidesData(upcoming_requested_rides);
-      setMyPastPostedRidesData(past_posted_rides);
+      setMyUpcomingPostedRidesData(data.upcoming_posted_rides);
+      setMyPastPostedRidesData(data.past_posted_rides);
+      setMyUpcomingRequestedRidesData(data.upcoming_requested_rides);
+      setMyPastRequestedRidesData(data.past_requested_rides);
 
       setUserInfo(data.user_info);
     } catch (error) {
@@ -146,6 +107,12 @@ export default function MyRides() {
 
     loadData();
   }, [viewType]);
+
+  useEffect(() => {
+    if (location.state?.viewType) {
+      setViewType(location.state.viewType);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (selectedRide) {
@@ -647,7 +614,7 @@ export default function MyRides() {
           message={popupMessageInfo.message}
         />
       )}
-      <div className="flex gap-4">
+      <div className="hidden md:flex gap-4">
         <IconButton type="back" onClick={() => navigate("/dashboard")} />
         <Button
           className={`${

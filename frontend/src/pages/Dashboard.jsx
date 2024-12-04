@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useTransition } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
@@ -263,14 +263,6 @@ export default function Dashboard() {
 
       console.log(data.rides);
 
-      const currentTime = new Date();
-      data.rides = data.rides.filter(
-        (entry) => new Date(entry.arrival_time) >= currentTime
-      );
-      console.log(currentTime);
-      data.rides.sort(
-        (a, b) => new Date(a.arrival_time) - new Date(b.arrival_time)
-      );
       setRidesData(data.rides);
       const tempLocations = [];
       for (const loc of data.locations) {

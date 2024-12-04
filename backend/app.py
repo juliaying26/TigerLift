@@ -7,6 +7,7 @@ load_dotenv() # load vars in .env file
 import smtplib # library for emails
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timezone
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
@@ -57,6 +58,9 @@ def api_dashboard():
 
     # mapping for location
     location_map = {location[0]: location[1] for location in locations}
+
+    current_time = datetime.now(timezone.utc)
+    current_time = current_time.replace(tzinfo=None)
     
     # mapping for rides array 
     updated_rides = []
@@ -76,7 +80,10 @@ def api_dashboard():
             'updated_at': ride[9],
             'current_riders': ride[10]
         }
-        updated_rides.append(updated_ride)
+
+        if updated_ride['arrival_time'] > current_time:
+            updated_rides.append(updated_ride)
+
     
     ridereqs_map = {}
     for ridereq in ridereqs:
@@ -99,8 +106,13 @@ def get_my_rides():
     # mapping for location
     location_map = {location[0]: location[1] for location in locations}
     
+    current_time = datetime.now(timezone.utc)
+    current_time = current_time.replace(tzinfo=None)
+
     # mapping for rides array 
     my_rides = []
+    past_my_rides = []
+
     for ride in myrides:
         updated_ride = {
             'id': ride[0],
@@ -118,9 +130,17 @@ def get_my_rides():
             'current_riders': ride[10],
             'requested_riders':ride[11]
         }
-        my_rides.append(updated_ride)
+        
+        if updated_ride['arrival_time'] > current_time:
+            my_rides.append(updated_ride)
+        else:
+            past_my_rides.append(updated_ride)
+
+        # my_rides.append(updated_ride)
 
     my_req_rides = []
+    past_my_req_rides = []
+
     for ride in myreqrides:
         updated_ride = {
             'id': ride[0],
@@ -138,12 +158,27 @@ def get_my_rides():
             'current_riders': ride[10],
             'request_status': ride[11]
         }
-        my_req_rides.append(updated_ride)
-    
+
+        if updated_ride['arrival_time'] > current_time:
+            my_req_rides.append(updated_ride)
+        else:
+            past_my_req_rides.append(updated_ride)
+
+        # my_req_rides.append(updated_ride)
+
+    my_rides.sort(key=lambda ride: ride['arrival_time'])
+    past_my_rides.sort(key=lambda ride: ride['arrival_time'], reverse=True)
+    my_req_rides.sort(key=lambda ride: ride['arrival_time'])
+    past_my_req_rides.sort(key=lambda ride: ride['arrival_time'], reverse=True)
+
+    past_my_req_rides = [ride for ride in past_my_req_rides if ride['request_status'] == 'accepted']
+
     return jsonify({
         'user_info': user_info,
-        'myrides': my_rides,
-        'myreqrides': my_req_rides,
+        'upcoming_posted_rides': my_rides,
+        'past_posted_rides': past_my_rides,
+        'upcoming_requested_rides': my_req_rides,
+        'past_requested_rides': past_my_req_rides,
     })
 
 @app.route("/api/addride", methods=["POST"])
