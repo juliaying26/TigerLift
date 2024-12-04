@@ -301,8 +301,8 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           rideid: rideid,
-          origin: origin,
-          destination: destination,
+          origin_name: origin["name"],
+          destination_name: destination["name"],
           arrival_time: formattedArrivalTime,
         }),
       });
@@ -466,23 +466,34 @@ export default function Dashboard() {
                   buttonStatus={dashboardData.ridereqs[ride.id]}
                   buttonDisabled={pendingRideId === ride.id}
                 >
-                  <p className="text-xl text-center">
-                    <strong>
-                      {ride.origin["name"]} → {ride.destination["name"]}
-                      {ride.origin["address"]} → {ride.destination["address"]}
-                    </strong>
-                  </p>
-                  <p className="text-center mb-2">
-                    Arrive by{" "}
-                    {new Date(ride.arrival_time).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "numeric",
-                      hour12: true,
-                    })}
-                  </p>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xl text-center flex gap-2">
+                      <div className="flex flex-col">
+                        <strong>{ride.origin["name"]}</strong>
+                        <div className="text-sm font-light">
+                          {ride.origin["address"]}
+                        </div>
+                      </div>
+                      →
+                      <div className="flex flex-col">
+                        <strong>{ride.destination["name"]}</strong>
+                        <div className="text-sm font-light">
+                          {ride.destination["address"]}
+                        </div>
+                      </div>
+                    </p>
+                    <p className="text-center">
+                      Arrive by{" "}
+                      {new Date(ride.arrival_time).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      })}
+                    </p>
+                  </div>
                   <hr className="border-1 my-3 border-theme_medium_1" />
                   <p>
                     <span className="font-semibold">Posted by:</span>{" "}

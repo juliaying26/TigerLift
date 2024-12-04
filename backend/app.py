@@ -8,7 +8,7 @@ import smtplib # library for emails
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
-import json
+from psycopg2.extras import Json
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
@@ -205,8 +205,8 @@ def addride():
 
     arrival_time = data.get('arrival_time')
 
-    origin_json = json.dumps(origin)
-    dest_json = json.dumps(dest)
+    origin_json = Json(origin)
+    dest_json = Json(dest)
 
     try:
         database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin_json, dest_json, arrival_time, note)
@@ -318,8 +318,8 @@ def requestride():
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
-    origin = data.get('origin')
-    destination = data.get('destination')
+    origin_name = data.get('origin_name')
+    destination_name = data.get('destination_name')
     arrival_time = data.get('arrival_time')
     print("REQUESTING RIDE")
     if not rideid:
@@ -333,7 +333,7 @@ def requestride():
             admin_info = database.rideid_to_admin_id_email(rideid)
             print("Admin info is", admin_info)
             subject = '🚗' + str(user_info['displayname']) + ' requested to join your Rideshare!'
-            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin['name'] + ' to ' + destination['name'] + ' on ' + arrival_time + '!'
+            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + arrival_time + '!'
             send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, message)
         except:
             return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
