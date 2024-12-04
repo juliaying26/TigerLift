@@ -53,11 +53,11 @@ def logout():
 def api_dashboard():
     user_info = _cas.authenticate()
     rides = database.get_all_rides()
-    locations = database.get_all_locations()
+    # locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
     # mapping for location
-    location_map = {location[0]: location[1] for location in locations}
+    # location_map = {location[0]: location[1] for location in locations}
 
     current_time = datetime.now(timezone.utc)
     current_time = current_time.replace(tzinfo=None)
@@ -72,9 +72,7 @@ def api_dashboard():
             'admin_email': ride[3],
             'max_capacity': ride[4],
             'origin': ride[5],
-            'origin_name': location_map.get(ride[5], 'Unknown'),
             'destination': ride[6],
-            'destination_name': location_map.get(ride[6], 'Unknown'),
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
@@ -101,10 +99,11 @@ def get_my_rides():
     user_info = _cas.authenticate()
     myrides = database.get_users_rides(user_info['netid'])
     myreqrides = database.get_users_requested_rides(user_info['netid'])
-    locations = database.get_all_locations()
+    
+    # locations = database.get_all_locations()
 
     # mapping for location
-    location_map = {location[0]: location[1] for location in locations}
+    # location_map = {location[0]: location[1] for location in locations}
     
     current_time = datetime.now(timezone.utc)
     current_time = current_time.replace(tzinfo=None)
@@ -121,9 +120,7 @@ def get_my_rides():
             'admin_email': ride[3],
             'max_capacity': ride[4],
             'origin': ride[5],
-            'origin_name': location_map.get(ride[5], 'Unknown'),
             'destination': ride[6],
-            'destination_name': location_map.get(ride[6], 'Unknown'),
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
@@ -149,9 +146,7 @@ def get_my_rides():
             'admin_email': ride[3],
             'max_capacity': ride[4],
             'origin': ride[5],
-            'origin_name': location_map.get(ride[5], 'Unknown'),
             'destination': ride[6],
-            'destination_name': location_map.get(ride[6], 'Unknown'),
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
@@ -189,6 +184,8 @@ def addride():
 
     origin_obj = data.get('origin')
     dest_obj = data.get('dest')
+
+    note = ""
     
     origin_addr = origin_obj['formatted_address']
     origin_name = origin_obj['name']
@@ -206,21 +203,10 @@ def addride():
             'name': dest_name,
             'id': dest_id}
 
-    # originID = database.location_to_id(data.get('origin'))
-    # if originID == -1:
-    #     print("HERE")
-    #     database.create_location(data.get('origin'))
-    #     originID = database.location_to_id(data.get('origin'))
-    
-    # destID = database.location_to_id(data.get('destination'))
-    # if destID == -1:
-    #     database.create_location(data.get('destination'))
-    #     destID = database.location_to_id(data.get('destination'))
-
     arrival_time = data.get('arrival_time')
 
     try:
-        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, originID, destID, arrival_time)
+        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin, dest, arrival_time, note)
         return jsonify({'success': True, 'message': 'Ride successfully created!'})
     except:
         return jsonify({'success': False, 'message': 'Failed to create ride.'}), 400
