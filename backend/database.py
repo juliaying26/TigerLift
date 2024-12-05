@@ -377,6 +377,7 @@ def get_users_rides(netid):
             Rides.arrival_time, 
             Rides.creation_time, 
             Rides.updated_at, 
+            Rides.note,
             Rides.current_riders, 
             COALESCE(ARRAY_AGG(
                 CASE 
@@ -401,6 +402,7 @@ def get_users_rides(netid):
             Rides.arrival_time, 
             Rides.creation_time, 
             Rides.updated_at, 
+            Rides.note,
             Rides.current_riders;
     """
 
@@ -427,7 +429,7 @@ def get_all_rides():
     
     sql_command = """
     SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin_dict,
-    destination_dict, arrival_time, creation_time, updated_at, current_riders FROM Rides
+    destination_dict, arrival_time, creation_time, updated_at, current_riders, note FROM Rides
     """
     conn = connect()
 
@@ -527,7 +529,7 @@ def get_users_requested_rides(netid):
     
     sql_command = """
         SELECT Rides.id, admin_netid, admin_name, admin_email, max_capacity, origin_dict, destination_dict, 
-            arrival_time, creation_time, updated_at, 
+            arrival_time, creation_time, updated_at, note, 
             current_riders, RideRequests.status as ride_request_status
         FROM Rides
         JOIN RideRequests ON Rides.id = RideRequests.ride_id

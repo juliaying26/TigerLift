@@ -89,6 +89,8 @@ export default function MyRides() {
       setMyUpcomingRequestedRidesData(data.upcoming_requested_rides);
       setMyPastRequestedRidesData(data.past_requested_rides);
 
+      console.log(data);
+
       setUserInfo(data.user_info);
     } catch (error) {
       console.error("Error fetching rides:", error);
@@ -554,6 +556,14 @@ export default function MyRides() {
                 <span className="font-semibold">Seats Taken:</span>{" "}
                 {ride.current_riders.length}/{ride.max_capacity}
               </p>
+              {ride.note && (
+                <div>
+                  <span className="font-semibold">Note:</span>
+                  <div className="p-2 bg-zinc-100 rounded-lg">
+                    <p>{ride.note}</p>
+                  </div>
+                </div>
+              )}
               {viewType === "posted" && (
                 <div>
                   <p>
@@ -870,6 +880,14 @@ export default function MyRides() {
                 </Button>
               )}
             </div>
+            {selectedRide.note && (
+              <div>
+                <span className="font-semibold">Note:</span>
+                <div className="p-2 bg-zinc-100 rounded-lg">
+                  <p>{selectedRide.note}</p>
+                </div>
+              </div>
+            )}
             <p>
               <span className="font-semibold">Current Riders:</span>
             </p>
