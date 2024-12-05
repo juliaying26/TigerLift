@@ -264,18 +264,18 @@ def searchrides():
     arrival_time = request.args.get('arrival_time')
     start_search_time = request.args.get('start_search_time')
 
-    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
-    print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
+    #print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
+    #print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
 
     origin = request.args.get('origin')
     destination = request.args.get('destination')
     if not origin and not destination:
         return jsonify({"error": "You must provide at least one of 'origin' or 'destination'"}), 400
 
-    origin_id = database.location_to_id(origin) if origin else None
-    destination_id = database.location_to_id(destination) if destination else None
+    print("origin:", origin)
+    print("destination:", destination)
 
-    rides = database.search_rides(origin_id, destination_id, arrival_time, start_search_time)
+    rides = database.search_rides(origin, destination, arrival_time, start_search_time)
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
@@ -294,13 +294,12 @@ def searchrides():
             'admin_email': ride[3],
             'max_capacity': ride[4],
             'origin': ride[5],
-            'origin_name': location_map.get(ride[5], 'Unknown'),
             'destination': ride[6],
-            'destination_name': location_map.get(ride[6], 'Unknown'),
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
-            'current_riders': ride[10]
+            'current_riders': ride[10],
+            'note': ride[11]
         }
 
         updated_rides.append(updated_ride)

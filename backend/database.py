@@ -477,7 +477,7 @@ def get_all_locations():
 def search_rides(origin_id, destination_id, arrival_time=None, start_search_time=None):
     query = """
         SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin_dict, 
-        destination_dict, arrival_time, creation_time, updated_at, current_riders FROM Rides
+        destination_dict, arrival_time, creation_time, updated_at, current_riders, note FROM Rides
         WHERE 1=1
     """
 
