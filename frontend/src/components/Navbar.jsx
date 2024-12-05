@@ -66,10 +66,6 @@ export default function Navbar({ user_info }) {
     fetchNotifs();
   }, []);
 
-  const handleOpenNotificationsModal = async () => {
-    setShowNotificationsModal(true);
-  };
-
   const handleCloseNotificationsModal = () => {
     setShowNotificationsModal(false);
   };
@@ -194,6 +190,16 @@ export default function Navbar({ user_info }) {
           </div>
         </div>
       )}
+
+      {
+        <NotificationsModal
+          isOpen={showNotificationsModal}
+          isLoading={isNotifsLoading}
+          onClose={handleCloseNotificationsModal}
+          notifications={notifications}
+        />
+      }
+
       <nav className="bg-theme_medium_1">
         <div className="w-full">
           <div className="flex h-16 items-center justify-between px-4 md:px-8">
@@ -221,18 +227,14 @@ export default function Navbar({ user_info }) {
             {/* Right Side */}
             <div className="hidden md:flex items-center gap-4">
               <IconButton
-                onClick={handleOpenNotificationsModal}
+                onClick={() =>
+                  setShowNotificationsModal(!showNotificationsModal)
+                }
                 type="notification"
                 className={`${
                   showNotificationsModal ? "bg-theme_light_1" : ""
-                } hover:bg-theme_light_1`}
+                } hover:bg-theme_light_1 z-50`}
               ></IconButton>
-              <NotificationsModal
-                isOpen={showNotificationsModal}
-                isLoading={isNotifsLoading}
-                onClose={handleCloseNotificationsModal}
-                notifications={notifications}
-              />
               <p className="font-medium text-lg">{user_info.displayname}</p>
               <a
                 href="/api/logout"

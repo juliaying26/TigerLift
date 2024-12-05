@@ -28,9 +28,9 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       {user ? (
-        <div>
+        <div className="h-full">
           <Navbar user_info={user} />
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
