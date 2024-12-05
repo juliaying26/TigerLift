@@ -103,6 +103,8 @@ export default function Dashboard() {
     setSearchOrigin(searchDest);
     setSearchDest(tempSearchOrigin);
 
+    console.log("searchOriginRef.current when switchign fields:", searchOriginRef.current.placeholder)
+
     if (searchOriginRef.current && searchDestinationRef.current) {
       const tempSearchOriginValue = searchOriginRef.current.value;
       searchOriginRef.current.value = searchDestinationRef.current.value;
@@ -338,6 +340,23 @@ export default function Dashboard() {
     setEndSearchTime(null);
   };
 
+  const clearSearchAutocompleteFields = async () => {
+    //console.log("trying to clear field.")
+    //console.log("text:", searchOriginRef.current.value)
+
+    if (searchOriginRef.current.value) {
+      searchOriginRef.current.value = "";
+    }
+    if (searchDestinationRef.current.value) {
+      searchDestinationRef.current.value = "";
+    }
+  };
+
+  const clearFilters = async () => {
+    resetSearch();
+    clearSearchAutocompleteFields();
+  }
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -375,7 +394,6 @@ export default function Dashboard() {
             options={locations}
             isClearable
             placeholder="Select starting point"
-            onChange={resetSearch}
           />
           */}
           
@@ -394,10 +412,10 @@ export default function Dashboard() {
                   place.geometry.location.lng()
                 );
               setSearchOrigin(place);
-              resetSearch();
             }}
             options={autocompleteOptions}
             ref={searchOriginRef}
+            //onSelected={searchRide}
           />
 
           <IconButton
@@ -416,7 +434,6 @@ export default function Dashboard() {
             options={locations}
             isClearable
             placeholder="Select destination"
-            onChange={resetSearch}
           />
           */}
 
@@ -482,7 +499,9 @@ export default function Dashboard() {
           {inSearch && (
             <div>
               <Button
-                onClick={resetSearch}
+                // clearFilters() includes resetSearch() and clearSearchAutocompleteFields()
+                onClick={clearFilters}
+                
                 className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
               >
                 Clear Search Filters
