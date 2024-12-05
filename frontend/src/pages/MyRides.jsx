@@ -536,15 +536,17 @@ export default function MyRides() {
                   </span>
                 </p>
                 <p className="text-center">
-                  Arrive by{" "}
-                  {new Date(ride.arrival_time).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "numeric",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
+                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                    Arrive by{" "}
+                    {new Date(ride.arrival_time).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    })}
+                  </span>
                 </p>
               </div>
               <hr className="border-1 my-3 border-theme_medium_1" />
@@ -557,7 +559,7 @@ export default function MyRides() {
                 {ride.current_riders.length}/{ride.max_capacity}
               </p>
               {ride.note && (
-                <div>
+                <div className="mb-0.5">
                   <span className="font-semibold">Note:</span>
                   <div className="p-2 bg-zinc-100 rounded-lg">
                     <p>{ride.note}</p>
@@ -604,9 +606,9 @@ export default function MyRides() {
                       })}
                     </div>
                   ) : (
-                    <p>
+                    <p className="text-zinc-800">
                       {new Date(ride.arrival_time) > new Date()
-                        ? "No current riders."
+                        ? "No current riders. Manage Rideshare to manage requests."
                         : "None."}
                     </p>
                   )}
@@ -788,27 +790,31 @@ export default function MyRides() {
                   allowClear={false}
                 />
               ) : newArrivalDate || newArrivalTime ? (
-                new Date(
-                  `${newArrivalDate.format(
-                    "YYYY-MM-DD"
-                  )}T${newArrivalTime.format("HH:mm:ss")}`
-                ).toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                  hour12: true,
-                })
+                <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                  {new Date(
+                    `${newArrivalDate.format(
+                      "YYYY-MM-DD"
+                    )}T${newArrivalTime.format("HH:mm:ss")}`
+                  ).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
+                </span>
               ) : (
-                new Date(selectedRide.arrival_time).toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                  hour12: true,
-                })
+                <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                  {new Date(selectedRide.arrival_time).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
+                </span>
               )}
               {isEditingArrivalTime ? (
                 <Button
@@ -881,7 +887,7 @@ export default function MyRides() {
               )}
             </div>
             {selectedRide.note && (
-              <div>
+              <div className="mb-0.5">
                 <span className="font-semibold">Note:</span>
                 <div className="p-2 bg-zinc-100 rounded-lg">
                   <p>{selectedRide.note}</p>
@@ -920,7 +926,7 @@ export default function MyRides() {
                 })}
               </div>
             ) : (
-              <p>No current riders.</p>
+              <p className="text-zinc-700">No current riders.</p>
             )}
             <div className="flex flex-col gap-2 mt-1 mb-4">
               <p className="-mb-1">

@@ -552,16 +552,18 @@ export default function Dashboard() {
                         </span>
                       </span>
                     </p>
-                    <p className="text-center">
-                      Arrive by{" "}
-                      {new Date(ride.arrival_time).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      })}
+                    <p className="mt-2 mb-1 text-center">
+                      <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                        Arrive by{" "}
+                        {new Date(ride.arrival_time).toLocaleString("en-US", {
+                          year: "numeric",
+                          month: "numeric",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                          hour12: true,
+                        })}
+                      </span>
                     </p>
                   </div>
                   <hr className="border-1 my-3 border-theme_medium_1" />
@@ -579,7 +581,7 @@ export default function Dashboard() {
                     {ride.current_riders.length}/{ride.max_capacity}
                   </p>
                   {ride.note && (
-                    <div>
+                    <div className="mb-0.5">
                       <span className="font-semibold">Note:</span>
                       <div className="p-2 bg-zinc-100 rounded-lg">
                         <p>{ride.note}</p>
