@@ -338,12 +338,6 @@ export default function Dashboard() {
     setStartSearchTime(null);
     setEndSearchDate(null);
     setEndSearchTime(null);
-  };
-
-  const clearSearchAutocompleteFields = async () => {
-    //console.log("trying to clear field.")
-    //console.log("text:", searchOriginRef.current.value)
-
     if (searchOriginRef.current.value) {
       searchOriginRef.current.value = "";
     }
@@ -351,11 +345,6 @@ export default function Dashboard() {
       searchDestinationRef.current.value = "";
     }
   };
-
-  const clearFilters = async () => {
-    resetSearch();
-    clearSearchAutocompleteFields();
-  }
 
   useEffect(() => {
     fetchDashboardData();
@@ -500,7 +489,7 @@ export default function Dashboard() {
             <div>
               <Button
                 // clearFilters() includes resetSearch() and clearSearchAutocompleteFields()
-                onClick={clearFilters}
+                onClick={resetSearch}
                 
                 className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
               >
