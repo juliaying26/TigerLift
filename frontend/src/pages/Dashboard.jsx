@@ -104,7 +104,7 @@ export default function Dashboard() {
     setSearchDest(tempSearchOrigin);
 
     if (searchOriginRef.current && searchDestinationRef.current) {
-      const tempSearchOriginValue = originRef.current.value;
+      const tempSearchOriginValue = searchOriginRef.current.value;
       searchOriginRef.current.value = searchDestinationRef.current.value;
       searchDestinationRef.current.value = tempSearchOriginValue;
     }
@@ -394,6 +394,7 @@ export default function Dashboard() {
                   place.geometry.location.lng()
                 );
               setSearchOrigin(place);
+              resetSearch();
             }}
             options={autocompleteOptions}
             ref={searchOriginRef}
