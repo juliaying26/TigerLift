@@ -13,6 +13,8 @@ import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
+import CopyEmailButton from "../components/CopyEmailButton";
+import TextArea from "../components/TextArea";
 
 export default function Dashboard() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -22,7 +24,6 @@ export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
     rides: [],
-    locations: [],
     ridereqs: {},
   });
 
@@ -43,6 +44,7 @@ export default function Dashboard() {
   const [dest, setDest] = useState(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [rideNote, setRideNote] = useState("");
   const [isCreatingRide, setIsCreatingRide] = useState(false);
 
   const searchOriginRef = useRef(null);
@@ -61,7 +63,7 @@ export default function Dashboard() {
 
   const [inSearch, setInSearch] = useState(false);
 
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useState([]); // delete this later
 
   const max_capacity_option = 5;
   const capacity_options = [];
@@ -188,15 +190,17 @@ export default function Dashboard() {
 
 
   const checkCreateRideParams = async () => {
-    console.log(origin.formatted_address);
-    console.log(dest.formatted_address);
+    console.log(origin);
+    console.log(dest);
 
     if (
       capacity === "" ||
       origin === "" ||
       dest === "" ||
       date === "" ||
-      time === ""
+      time === "" ||
+      !date ||
+      !time
     ) {
       alert("You must provide all fields.");
       return;
@@ -219,9 +223,10 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           capacity: capacity["label"],
-          origin: origin.name,
-          destination: dest.name,
+          origin: origin, // .name,
+          destination: dest, // .name,
           arrival_time: arrival_time_iso,
+          note: rideNote,
         }),
       });
       const responseData = await response.json();
@@ -258,18 +263,9 @@ export default function Dashboard() {
     try {
       const response = await fetch("/api/dashboard");
       const data = await response.json();
-      // console.log(data.locations)
       setDashboardData(data);
-
       console.log(data.rides);
-
       setRidesData(data.rides);
-      const tempLocations = [];
-      for (const loc of data.locations) {
-        let dict = { value: loc[1], label: loc[1] };
-        tempLocations.push(dict);
-      }
-      setLocations(tempLocations);
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -281,8 +277,8 @@ export default function Dashboard() {
 
   const handleRideRequest = async (
     rideid,
-    origin_name,
-    destination_name,
+    origin,
+    destination,
     arrival_time
   ) => {
     console.log("IN HANDLE RIDE REQUEST");
@@ -301,8 +297,8 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           rideid: rideid,
-          origin_name: origin_name,
-          destination_name: destination_name,
+          origin_name: origin["name"],
+          destination_name: destination["name"],
           arrival_time: formattedArrivalTime,
         }),
       });
@@ -505,8 +501,8 @@ export default function Dashboard() {
                       : () =>
                           handleRideRequest(
                             ride.id,
-                            ride.origin_name,
-                            ride.destination_name,
+                            ride.origin,
+                            ride.destination,
                             ride.arrival_time
                           )
                   }
@@ -520,31 +516,62 @@ export default function Dashboard() {
                   buttonStatus={dashboardData.ridereqs[ride.id]}
                   buttonDisabled={pendingRideId === ride.id}
                 >
-                  <p className="text-xl text-center">
-                    <strong>
-                      {ride.origin_name} → {ride.destination_name}
-                    </strong>
-                  </p>
-                  <p className="text-center mb-2">
-                    Arrive by{" "}
-                    {new Date(ride.arrival_time).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "numeric",
-                      hour12: true,
-                    })}
-                  </p>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xl flex items-center justify-center gap-2">
+                      <span className="flex text-center flex-col">
+                        <strong>{ride.origin["name"]}</strong>
+                        <span className="text-sm">
+                          {ride.origin["address"]
+                            .split(" ")
+                            .slice(0, -2)
+                            .join(" ")}
+                        </span>
+                      </span>
+                      →
+                      <span className="flex text-center flex-col">
+                        <strong>{ride.destination["name"]}</strong>
+                        <span className="text-sm">
+                          {ride.destination["address"]
+                            .split(" ")
+                            .slice(0, -2)
+                            .join(" ")}
+                        </span>
+                      </span>
+                    </p>
+                    <p className="text-center">
+                      Arrive by{" "}
+                      {new Date(ride.arrival_time).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      })}
+                    </p>
+                  </div>
                   <hr className="border-1 my-3 border-theme_medium_1" />
                   <p>
                     <span className="font-semibold">Posted by:</span>{" "}
-                    {ride.admin_name}, {ride.admin_email}
+                    <span>{ride.admin_name}</span>{" "}
+                    <CopyEmailButton
+                      copy={[ride.admin_email]}
+                      text="Copy Email"
+                      className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle"
+                    />
                   </p>
                   <p>
                     <span className="font-semibold">Seats Taken:</span>{" "}
                     {ride.current_riders.length}/{ride.max_capacity}
                   </p>
+                  {ride.note && (
+                    <div>
+                      <span className="font-semibold">Note:</span>
+                      <div className="p-2 bg-zinc-100 rounded-lg">
+                        <p>{ride.note}</p>
+                      </div>
+                    </div>
+                  )}
                 </RideCard>
               ))}
             </div>
@@ -601,7 +628,6 @@ export default function Dashboard() {
                     onClick={flipCreateRideFields}
                     disabled={false}
                   ></IconButton>
-
                   <Autocomplete
                     className="flex-grow max-w-[44%]"
                     wrapperClassName="w-full"
@@ -625,7 +651,6 @@ export default function Dashboard() {
                   />
                 </div>
               </div>
-
               <div>
                 <p className="font-medium">Arrival Time</p>
                 <DateTimePicker
@@ -636,7 +661,15 @@ export default function Dashboard() {
                 />
               </div>
             </div>
-
+            <div>
+              <p className="font-medium">Optional Note to Riders</p>
+              <TextArea
+                placeholder={"Add an optional note here. (Max 250 characters)."}
+                inputValue={rideNote}
+                setInputValue={setRideNote}
+                maxLength={250}
+              />
+            </div>
             <Button
               className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1"
               onClick={checkCreateRideParams}

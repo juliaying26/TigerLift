@@ -8,6 +8,7 @@ import smtplib # library for emails
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
+from psycopg2.extras import Json
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
@@ -53,11 +54,11 @@ def logout():
 def api_dashboard():
     user_info = _cas.authenticate()
     rides = database.get_all_rides()
-    locations = database.get_all_locations()
+    # locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
     # mapping for location
-    location_map = {location[0]: location[1] for location in locations}
+    # location_map = {location[0]: location[1] for location in locations}
 
     current_time = datetime.now(timezone.utc)
     current_time = current_time.replace(tzinfo=None)
@@ -72,16 +73,15 @@ def api_dashboard():
             'admin_email': ride[3],
             'max_capacity': ride[4],
             'origin': ride[5],
-            'origin_name': location_map.get(ride[5], 'Unknown'),
             'destination': ride[6],
-            'destination_name': location_map.get(ride[6], 'Unknown'),
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
-            'current_riders': ride[10]
+            'current_riders': ride[10],
+            'note': ride[11]
         }
 
-        if updated_ride['arrival_time'] > current_time:
+        if updated_ride['arrival_time'] > current_time and len(updated_ride['current_riders']) < updated_ride['max_capacity']:
             updated_rides.append(updated_ride)
 
     
@@ -92,7 +92,6 @@ def api_dashboard():
     return jsonify({
         'user_info': user_info,
         'rides': updated_rides,
-        'locations': locations,
         'ridereqs': ridereqs_map
     })
 
@@ -101,10 +100,11 @@ def get_my_rides():
     user_info = _cas.authenticate()
     myrides = database.get_users_rides(user_info['netid'])
     myreqrides = database.get_users_requested_rides(user_info['netid'])
-    locations = database.get_all_locations()
+    
+    # locations = database.get_all_locations()
 
     # mapping for location
-    location_map = {location[0]: location[1] for location in locations}
+    # location_map = {location[0]: location[1] for location in locations}
     
     current_time = datetime.now(timezone.utc)
     current_time = current_time.replace(tzinfo=None)
@@ -121,14 +121,13 @@ def get_my_rides():
             'admin_email': ride[3],
             'max_capacity': ride[4],
             'origin': ride[5],
-            'origin_name': location_map.get(ride[5], 'Unknown'),
             'destination': ride[6],
-            'destination_name': location_map.get(ride[6], 'Unknown'),
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
-            'current_riders': ride[10],
-            'requested_riders':ride[11]
+            'note': ride[10],
+            'current_riders': ride[11],
+            'requested_riders': ride[12],
         }
         
         if updated_ride['arrival_time'] > current_time:
@@ -149,14 +148,13 @@ def get_my_rides():
             'admin_email': ride[3],
             'max_capacity': ride[4],
             'origin': ride[5],
-            'origin_name': location_map.get(ride[5], 'Unknown'),
             'destination': ride[6],
-            'destination_name': location_map.get(ride[6], 'Unknown'),
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
-            'current_riders': ride[10],
-            'request_status': ride[11]
+            'note': ride[10],
+            'current_riders': ride[11],
+            'request_status': ride[12],
         }
 
         if updated_ride['arrival_time'] > current_time:
@@ -187,24 +185,34 @@ def addride():
     data = request.get_json()
     capacity = data.get('capacity')
 
-    originID = database.location_to_id(data.get('origin'))
-    if originID == -1:
-        print("HERE")
-        database.create_location(data.get('origin'))
-        originID = database.location_to_id(data.get('origin'))
-    
-    destID = database.location_to_id(data.get('destination'))
-    if destID == -1:
-        database.create_location(data.get('destination'))
-        destID = database.location_to_id(data.get('destination'))
+    origin_obj = data.get('origin')
+    dest_obj = data.get('destination')
 
-    print(originID)
-    print(destID)
+    note = data.get('note')
+    
+    origin_addr = origin_obj['formatted_address']
+    origin_name = origin_obj['name']
+    origin_id = origin_obj['place_id']
+
+    dest_addr = dest_obj['formatted_address']
+    dest_name = dest_obj['name']
+    dest_id = dest_obj['place_id']
+
+    origin = {'address': origin_addr,
+              'name': origin_name,
+              'id': origin_id}
+    
+    dest = {'address': dest_addr,
+            'name': dest_name,
+            'id': dest_id}
 
     arrival_time = data.get('arrival_time')
 
+    origin_json = Json(origin)
+    dest_json = Json(dest)
+
     try:
-        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, originID, destID, arrival_time)
+        database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin_json, dest_json, arrival_time, note)
         return jsonify({'success': True, 'message': 'Ride successfully created!'})
     except:
         return jsonify({'success': False, 'message': 'Failed to create ride.'}), 400
@@ -311,7 +319,6 @@ def searchrides():
     return jsonify({
         'user_info': user_info,
         'rides': updated_rides,
-        'locations': locations,
         'ridereqs': ridereqs_map
     })
 
@@ -394,8 +401,8 @@ def batchupdateriderequest():
     except:
         return jsonify({'success': False, 'message': 'Failed to update ride.'}), 400
     
-@app.route("/api/sendemailnotifs", methods=["POST"])
-def send_email_notification():
+@app.route("/api/notify", methods=["POST"])
+def notify():
     """
     Sends email notifications
     """
@@ -411,43 +418,9 @@ def send_email_notification():
         subject = data.get('subject')
         message = data.get('message')
         # if mail is empty for some reason, use netid @ princeton.edu
-
-        # Add this message to notifications table
-        try:
-            database.add_notification(netid, subject, message)
-        except Exception as e:
-            print(f"Error adding to notifications table: {e}")
-
-        if not mail:
-            mail = netid + "@princeton.edu"
-
-        from_email = os.environ.get('EMAIL_ADDRESS')
-        from_password = os.environ.get('EMAIL_PASSWORD')
-
-        # Set up the email
-        msg = MIMEMultipart()
-        msg['From'] = from_email
-        msg['To'] = mail
-        msg['Subject'] = subject
-        # Attach the message
-        message = message + " Please see details on tigerlift.onrender.com"
-        msg.attach(MIMEText(message, 'plain'))
-
-        try:
-            # Connect to the SMTP server and send the email
-            with smtplib.SMTP('smtp.gmail.com', 587) as server:
-                server.starttls()  # Secure the connection
-                server.login(from_email, from_password)
-                server.send_message(msg)
-            print(f"Email sent to {mail} successfully!")
-            return jsonify({'success': True, 'message': 'Email sent successfully!'})
-        except Exception as e:
-            print(f"Error sending email to {mail}: {e}")
-            return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
-
+        return send_email_notification(netid, mail, subject, message)
     except Exception as e:
          return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
-
 
 def send_email_notification(netid, mail, subject, message):
     print("EMAIL NOTIF!!")

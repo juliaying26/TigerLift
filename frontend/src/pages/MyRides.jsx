@@ -89,6 +89,8 @@ export default function MyRides() {
       setMyUpcomingRequestedRidesData(data.upcoming_requested_rides);
       setMyPastRequestedRidesData(data.past_requested_rides);
 
+      console.log(data);
+
       setUserInfo(data.user_info);
     } catch (error) {
       console.error("Error fetching rides:", error);
@@ -214,7 +216,7 @@ export default function MyRides() {
 
       for (const rider of selectedRide.current_riders) {
         try {
-          const response_email = await fetch("/api/sendemailnotifs", {
+          const response_email = await fetch("/api/notify", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -333,8 +335,8 @@ export default function MyRides() {
           pending_riders: pending_riders,
           new_capacity: newCapacity?.label,
           new_arrival_time: new_arrival_time,
-          origin_name: selectedRide.origin_name,
-          destination_name: selectedRide.destination_name,
+          origin_name: selectedRide.origin["name"],
+          destination_name: selectedRide.destination["name"],
         }),
       });
       const responseData = await response.json();
@@ -359,7 +361,7 @@ export default function MyRides() {
             // console.log("message is", message_a)
 
             try {
-              const response_1 = await fetch("/api/sendemailnotifs", {
+              const response_1 = await fetch("/api/notify", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -387,7 +389,7 @@ export default function MyRides() {
             }
           }
         } catch (error) {
-          console.error("Error during fetch sendemailnotifs:", error);
+          console.error("Error during fetch notify:", error);
         }
       }
 
@@ -514,22 +516,37 @@ export default function MyRides() {
             secondaryButtonStatus={ride.request_status}
           >
             <div>
-              <p className="text-xl text-center">
-                <strong>
-                  {ride.origin_name} → {ride.destination_name}
-                </strong>
-              </p>
-              <p className="text-center mb-2">
-                Arrive by{" "}
-                {new Date(ride.arrival_time).toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                  hour12: true,
-                })}
-              </p>
+              <div className="flex flex-col gap-2">
+                <p className="text-xl flex items-center justify-center gap-2">
+                  <span className="flex text-center flex-col">
+                    <strong>{ride.origin["name"]}</strong>
+                    <span className="text-sm">
+                      {ride.origin["address"].split(" ").slice(0, -2).join(" ")}
+                    </span>
+                  </span>
+                  →
+                  <span className="flex text-center flex-col">
+                    <strong>{ride.destination["name"]}</strong>
+                    <span className="text-sm">
+                      {ride.destination["address"]
+                        .split(" ")
+                        .slice(0, -2)
+                        .join(" ")}
+                    </span>
+                  </span>
+                </p>
+                <p className="text-center">
+                  Arrive by{" "}
+                  {new Date(ride.arrival_time).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
+                </p>
+              </div>
               <hr className="border-1 my-3 border-theme_medium_1" />
               <p>
                 <span className="font-semibold">Posted by:</span>{" "}
@@ -539,10 +556,18 @@ export default function MyRides() {
                 <span className="font-semibold">Seats Taken:</span>{" "}
                 {ride.current_riders.length}/{ride.max_capacity}
               </p>
+              {ride.note && (
+                <div>
+                  <span className="font-semibold">Note:</span>
+                  <div className="p-2 bg-zinc-100 rounded-lg">
+                    <p>{ride.note}</p>
+                  </div>
+                </div>
+              )}
               {viewType === "posted" && (
                 <div>
                   <p>
-                    <div className="flex items-center justify-between">
+                    <span className="flex items-center justify-between">
                       <span className="font-semibold">
                         {new Date(ride.arrival_time) > new Date()
                           ? "Current Riders:"
@@ -552,10 +577,10 @@ export default function MyRides() {
                         <CopyEmailButton
                           copy={ride.current_riders.map((rider) => rider[2])}
                           text="Copy All Rider Emails"
-                          className="text-theme_medium_2 hover:text-theme_dark_2"
+                          className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 align-middle"
                         />
                       )}
-                    </div>
+                    </span>
                   </p>
                   {Array.isArray(ride.current_riders) &&
                   ride.current_riders.length > 0 ? (
@@ -591,18 +616,14 @@ export default function MyRides() {
           </RideCard>
         ))}
       </div>
+    ) : loading ? (
+      <LoadingIcon
+        carColor={isUpcoming ? "bg-theme_medium_2" : "bg-theme_medium_1"}
+      />
+    ) : viewType === "posted" ? (
+      <p className="text-center">No upcoming posted rides.</p>
     ) : (
-      <p className="text-center">
-        {loading ? (
-          <LoadingIcon
-            carColor={isUpcoming ? "bg-theme_medium_2" : "bg-theme_medium_1"}
-          />
-        ) : viewType === "posted" ? (
-          "No upcoming posted rides."
-        ) : (
-          "No upcoming requested rides."
-        )}
-      </p>
+      <p className="text-center">No upcoming requested rides.</p>
     );
   };
 
@@ -733,10 +754,26 @@ export default function MyRides() {
                 coordinating logistics to meet up.
               </span>
             </p>
-            <p className="text-xl my-1">
-              <strong>
-                {selectedRide.origin_name} → {selectedRide.destination_name}
-              </strong>
+            <p className="text-xl flex items-center justify-center gap-2 my-1">
+              <span className="flex text-center flex-col">
+                <strong>{selectedRide.origin["name"]}</strong>
+                <span className="text-sm">
+                  {selectedRide.origin["address"]
+                    .split(" ")
+                    .slice(0, -2)
+                    .join(" ")}
+                </span>
+              </span>
+              →
+              <span className="flex text-center flex-col">
+                <strong>{selectedRide.destination["name"]}</strong>
+                <span className="text-sm">
+                  {selectedRide.destination["address"]
+                    .split(" ")
+                    .slice(0, -2)
+                    .join(" ")}
+                </span>
+              </span>
             </p>
             <div className="flex items-center gap-1">
               <p>
@@ -843,6 +880,14 @@ export default function MyRides() {
                 </Button>
               )}
             </div>
+            {selectedRide.note && (
+              <div>
+                <span className="font-semibold">Note:</span>
+                <div className="p-2 bg-zinc-100 rounded-lg">
+                  <p>{selectedRide.note}</p>
+                </div>
+              </div>
+            )}
             <p>
               <span className="font-semibold">Current Riders:</span>
             </p>

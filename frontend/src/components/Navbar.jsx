@@ -5,10 +5,12 @@ import { Link } from "react-router-dom";
 import NotificationsModal from "./NotificationsModal";
 
 export default function Navbar({ user_info }) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [isNotifsLoading, setIsNotifsLoading] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
   const [myRidesViewType, setMyRidesViewType] = useState("");
@@ -28,8 +30,8 @@ export default function Navbar({ user_info }) {
 
   const isActive = (path) => location.pathname === path;
 
-  const handleOpenNotificationsModal = async () => {
-    setShowNotificationsModal(true);
+  const fetchNotifs = async () => {
+    setIsNotifsLoading(true);
     try {
       const response = await fetch("/api/notifications", {
         method: "GET",
@@ -53,10 +55,19 @@ export default function Navbar({ user_info }) {
         subject: row[3],
       }));
       setNotifications(data || []);
+      setIsNotifsLoading(false);
     } catch (error) {
       console.error("Error fetching notifications:", error);
       alert("Failed to load notifications.");
     }
+  };
+
+  useEffect(() => {
+    fetchNotifs();
+  }, []);
+
+  const handleOpenNotificationsModal = async () => {
+    setShowNotificationsModal(true);
   };
 
   const handleCloseNotificationsModal = () => {
@@ -218,6 +229,7 @@ export default function Navbar({ user_info }) {
               ></IconButton>
               <NotificationsModal
                 isOpen={showNotificationsModal}
+                isLoading={isNotifsLoading}
                 onClose={handleCloseNotificationsModal}
                 notifications={notifications}
               />
