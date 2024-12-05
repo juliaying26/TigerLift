@@ -515,22 +515,23 @@ export default function MyRides() {
           >
             <div>
               <div className="flex flex-col gap-2">
-                <p className="text-xl text-center flex gap-2">
-                  <div className="flex flex-col">
+                <p className="text-xl flex items-center justify-center gap-2">
+                  <span className="flex text-center flex-col">
                     <strong>{ride.origin["name"]}</strong>
-                    <div className="text-sm font-light">
-                      {ride.origin["address"].split(' ').slice(0, -2).join(' ')}
-                      {/* {ride.origin["address"]} */}
-                    </div>
-                  </div>
+                    <span className="text-sm">
+                      {ride.origin["address"].split(" ").slice(0, -2).join(" ")}
+                    </span>
+                  </span>
                   →
-                  <div className="flex flex-col">
+                  <span className="flex text-center flex-col">
                     <strong>{ride.destination["name"]}</strong>
-                    <div className="text-sm font-light">
-                      {ride.destination["address"].split(' ').slice(0, -2).join(' ')}
-                      {/* {ride.destination["address"]} */}
-                    </div>
-                  </div>
+                    <span className="text-sm">
+                      {ride.destination["address"]
+                        .split(" ")
+                        .slice(0, -2)
+                        .join(" ")}
+                    </span>
+                  </span>
                 </p>
                 <p className="text-center">
                   Arrive by{" "}
@@ -556,7 +557,7 @@ export default function MyRides() {
               {viewType === "posted" && (
                 <div>
                   <p>
-                    <div className="flex items-center justify-between">
+                    <span className="flex items-center justify-between">
                       <span className="font-semibold">
                         {new Date(ride.arrival_time) > new Date()
                           ? "Current Riders:"
@@ -566,10 +567,10 @@ export default function MyRides() {
                         <CopyEmailButton
                           copy={ride.current_riders.map((rider) => rider[2])}
                           text="Copy All Rider Emails"
-                          className="text-theme_medium_2 hover:text-theme_dark_2"
+                          className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 align-middle"
                         />
                       )}
-                    </div>
+                    </span>
                   </p>
                   {Array.isArray(ride.current_riders) &&
                   ride.current_riders.length > 0 ? (
@@ -605,18 +606,14 @@ export default function MyRides() {
           </RideCard>
         ))}
       </div>
+    ) : loading ? (
+      <LoadingIcon
+        carColor={isUpcoming ? "bg-theme_medium_2" : "bg-theme_medium_1"}
+      />
+    ) : viewType === "posted" ? (
+      <p className="text-center">No upcoming posted rides.</p>
     ) : (
-      <p className="text-center">
-        {loading ? (
-          <LoadingIcon
-            carColor={isUpcoming ? "bg-theme_medium_2" : "bg-theme_medium_1"}
-          />
-        ) : viewType === "posted" ? (
-          "No upcoming posted rides."
-        ) : (
-          "No upcoming requested rides."
-        )}
-      </p>
+      <p className="text-center">No upcoming requested rides.</p>
     );
   };
 
@@ -747,26 +744,26 @@ export default function MyRides() {
                 coordinating logistics to meet up.
               </span>
             </p>
-            <p className="text-xl my-1">
-              <div className="flex flex-col gap-2">
-                <p className="text-xl text-center flex gap-2">
-                  <div className="flex flex-col">
-                    <strong>{selectedRide.origin["name"]}</strong>
-                    <div className="text-sm font-light">
-                      {selectedRide.origin["address"].split(' ').slice(0, -2).join(' ')}
-                      {/* {selectedRide.origin["address"]} */}
-                    </div>
-                  </div>
-                  →
-                  <div className="flex flex-col">
-                    <strong>{selectedRide.destination["name"]}</strong>
-                    <div className="text-sm font-light">
-                      {selectedRide.destination["address"].split(' ').slice(0, -2).join(' ')}
-                      {/* {selectedRide.destination["address"]} */}
-                    </div>
-                  </div>
-                </p>
-              </div>
+            <p className="text-xl flex items-center justify-center gap-2 my-1">
+              <span className="flex text-center flex-col">
+                <strong>{selectedRide.origin["name"]}</strong>
+                <span className="text-sm">
+                  {selectedRide.origin["address"]
+                    .split(" ")
+                    .slice(0, -2)
+                    .join(" ")}
+                </span>
+              </span>
+              →
+              <span className="flex text-center flex-col">
+                <strong>{selectedRide.destination["name"]}</strong>
+                <span className="text-sm">
+                  {selectedRide.destination["address"]
+                    .split(" ")
+                    .slice(0, -2)
+                    .join(" ")}
+                </span>
+              </span>
             </p>
             <div className="flex items-center gap-1">
               <p>

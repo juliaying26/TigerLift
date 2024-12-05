@@ -23,7 +23,6 @@ export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
     rides: [],
-    locations: [],
     ridereqs: {},
   });
 
@@ -259,18 +258,9 @@ export default function Dashboard() {
     try {
       const response = await fetch("/api/dashboard");
       const data = await response.json();
-      // console.log(data.locations)
       setDashboardData(data);
-
       console.log(data.rides);
-
       setRidesData(data.rides);
-      const tempLocations = [];
-      for (const loc of data.locations) {
-        let dict = { value: loc[1], label: loc[1] };
-        tempLocations.push(dict);
-      }
-      setLocations(tempLocations);
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -430,91 +420,98 @@ export default function Dashboard() {
           )}
           {ridesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {ridesData.map((ride) => (
-
-                ride.current_riders.length < ride.max_capacity && (
-
-                <RideCard
-                  key={ride.id}
-                  buttonText={
-                    ride.admin_netid === dashboardData.user_info.netid
-                      ? ""
-                      : dashboardData.ridereqs[ride.id] !== undefined &&
-                        dashboardData.ridereqs[ride.id] !== null
-                      ? "Status: " +
-                        capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
-                      : ride.current_riders.length === ride.max_capacity
-                      ? "Ride filled"
-                      : "Request to Join"
-                  }
-                  buttonOnClick={
-                    dashboardData.ridereqs[ride.id] ||
-                    ride.admin_netid === dashboardData.user_info.netid ||
-                    ride.current_riders.length === ride.max_capacity
-                      ? () => {}
-                      : () =>
-                          handleRideRequest(
-                            ride.id,
-                            ride.origin,
-                            ride.destination,
-                            ride.arrival_time
-                          )
-                  }
-                  buttonClassName={`${
-                    ride.admin_netid === dashboardData.user_info.netid
-                      ? "cursor-auto"
-                      : dashboardData.ridereqs[ride.id]
-                      ? "cursor-auto"
-                      : "bg-theme_dark_1 text-white hover:bg-theme_medium_1"
-                  }`}
-                  buttonStatus={dashboardData.ridereqs[ride.id]}
-                  buttonDisabled={pendingRideId === ride.id}
-                >
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xl text-center flex gap-2">
-                      <div className="flex flex-col">
-                        <strong>{ride.origin["name"]}</strong>
-                        <div className="text-sm font-light">
-                          {ride.origin["address"].split(' ').slice(0, -2).join(' ')}
-                          {/* ride.origin["address"]} */}
-                        </div>
+              {ridesData.map(
+                (ride) =>
+                  ride.current_riders.length < ride.max_capacity && (
+                    <RideCard
+                      key={ride.id}
+                      buttonText={
+                        ride.admin_netid === dashboardData.user_info.netid
+                          ? ""
+                          : dashboardData.ridereqs[ride.id] !== undefined &&
+                            dashboardData.ridereqs[ride.id] !== null
+                          ? "Status: " +
+                            capitalizeFirstLetter(
+                              dashboardData.ridereqs[ride.id]
+                            )
+                          : ride.current_riders.length === ride.max_capacity
+                          ? "Ride filled"
+                          : "Request to Join"
+                      }
+                      buttonOnClick={
+                        dashboardData.ridereqs[ride.id] ||
+                        ride.admin_netid === dashboardData.user_info.netid ||
+                        ride.current_riders.length === ride.max_capacity
+                          ? () => {}
+                          : () =>
+                              handleRideRequest(
+                                ride.id,
+                                ride.origin,
+                                ride.destination,
+                                ride.arrival_time
+                              )
+                      }
+                      buttonClassName={`${
+                        ride.admin_netid === dashboardData.user_info.netid
+                          ? "cursor-auto"
+                          : dashboardData.ridereqs[ride.id]
+                          ? "cursor-auto"
+                          : "bg-theme_dark_1 text-white hover:bg-theme_medium_1"
+                      }`}
+                      buttonStatus={dashboardData.ridereqs[ride.id]}
+                      buttonDisabled={pendingRideId === ride.id}
+                    >
+                      <div className="flex flex-col gap-2">
+                        <p className="text-xl flex items-center justify-center gap-2">
+                          <span className="flex text-center flex-col">
+                            <strong>{ride.origin["name"]}</strong>
+                            <span className="text-sm">
+                              {ride.origin["address"]
+                                .split(" ")
+                                .slice(0, -2)
+                                .join(" ")}
+                            </span>
+                          </span>
+                          →
+                          <span className="flex text-center flex-col">
+                            <strong>{ride.destination["name"]}</strong>
+                            <span className="text-sm">
+                              {ride.destination["address"]
+                                .split(" ")
+                                .slice(0, -2)
+                                .join(" ")}
+                            </span>
+                          </span>
+                        </p>
+                        <p className="text-center">
+                          Arrive by{" "}
+                          {new Date(ride.arrival_time).toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "numeric",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "numeric",
+                            hour12: true,
+                          })}
+                        </p>
                       </div>
-                      →
-                      <div className="flex flex-col">
-                        <strong>{ride.destination["name"]}</strong>
-                        <div className="text-sm font-light">
-                          {ride.destination["address"].split(' ').slice(0, -2).join(' ')}
-                          {/* {ride.destination["address"]} */}
-                        </div>
-                      </div>
-                    </p>
-                    <p className="text-center">
-                      Arrive by{" "}
-                      {new Date(ride.arrival_time).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      })}
-                    </p>
-                  </div>
-                  <hr className="border-1 my-3 border-theme_medium_1" />
-                  <p>
-                    <span className="font-semibold">Posted by:</span> {ride.admin_name}, 
-                    <CopyEmailButton
-                      copy={[ride.admin_email]}
-                      text="Copy Email"
-                      className="text-zinc-800 hover:text-zinc-600"
-                    />
-                  </p>
-                  <p>
-                    <span className="font-semibold">Seats Taken:</span>{" "}
-                    {ride.current_riders.length}/{ride.max_capacity}
-                  </p>
-                </RideCard>)
-              ))}
+                      <hr className="border-1 my-3 border-theme_medium_1" />
+                      <p>
+                        <span className="font-semibold">Posted by:</span>{" "}
+                        <span>{ride.admin_name}</span>{" "}
+                        <CopyEmailButton
+                          copy={[ride.admin_email]}
+                          text="Copy Email"
+                          className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle"
+                        />
+                      </p>
+                      <p>
+                        <span className="font-semibold">Seats Taken:</span>{" "}
+                        {ride.current_riders.length}/{ride.max_capacity}
+                      </p>
+                    </RideCard>
+                  )
+              )}
             </div>
           ) : (
             <p className="text-center">No rides available in this category.</p>
