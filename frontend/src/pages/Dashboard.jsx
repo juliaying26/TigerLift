@@ -292,6 +292,17 @@ export default function Dashboard() {
         "MMMM D, YYYY, h:mm A"
       );
 
+      const formatted = new Date(arrival_time).toLocaleString("en-US", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      });
+
+      console.log(formatted);
+
       const response = await fetch("/api/requestride", {
         method: "POST",
         headers: {

@@ -334,7 +334,7 @@ def requestride():
         try: 
             admin_info = database.rideid_to_admin_id_email(rideid)
             print("Admin info is", admin_info)
-            subject = '🚗' + str(user_info['displayname']) + ' requested to join your Rideshare!'
+            subject = '🚗 ' + str(user_info['displayname']) + ' requested to join your Rideshare!'
             message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + arrival_time + '!'
             send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, message)
         except:
@@ -410,7 +410,6 @@ def notify():
         mail = data.get('mail')
         subject = data.get('subject')
         message = data.get('message')
-        # if mail is empty for some reason, use netid @ princeton.edu
         return send_email_notification(netid, mail, subject, message)
     except Exception as e:
          return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
@@ -424,6 +423,7 @@ def send_email_notification(netid, mail, subject, message):
         return jsonify({'success': True, 'message': 'EMAILS_ON set to False'})
 
     try:
+        # if mail is empty for some reason, use netid @ princeton.edu
         if not mail:
             mail = netid + "@princeton.edu"
 
