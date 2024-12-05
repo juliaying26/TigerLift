@@ -214,7 +214,7 @@ export default function MyRides() {
 
       for (const rider of selectedRide.current_riders) {
         try {
-          const response_email = await fetch("/api/sendemailnotifs", {
+          const response_email = await fetch("/api/notify", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -359,7 +359,7 @@ export default function MyRides() {
             // console.log("message is", message_a)
 
             try {
-              const response_1 = await fetch("/api/sendemailnotifs", {
+              const response_1 = await fetch("/api/notify", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -387,7 +387,7 @@ export default function MyRides() {
             }
           }
         } catch (error) {
-          console.error("Error during fetch sendemailnotifs:", error);
+          console.error("Error during fetch notify:", error);
         }
       }
 
