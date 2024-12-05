@@ -392,7 +392,7 @@ def batchupdateriderequest():
     except:
         return jsonify({'success': False, 'message': 'Failed to update ride.'}), 400
     
-@app.route("/api/sendemailnotifs", methods=["POST"])
+@app.route("/api/notify", methods=["POST"])
 def send_email_notification():
     """
     Sends email notifications
@@ -409,43 +409,9 @@ def send_email_notification():
         subject = data.get('subject')
         message = data.get('message')
         # if mail is empty for some reason, use netid @ princeton.edu
-
-        # Add this message to notifications table
-        try:
-            database.add_notification(netid, subject, message)
-        except Exception as e:
-            print(f"Error adding to notifications table: {e}")
-
-        if not mail:
-            mail = netid + "@princeton.edu"
-
-        from_email = os.environ.get('EMAIL_ADDRESS')
-        from_password = os.environ.get('EMAIL_PASSWORD')
-
-        # Set up the email
-        msg = MIMEMultipart()
-        msg['From'] = from_email
-        msg['To'] = mail
-        msg['Subject'] = subject
-        # Attach the message
-        message = message + " Please see details on tigerlift.onrender.com"
-        msg.attach(MIMEText(message, 'plain'))
-
-        try:
-            # Connect to the SMTP server and send the email
-            with smtplib.SMTP('smtp.gmail.com', 587) as server:
-                server.starttls()  # Secure the connection
-                server.login(from_email, from_password)
-                server.send_message(msg)
-            print(f"Email sent to {mail} successfully!")
-            return jsonify({'success': True, 'message': 'Email sent successfully!'})
-        except Exception as e:
-            print(f"Error sending email to {mail}: {e}")
-            return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
-
+        return send_email_notification(netid, mail, subject, message)
     except Exception as e:
          return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
-
 
 def send_email_notification(netid, mail, subject, message):
     print("EMAIL NOTIF!!")
