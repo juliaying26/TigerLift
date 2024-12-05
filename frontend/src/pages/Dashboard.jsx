@@ -30,7 +30,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [ridesData, setRidesData] = useState([]);
   const [createRideModal, setCreateRideModal] = useState(false);
-  //const [searchRideModal, setSearchRideModal] = useState(false);
 
   const [popupMessageInfo, setPopupMessageInfo] = useState({
     status: "",
@@ -113,7 +112,9 @@ export default function Dashboard() {
   };
 
   const searchRide = async () => {
-    console.log(dashboardData);
+    //console.log(dashboardData);
+
+    console.log("in search ride. search origin: ", searchOrigin)
 
     if (!searchOrigin && !searchDest) {
       alert(
@@ -350,6 +351,21 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
+  useEffect(() => {
+    if (searchOrigin) {
+      console.log("searchOrigin updated:", searchOrigin);
+      searchRide();
+    }
+  }, [searchOrigin]);
+
+  useEffect(() => {
+    if (searchDest) {
+      console.log("searchDest updated:", searchDest);
+      searchRide();
+    }
+  }, [searchDest]);
+  
+
   return (
     <div className="p-8">
       {popupMessageInfo.message && (
@@ -401,10 +417,14 @@ export default function Dashboard() {
                   place.geometry.location.lng()
                 );
               setSearchOrigin(place);
+              console.log("place:", place)
+
+              // TODO: need to call searchRide here so it works
+              //searchRide();
+
             }}
             options={autocompleteOptions}
             ref={searchOriginRef}
-            //onSelected={searchRide}
           />
 
           <IconButton
@@ -488,7 +508,6 @@ export default function Dashboard() {
           {inSearch && (
             <div>
               <Button
-                // clearFilters() includes resetSearch() and clearSearchAutocompleteFields()
                 onClick={resetSearch}
                 
                 className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
