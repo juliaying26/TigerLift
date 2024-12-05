@@ -19,7 +19,7 @@ export default function Button({
   return (
     <button
       onClick={onClick}
-      className={`py-1 text-lg md:text-base font-medium ${
+      className={`py-1.5 px-3 text-lg md:text-base font-medium ${
         buttonStyling ? buttonStyling : "px-2.5 rounded-md"
       } ${className} ${disabled ? `${disabledStyling} hover:bg-zinc-100` : ""}`}
       disabled={disabled}
