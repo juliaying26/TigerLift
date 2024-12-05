@@ -392,7 +392,7 @@ def batchupdateriderequest():
     except:
         return jsonify({'success': False, 'message': 'Failed to update ride.'}), 400
     
-@app.route("/api/sendemailnotifs", methods=["POST"])
+@app.route("/api/notify", methods=["POST"])
 def send_email_notification():
     """
     Sends email notifications
