@@ -33,7 +33,17 @@ export default function NotificationsModal({ isOpen, onClose, notifications }) {
                   <p className="font-bold">{notification.subject}</p>
                   <p>{notification.message}</p>
                   <p className="text-sm text-gray-500">
-                    {new Date(notification.notification_time).toLocaleString()}
+                    {new Date(notification.notification_time).toLocaleString(
+                      "en-US",
+                      {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      }
+                    )}
                   </p>
                 </li>
               ))}

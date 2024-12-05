@@ -77,7 +77,8 @@ def api_dashboard():
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
-            'current_riders': ride[10]
+            'current_riders': ride[10],
+            'note': ride[11]
         }
 
         if updated_ride['arrival_time'] > current_time and len(updated_ride['current_riders']) < updated_ride['max_capacity']:
@@ -124,8 +125,9 @@ def get_my_rides():
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
-            'current_riders': ride[10],
-            'requested_riders':ride[11]
+            'note': ride[10],
+            'current_riders': ride[11],
+            'requested_riders': ride[12],
         }
         
         if updated_ride['arrival_time'] > current_time:
@@ -150,8 +152,9 @@ def get_my_rides():
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
-            'current_riders': ride[10],
-            'request_status': ride[11]
+            'note': ride[10],
+            'current_riders': ride[11],
+            'request_status': ride[12],
         }
 
         if updated_ride['arrival_time'] > current_time:
@@ -185,7 +188,7 @@ def addride():
     origin_obj = data.get('origin')
     dest_obj = data.get('destination')
 
-    note = ""
+    note = data.get('note')
     
     origin_addr = origin_obj['formatted_address']
     origin_name = origin_obj['name']

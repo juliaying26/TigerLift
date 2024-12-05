@@ -6,6 +6,7 @@ export default function Input({
   inputValue,
   setInputValue,
   placeholder,
+  maxLength = null,
 }) {
   const handleChange = (e) => {
     setInputValue(e.target.value);
@@ -20,6 +21,7 @@ export default function Input({
       placeholder={placeholder}
       onChange={handleChange}
       style={{ height: 80, resize: "none" }}
+      {...(maxLength ? { maxLength, showCount: true } : {})}
     />
   );
 }
