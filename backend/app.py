@@ -84,6 +84,7 @@ def api_dashboard():
         if updated_ride['arrival_time'] > current_time and len(updated_ride['current_riders']) < updated_ride['max_capacity']:
             updated_rides.append(updated_ride)
 
+    updated_rides.sort(key=lambda ride: ride['arrival_time'])
     
     ridereqs_map = {}
     for ridereq in ridereqs:
