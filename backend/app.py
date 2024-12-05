@@ -80,7 +80,7 @@ def api_dashboard():
             'current_riders': ride[10]
         }
 
-        if updated_ride['arrival_time'] > current_time:
+        if updated_ride['arrival_time'] > current_time and len(updated_ride['current_riders']) < updated_ride['max_capacity']:
             updated_rides.append(updated_ride)
 
     
