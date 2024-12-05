@@ -49,8 +49,8 @@ export default function Dashboard() {
 
   const searchOriginRef = useRef(null);
   const searchDestinationRef = useRef(null);
-  const [searchOrigin, setSearchOrigin] = useState("");
-  const [searchDest, setSearchDest] = useState("");
+  const [searchOrigin, setSearchOrigin] = useState(null);
+  const [searchDest, setSearchDest] = useState(null);
   const [startSearchDate, setStartSearchDate] = useState();
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
@@ -155,10 +155,12 @@ export default function Dashboard() {
       //console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
       //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 
+      //console.log("origin place id:", searchOrigin.place_id)
+
       
       const params = new URLSearchParams({
-        ...(searchOrigin && { origin: searchOrigin.name }),
-        ...(searchDest && { destination: searchDest.name }),
+        ...(searchOrigin && { origin: searchOrigin.place_id }),
+        ...(searchDest && { destination: searchDest.place_id }),
         ...(start_search_time_string && {
           start_search_time: start_search_time_iso,
         }),
