@@ -45,6 +45,8 @@ export default function Dashboard() {
   const [time, setTime] = useState("");
   const [isCreatingRide, setIsCreatingRide] = useState(false);
 
+  const searchOriginRef = useRef(null);
+  const searchDestinationRef = useRef(null);
   const [searchOrigin, setSearchOrigin] = useState("");
   const [searchDest, setSearchDest] = useState("");
   const [startSearchDate, setStartSearchDate] = useState();
@@ -94,11 +96,16 @@ export default function Dashboard() {
   };
 
   const flipSearchFields = () => {
-    let prevDest = searchDest;
-    let prevOrigin = searchOrigin;
-    setSearchOrigin(prevDest);
-    setSearchDest(prevOrigin);
-    return;
+    const tempSearchOrigin = searchOrigin;
+
+    setSearchOrigin(searchDest);
+    setSearchDest(tempSearchOrigin);
+
+    if (searchOriginRef.current && searchDestinationRef.current) {
+      const tempSearchOriginValue = originRef.current.value;
+      searchOriginRef.current.value = searchDestinationRef.current.value;
+      searchDestinationRef.current.value = tempSearchOriginValue;
+    }
   };
 
   const searchRide = async () => {
@@ -146,9 +153,10 @@ export default function Dashboard() {
       //console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
       //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 
+      
       const params = new URLSearchParams({
-        ...(searchOrigin && { origin: searchOrigin.label }),
-        ...(searchDest && { destination: searchDest.label }),
+        ...(searchOrigin && { origin: searchOrigin.name }),
+        ...(searchDest && { destination: searchDest.name }),
         ...(start_search_time_string && {
           start_search_time: start_search_time_iso,
         }),
@@ -157,26 +165,27 @@ export default function Dashboard() {
 
       console.log("params: " + params.toString());
 
+
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-      });
-
+    });
       if (!response.ok) {
         throw new Error(`Failed to fetch rides: ${response.status}`);
       }
-
       const data = await response.json();
       console.log("DATA =", data);
-
       setRidesData(data.rides);
       setInSearch(true);
-    } catch (error) {
-      console.error("Error during fetch:", error);
-    } //finally {
-    //handleCloseSearchRideModal();
-    //}
-  };
+      }
+        catch (error) {
+          console.error("Error during fetch:", error);
+        }
+      }
+
+
+
+
 
   const checkCreateRideParams = async () => {
     console.log(origin.formatted_address);
@@ -244,15 +253,6 @@ export default function Dashboard() {
     setTime("");
   };
 
-  /*
-  const handleOpenSearchRideModal = async () => {
-    setSearchRideModal(true);
-  };
-
-  const handleCloseSearchRideModal = async () => {
-    setSearchRideModal(false);
-  };
-  */
 
   const fetchDashboardData = async () => {
     try {
@@ -358,23 +358,77 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        <div className="flex items-center justify-between space-x-3">
-          <Dropdown
+         <div className="flex items-center justify-between space-x-3">
+         {/*
+         <Dropdown
             inputValue={searchOrigin}
             setInputValue={setSearchOrigin}
             options={locations}
             isClearable
             placeholder="Select starting point"
+            onChange={resetSearch}
+          />
+          */}
+          
+          <Autocomplete
+              apiKey={google_api_key}
+              placeholder="Enter origin"
+              onPlaceSelected={(place) => {
+                console.log("Selected Place Details:", place);
+                console.log(
+                  "Formatted Address:",
+                  place.formatted_address
+                );
+                console.log(
+                  "Coordinates:",
+                  place.geometry.location.lat(),
+                  place.geometry.location.lng()
+                );
+              setSearchOrigin(place);
+            }}
+            options={autocompleteOptions}
+            ref={searchOriginRef}
           />
 
-          <IconButton type="flip" onClick={flipSearchFields} disabled={false} />
+          <IconButton
+            className="flex-none"
+            type="flip"
+            onClick={flipSearchFields}
+            disabled={false}
+          ></IconButton>
 
+          {/* <IconButton type="flip" onClick={flipSearchFields} disabled={false} /> */}
+
+          {/*
           <Dropdown
             inputValue={searchDest}
             setInputValue={setSearchDest}
             options={locations}
             isClearable
             placeholder="Select destination"
+            onChange={resetSearch}
+          />
+          */}
+
+
+          <Autocomplete
+              apiKey={google_api_key}
+              placeholder="Enter destination"
+              onPlaceSelected={(place) => {
+                console.log("Selected Place Details:", place);
+                console.log(
+                  "Formatted Address:",
+                  place.formatted_address
+                );
+                console.log(
+                  "Coordinates:",
+                  place.geometry.location.lat(),
+                  place.geometry.location.lng()
+                );
+              setSearchDest(place);
+            }}
+            options={autocompleteOptions}
+            ref={searchDestinationRef}
           />
 
           <div
