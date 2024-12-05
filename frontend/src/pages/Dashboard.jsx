@@ -422,7 +422,6 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {ridesData.map(
                 (ride) =>
-                  ride.current_riders.length < ride.max_capacity && (
                     <RideCard
                       key={ride.id}
                       buttonText={
@@ -511,7 +510,7 @@ export default function Dashboard() {
                       </p>
                     </RideCard>
                   )
-              )}
+              }
             </div>
           ) : (
             <p className="text-center">No rides available in this category.</p>
