@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import CheckIcon from "@mui/icons-material/Check";
 
 export default function CopyEmailIcon({ text, copy, className = "" }) {
   const [copied, setCopied] = useState(false);
@@ -20,24 +18,19 @@ export default function CopyEmailIcon({ text, copy, className = "" }) {
   return (
     <button
       onClick={handleCopy}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "transparent",
-        border: "none",
-      }}
-      className={`${copied ? "text-theme_dark_2 cursor-auto" : className}`}
+      className={`${
+        copied ? "!text-theme_dark_2 !cursor-auto" : ""
+      } ${className}`}
     >
       {copied ? (
-        <div className="text-sm flex items-center gap-1.5">
+        <div className="text-sm flex items-center gap-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-4"
+            className="size-4 mb-0.5"
           >
             <path
               strokeLinecap="round"

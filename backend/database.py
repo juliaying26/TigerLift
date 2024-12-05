@@ -13,19 +13,6 @@ def database_setup():
     """
 
     sql_commands = """
-        CREATE TABLE IF NOT EXISTS Users (
-            id SERIAL PRIMARY KEY,
-            netid VARCHAR(10) UNIQUE NOT NULL,
-            name VARCHAR(50) NOT NULL,
-            email VARCHAR(50) UNIQUE NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE TABLE IF NOT EXISTS PredefinedLocations (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
-        );
 
         CREATE TABLE IF NOT EXISTS Rides (
             id SERIAL PRIMARY KEY,
@@ -33,12 +20,13 @@ def database_setup():
             admin_name VARCHAR(50),
             admin_email VARCHAR(50),
             max_capacity INTEGER CHECK (max_capacity BETWEEN 1 AND 20) NOT NULL,
-            origin INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
-            destination INTEGER REFERENCES PredefinedLocations(id) NOT NULL,
+            origin_dict JSONB NOT NULL,
+            destination_dict JSONB NOT NULL,
             arrival_time TIMESTAMP NOT NULL,
             creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            current_riders TEXT[][]
+            current_riders TEXT[][],
+            note VARCHAR(250)
         );
 
         CREATE TABLE IF NOT EXISTS RideRequests (
@@ -55,8 +43,8 @@ def database_setup():
         CREATE TABLE IF NOT EXISTS Notifications (
             id SERIAL PRIMARY KEY,
             netid VARCHAR(10),
+            subject TEXT NOT NULL,
             message TEXT NOT NULL,
-            type VARCHAR(50) CHECK (type IN ('ride update', 'request made', 'request accepted', 'request rejected')) NOT NULL,
             notification_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         
@@ -90,7 +78,7 @@ def connect():
         print(f"Error connecting to the database: {e}")
         return None
 
-def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time):
+def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, note=""):
     """
     Adds a ride to the Rides database
     """
@@ -99,12 +87,12 @@ def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, dest
 
     sql_command = f"""
         INSERT INTO Rides (admin_netid, admin_name, admin_email, max_capacity, current_riders,
-        origin, destination, arrival_time) VALUES (%s, %s, %s, %s, 
-        %s, %s, %s, %s);   
+        origin_dict, destination_dict, arrival_time, note) VALUES (%s, %s, %s, %s, 
+        %s, %s, %s, %s, %s);   
     """
 
     values = (admin_netid, admin_name, admin_email, max_capacity, current_riders, origin, destination, 
-              arrival_time)  
+              arrival_time, note)  
     
     conn = connect()
     
@@ -326,36 +314,6 @@ def update_arrival_time(rideid, new_arrival_time):
         finally:
             conn.close()
 
-
-def create_notification(netid, message, type):
-    """
-    Adds a notifiction in the Notifications database
-    """
-
-    sql_command = f"""
-        INSERT INTO Notifications (netid, message, type) VALUES 
-        (%s, %s, %s);        
-    """
-    
-    values = (netid, message, type)
-    
-    conn = connect()
-    
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
-                conn.commit()
-                print("Notification addded successfully!")
-        except Exception as e:
-            print(f"Error adding notification: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
-
-
 # def create_location(id, name):
 #     """
 #     Adds a location in the Locations database
@@ -382,52 +340,6 @@ def create_notification(netid, message, type):
 #             conn.close()
 #     else:
 #         print("Connection not established.")
-
-def create_location(name):
-    """
-    Adds a location in the Locations database
-    """
-    sql_command = """
-    INSERT INTO PredefinedLocations (name) VALUES (%s) RETURNING id;
-    """
-    values = (name,)
-    conn = connect()
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
-                new_id = cursor.fetchone()[0]  # Retrieve the auto-generated ID
-                conn.commit()
-                print(f"Location created successfully with ID: {new_id}!")
-                return new_id
-        except Exception as e:
-            print(f"Error creating location: {e}")
-            return None
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
-        return None
-
-def delete_all_locations():
-    sql_command = "DELETE FROM PredefinedLocations"
-    
-    conn = connect()
-    
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command)
-                conn.commit()
-                print("Location deleted successfully!")
-        except Exception as e:
-            print(f"Error deleting locations: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
 
 def delete_all_rides():
     sql_command = "DELETE FROM Rides"
@@ -460,11 +372,12 @@ def get_users_rides(netid):
             Rides.admin_name,
             Rides.admin_email,
             Rides.max_capacity, 
-            Rides.origin, 
-            Rides.destination, 
+            Rides.origin_dict, 
+            Rides.destination_dict, 
             Rides.arrival_time, 
             Rides.creation_time, 
             Rides.updated_at, 
+            Rides.note,
             Rides.current_riders, 
             COALESCE(ARRAY_AGG(
                 CASE 
@@ -484,11 +397,12 @@ def get_users_rides(netid):
             Rides.admin_name,
             Rides.admin_email,
             Rides.max_capacity, 
-            Rides.origin, 
-            Rides.destination, 
+            Rides.origin_dict, 
+            Rides.destination_dict, 
             Rides.arrival_time, 
             Rides.creation_time, 
             Rides.updated_at, 
+            Rides.note,
             Rides.current_riders;
     """
 
@@ -512,7 +426,11 @@ def get_users_rides(netid):
     return rides
 
 def get_all_rides():
-    sql_command = "SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides"
+    
+    sql_command = """
+    SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin_dict,
+    destination_dict, arrival_time, creation_time, updated_at, current_riders, note FROM Rides
+    """
     conn = connect()
 
     rides = []
@@ -556,21 +474,23 @@ def get_all_locations():
 
     return locations
 
-def search_rides(origin, destination, arrival_time=None, start_search_time=None):
+def search_rides(origin_id, destination_id, arrival_time=None, start_search_time=None):
     query = """
-        SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, creation_time, updated_at, current_riders FROM Rides
+        SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin_dict, 
+        destination_dict, arrival_time, creation_time, updated_at, current_riders FROM Rides
         WHERE 1=1
     """
 
     conn = connect()
     values = []
 
-    if origin:
-        query += " AND origin = %s"
-        values.append(origin)
-    if destination:
-        query += " AND destination = %s"
-        values.append(destination)
+    if origin_id:
+        query += " AND origin_dict->>'id' = %s"
+        values.append(origin_id)
+    if destination_id:
+        query += " AND destination_dict->>'id' = %s"
+        values.append(destination_id)
+
     # start_search_time is arrive after
     if start_search_time:
         query += " AND arrival_time >= %s"
@@ -583,7 +503,7 @@ def search_rides(origin, destination, arrival_time=None, start_search_time=None)
         query += " AND arrival_time <= %s"
         values.append(arrival_time)
 
-    if not (origin or destination):
+    if not (origin_id or destination_id):
         raise ValueError("At least one of 'origin' or 'destination' must be provided.")
 
     if conn:
@@ -608,8 +528,8 @@ def get_users_requested_rides(netid):
     """
     
     sql_command = """
-        SELECT Rides.id, admin_netid, admin_name, admin_email, max_capacity, origin, destination, 
-            arrival_time, creation_time, updated_at, 
+        SELECT Rides.id, admin_netid, admin_name, admin_email, max_capacity, origin_dict, destination_dict, 
+            arrival_time, creation_time, updated_at, note, 
             current_riders, RideRequests.status as ride_request_status
         FROM Rides
         JOIN RideRequests ON Rides.id = RideRequests.ride_id
@@ -912,7 +832,6 @@ def id_to_location(id):
     print("ID corresponding to num is", location_result)
     return int(location_result)
 
-
 def rideid_to_admin_id_email(ride_id):
     """
     Given a rideid, returns admin_netid and email
@@ -943,6 +862,62 @@ def rideid_to_admin_id_email(ride_id):
 
     print("Admin_netid corresponding to ride_id is", admin_netid_result)
     return (admin_netid_result, admin_mail_result) if admin_netid_result else None
+
+def get_user_notifs(netid):
+    """
+    Given user's netid, finds that user's notifs
+    """
+    sql_command =  """
+            SELECT id, message, notification_time, subject 
+            FROM Notifications 
+            WHERE netid = %s
+            ORDER BY notification_time DESC
+        """
+    values = (netid,)
+    
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                result = cursor.fetchall()
+                print(result, " is result")
+                return result
+        except Exception as e:
+            print(f"Error fetching notifications: {e}")
+            return None # meaning error
+        finally:
+            conn.close()
+    else:
+        print("Failed to establish a database connection.")
+        return None
+    
+def add_notification(netid, subject, message):
+    """
+    Adds the relevant message to notification table
+    """
+    sql_command =  """
+            INSERT INTO Notifications (netid, message, notification_time, subject)
+            VALUES (%s, %s, CURRENT_TIMESTAMP, %s)
+        """
+    values = (netid, message, subject)
+    
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Notification added successfully.")
+                return True 
+        except Exception as e:
+            print(f"Error adding to notifications: {e}")
+            return None # meaning error
+        finally:
+            conn.close()
+    else:
+        print("Failed to establish a database connection.")
+        return None
 
 if __name__ == "__main__":
     database_setup()

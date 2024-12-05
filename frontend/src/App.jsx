@@ -28,9 +28,9 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       {user ? (
-        <div>
+        <div className="h-full">
           <Navbar user_info={user} />
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -44,12 +44,6 @@ function App() {
             <h1 className="text-4xl mb-4 font-serif">Welcome to TigerLift!</h1>
             <br />
             <br />
-            {/* <Button
-              onClick={handleLogin}
-              className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-            >
-              Login with CAS
-            </Button> */}
             <a
               href="/api/login"
               className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded hover:bg-theme_medium_1 hover:text-white"
