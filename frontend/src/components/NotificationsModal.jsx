@@ -1,7 +1,13 @@
 import React from "react";
 import IconButton from "./IconButton";
+import LoadingIcon from "./LoadingIcon";
 
-export default function NotificationsModal({ isOpen, onClose, notifications }) {
+export default function NotificationsModal({
+  isOpen,
+  isLoading,
+  onClose,
+  notifications,
+}) {
   if (!isOpen) return null;
 
   // If click outside Notifications modal, automatically close it
@@ -26,7 +32,9 @@ export default function NotificationsModal({ isOpen, onClose, notifications }) {
           ></IconButton>
         </div>
         <div className="p-4">
-          {notifications.length > 0 ? (
+          {isLoading ? (
+            <LoadingIcon carColor="bg-theme_medium_2" />
+          ) : notifications.length > 0 ? (
             <ul className="space-y-4">
               {notifications.map((notification, index) => (
                 <li key={index} className="border-b pb-2 border-gray-300">
