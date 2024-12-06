@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS RideRequests (
 
 CREATE TABLE IF NOT EXISTS Notifications (
     id SERIAL PRIMARY KEY,
-    netid VARCHAR(10),
+    netid VARCHAR(20),
     subject TEXT NOT NULL,
     message TEXT NOT NULL,
     notification_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
