@@ -111,45 +111,45 @@ def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, dest
     else:
         print("Connection not established.")
 
-def update_ride(ride_id, current_riders, max_capacity=None, origin=None, destination=None, 
-                arrival_time=None):
-    """"
-    Updates an existing ride in the Rides database
-    """
+# def update_ride(ride_id, current_riders, max_capacity=None, origin=None, destination=None, 
+#                 arrival_time=None):
+#     """"
+#     Updates an existing ride in the Rides database
+#     """
 
-    # NEED TO FIX TO DEAL WITH INJECTION ATTACKS!!!
+#     # NEED TO FIX TO DEAL WITH INJECTION ATTACKS!!!
   
-    sql_command = f"""
-        UPDATE Rides
-        SET updated_at = CURRENT_TIMESTAMP
-    """
+#     sql_command = f"""
+#         UPDATE Rides
+#         SET updated_at = CURRENT_TIMESTAMP
+#     """
 
-    if max_capacity != None:
-        sql_command += f""", max_capacity = {max_capacity}"""
-    if origin != None:
-        sql_command += f""", origin = {origin}, """
-    if destination != None:
-        sql_command += f""", destination = {destination}"""
-    if arrival_time != None:
-        sql_command += f""", arrival_time = {arrival_time}"""
+#     if max_capacity != None:
+#         sql_command += f""", max_capacity = {max_capacity}"""
+#     if origin != None:
+#         sql_command += f""", origin = {origin}, """
+#     if destination != None:
+#         sql_command += f""", destination = {destination}"""
+#     if arrival_time != None:
+#         sql_command += f""", arrival_time = {arrival_time}"""
 
-    sql_command += f""" WHERE id = {ride_id};"""
+#     sql_command += f""" WHERE id = {ride_id};"""
 
-    conn = connect()
+#     conn = connect()
     
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command)
-                conn.commit()
-                print("Ride updated successfully!")
-        except Exception as e:
-            print(f"Error updating ride: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
+#     # if it was successful connection, execute SQL commands to database & commit
+#     if conn:
+#         try:
+#             with conn.cursor() as cursor:
+#                 cursor.execute(sql_command)
+#                 conn.commit()
+#                 print("Ride updated successfully!")
+#         except Exception as e:
+#             print(f"Error updating ride: {e}")
+#         finally:
+#             conn.close()
+#     else:
+#         print("Connection not established.")
 
 def delete_ride(netid, ride_id):
     """
@@ -452,27 +452,27 @@ def get_all_rides():
     return rides
 
 
-def get_all_locations():
-    sql_command = "SELECT * FROM PredefinedLocations"
-    conn = connect()
+# def get_all_locations():
+#     sql_command = "SELECT * FROM PredefinedLocations"
+#     conn = connect()
 
-    locations = []
+#     locations = []
 
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command)
-                locations = cursor.fetchall()
-                print("Locations retrieved successfully!")
-        except Exception as e:
-            print(f"Error retrieving locations: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
+#     # if it was successful connection, execute SQL commands to database & commit
+#     if conn:
+#         try:
+#             with conn.cursor() as cursor:
+#                 cursor.execute(sql_command)
+#                 locations = cursor.fetchall()
+#                 print("Locations retrieved successfully!")
+#         except Exception as e:
+#             print(f"Error retrieving locations: {e}")
+#         finally:
+#             conn.close()
+#     else:
+#         print("Connection not established.")
 
-    return locations
+#     return locations
 
 def search_rides(origin_id, destination_id, arrival_time=None, start_search_time=None):
     query = """
@@ -772,65 +772,65 @@ def remove_rider(requester_id, full_name, mail, ride_id):
         print("Connection not established.")
 
 
-def location_to_id(location):    
-    """
-    given location name, returns ID from PredefinedLocations.
-    """
-    sql_command = "SELECT id FROM PredefinedLocations WHERE name = %s"
-    values = (location,)
-    id_result = None
-    print(location)
+# def location_to_id(location):    
+#     """
+#     given location name, returns ID from PredefinedLocations.
+#     """
+#     sql_command = "SELECT id FROM PredefinedLocations WHERE name = %s"
+#     values = (location,)
+#     id_result = None
+#     print(location)
 
-    conn = connect()
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
-                result = cursor.fetchone()
-                if result:
-                    id_result = result[0]
-                    print("id retrieved successfully:", id_result)
-                else:
-                    print("No matching location found.")
-                    return -1
-        except Exception as e:
-            print(f"Error retrieving requests: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
+#     conn = connect()
+#     if conn:
+#         try:
+#             with conn.cursor() as cursor:
+#                 cursor.execute(sql_command, values)
+#                 result = cursor.fetchone()
+#                 if result:
+#                     id_result = result[0]
+#                     print("id retrieved successfully:", id_result)
+#                 else:
+#                     print("No matching location found.")
+#                     return -1
+#         except Exception as e:
+#             print(f"Error retrieving requests: {e}")
+#         finally:
+#             conn.close()
+#     else:
+#         print("Connection not established.")
 
-    print("ID corresponding to num is", id_result)
-    return int(id_result)
+#     print("ID corresponding to num is", id_result)
+#     return int(id_result)
 
-def id_to_location(id):
-    """
-     Given id, returns location name from PredefinedLocations
-    """
-    sql_command = "SELECT name FROM PredefinedLocations WHERE id = %s"
-    values = (id,)
-    location_result=None
+# def id_to_location(id):
+#     """
+#      Given id, returns location name from PredefinedLocations
+#     """
+#     sql_command = "SELECT name FROM PredefinedLocations WHERE id = %s"
+#     values = (id,)
+#     location_result=None
 
-    conn = connect()
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
-                result = cursor.fetchone()
-                if result:
-                    location_result = result[0]
-                    print("location retrieved successfully:", location_result)
-                else:
-                    print("No matching location found.")
-        except Exception as e:
-            print(f"Error retrieving requests: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
+#     conn = connect()
+#     if conn:
+#         try:
+#             with conn.cursor() as cursor:
+#                 cursor.execute(sql_command, values)
+#                 result = cursor.fetchone()
+#                 if result:
+#                     location_result = result[0]
+#                     print("location retrieved successfully:", location_result)
+#                 else:
+#                     print("No matching location found.")
+#         except Exception as e:
+#             print(f"Error retrieving requests: {e}")
+#         finally:
+#             conn.close()
+#     else:
+#         print("Connection not established.")
 
-    print("ID corresponding to num is", location_result)
-    return int(location_result)
+#     print("ID corresponding to num is", location_result)
+#     return int(location_result)
 
 def rideid_to_admin_id_email(ride_id):
     """
@@ -868,7 +868,7 @@ def get_user_notifs(netid):
     Given user's netid, finds that user's notifs
     """
     sql_command =  """
-            SELECT id, message, notification_time, subject 
+            SELECT id, message, notification_time, subject, status
             FROM Notifications 
             WHERE netid = %s
             ORDER BY notification_time DESC
@@ -912,6 +912,34 @@ def add_notification(netid, subject, message):
                 return True 
         except Exception as e:
             print(f"Error adding to notifications: {e}")
+            return None # meaning error
+        finally:
+            conn.close()
+    else:
+        print("Failed to establish a database connection.")
+        return None
+    
+def read_notification(netid, notif_id):
+    """
+    Given user's netid and notif_id, marks that notif as read
+    """
+    sql_command =  """
+            UPDATE Notifications
+            SET status = 'read'
+            WHERE netid = %s AND id = %s
+        """
+    values = (netid, notif_id)
+    
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("Notification marked as read successfully.")
+                return True
+        except Exception as e:
+            print(f"Error marking notification as read: {e}")
             return None # meaning error
         finally:
             conn.close()

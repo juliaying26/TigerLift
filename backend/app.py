@@ -473,10 +473,27 @@ def notifications():
     
     try: 
         response = database.get_user_notifs(netid)
-        return jsonify({"notifications": response}), 200
+        print(response)
+        new_notifs = [notif for notif in response if not notif[4]]
+        past_notifs = [notif for notif in response if notif[4] == 'read']
+        return jsonify({"new_notifs": new_notifs,
+                        "past_notifs": past_notifs}), 200
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@app.route("/api/readnotification", methods=["POST"])
+def mark_as_read():
+    user_info = _cas.authenticate()
+    data = request.get_json()
+    notif_id = data.get('notif_id')
+    print("notif_id is ", notif_id)
+    try:
+        database.read_notification(user_info['netid'], notif_id)
+        return jsonify({'success': True, 'message': 'Notification marked as read'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to mark notification as read'}), 400
 
 # @app.route("/api/acceptriderequest", methods=["POST"])
 # def acceptriderequest():
