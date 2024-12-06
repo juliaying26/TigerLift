@@ -638,7 +638,7 @@ export default function MyRides() {
         />
       )}
       <div className="hidden md:flex gap-4">
-        <IconButton type="back" onClick={() => navigate("/dashboard")} />
+        <IconButton type="back" onClick={() => navigate("/allrides")} />
         <Button
           className={`${
             viewType == "posted"

@@ -1,8 +1,8 @@
 import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Input from "../components/Input";
-import DateTimePicker from "../components/DateTimePicker";
+import Navbar from "../components/Navbar.jsx";
+import Input from "../components/Input.jsx";
+import DateTimePicker from "../components/DateTimePicker.jsx";
 import RideCard from "../components/RideCard.jsx";
 import Pill from "../components/Pill.jsx";
 import Button from "../components/Button.jsx";
@@ -13,10 +13,10 @@ import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
-import CopyEmailButton from "../components/CopyEmailButton";
-import TextArea from "../components/TextArea";
+import CopyEmailButton from "../components/CopyEmailButton.jsx";
+import TextArea from "../components/TextArea.jsx";
 
-export default function Dashboard() {
+export default function AllRides() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
 
   const [pendingRideId, setPendingRideId] = useState(null);
