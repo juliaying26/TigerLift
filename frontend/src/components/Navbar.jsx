@@ -132,10 +132,10 @@ export default function Navbar({ user_info }) {
               <button
                 onClick={() => {
                   setMyRidesViewType("");
-                  navigateTo("/dashboard");
+                  navigateTo("/allrides");
                 }}
                 className={`${
-                  isActive("/dashboard") ? "bg-theme_light_1 font-medium" : ""
+                  isActive("/allrides") ? "bg-theme_light_1 font-medium" : ""
                 } text-lg rounded-md py-3 hover:bg-theme_light_1`}
               >
                 All Rideshares

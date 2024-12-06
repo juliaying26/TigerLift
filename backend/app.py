@@ -42,7 +42,7 @@ def login():
     print("user info")
     print(user_info)
     print("RIGHT BEFORE REDIRECT")
-    return redirect(f"{FRONTEND_URL}/dashboard")
+    return redirect(f"{FRONTEND_URL}/allrides")
 
 @app.route("/api/logout", methods=["GET"])
 def logout():
@@ -244,17 +244,17 @@ def cancelriderequest():
 def addlocation():
     database.create_location(1, "Princeton")
     database.create_location(2, "Airport")
-    return redirect("/dashboard")
+    return redirect("/allrides")
 
 @app.route("/deletelocations", methods=["GET"])
 def deletelocations():
     database.delete_all_locations()
-    return redirect("/dashboard")
+    return redirect("/allrides")
 
 @app.route("/deleteallrides", methods=["GET"])
 def deleteallrides():
     database.delete_all_rides()
-    return redirect("/dashboard")
+    return redirect("/allrides")
 
 @app.route("/api/searchrides", methods=["GET"])
 def searchrides():

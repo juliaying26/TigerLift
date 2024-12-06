@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
+import AllRides from "./pages/AllRides";
 import MyRides from "./pages/MyRides";
 import Navbar from "./components/Navbar";
 import Button from "./components/Button";
@@ -33,8 +33,8 @@ function App() {
         <div className="h-full">
           <Navbar user_info={user} />
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Navigate to="/allrides" replace />} />
+            <Route path="/allrides" element={<AllRides />} />
             <Route path="/myrides" element={<MyRides />} />
           </Routes>
         </div>
