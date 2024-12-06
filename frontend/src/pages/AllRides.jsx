@@ -137,9 +137,16 @@ export default function AllRides() {
       let arrival_time_iso = null;
 
       if (startSearchDate != null) {
-        start_search_time_string = `${startSearchDate.format(
-          "YYYY-MM-DD"
-        )}T${startSearchTime.format("HH:mm:ss")}`;
+        if (startSearchTime != null) {
+          start_search_time_string = `${startSearchDate.format(
+            "YYYY-MM-DD"
+          )}T${startSearchTime.format("HH:mm:ss")}`;
+        }
+        else if (startSearchTime == null) {
+          start_search_time_string = `${startSearchDate.format(
+            "YYYY-MM-DD"
+            )}T00:00:00`; // defaults to midnight to show all times on this day
+        }
 
         start_search_time_iso = new Date(
           start_search_time_string
@@ -147,9 +154,16 @@ export default function AllRides() {
       }
 
       if (endSearchDate != null) {
-        arrival_time_string = `${endSearchDate.format(
-          "YYYY-MM-DD"
-        )}T${endSearchTime.format("HH:mm:ss")}`;
+        if (endSearchTime != null) {
+          arrival_time_string = `${endSearchDate.format(
+            "YYYY-MM-DD"
+          )}T${endSearchTime.format("HH:mm:ss")}`;
+        }
+        else if (endSearchTime == null) {
+          arrival_time_string = `${endSearchDate.format(
+            "YYYY-MM-DD"
+          )}T23:59:00`; // defaults to 11:59pm to include all rides on that day
+        }
 
         arrival_time_iso = new Date(arrival_time_string).toISOString();
       }
@@ -344,21 +358,29 @@ export default function AllRides() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  });
 
   useEffect(() => {
+
     if (searchOrigin) {
       console.log("searchOrigin updated:", searchOrigin);
       searchRide();
     }
-  }, [searchOrigin]);
 
-  useEffect(() => {
     if (searchDest) {
       console.log("searchDest updated:", searchDest);
       searchRide();
     }
-  }, [searchDest]);
+
+    if (startSearchDate) {
+      searchRide();
+    }
+
+    if (endSearchDate) {
+      searchRide();
+    }
+
+  }, [searchOrigin, searchDest, startSearchDate, endSearchDate]);
 
   return (
     <div className="p-8">
@@ -412,9 +434,6 @@ export default function AllRides() {
                 );
                 setSearchOrigin(place);
                 console.log("place:", place);
-
-                // TODO: need to call searchRide here so it works
-                //searchRide();
               }}
               options={autocompleteOptions}
               ref={searchOriginRef}
