@@ -84,6 +84,7 @@ def api_dashboard():
         if updated_ride['arrival_time'] > current_time and len(updated_ride['current_riders']) < updated_ride['max_capacity']:
             updated_rides.append(updated_ride)
 
+    updated_rides.sort(key=lambda ride: ride['arrival_time'])
     
     ridereqs_map = {}
     for ridereq in ridereqs:
@@ -263,18 +264,18 @@ def searchrides():
     arrival_time = request.args.get('arrival_time')
     start_search_time = request.args.get('start_search_time')
 
-    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
-    print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
+    #print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
+    #print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
 
     origin = request.args.get('origin')
     destination = request.args.get('destination')
     if not origin and not destination:
         return jsonify({"error": "You must provide at least one of 'origin' or 'destination'"}), 400
 
-    origin_id = database.location_to_id(origin) if origin else None
-    destination_id = database.location_to_id(destination) if destination else None
+    print("origin:", origin)
+    print("destination:", destination)
 
-    rides = database.search_rides(origin_id, destination_id, arrival_time, start_search_time)
+    rides = database.search_rides(origin, destination, arrival_time, start_search_time)
     locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
@@ -293,13 +294,12 @@ def searchrides():
             'admin_email': ride[3],
             'max_capacity': ride[4],
             'origin': ride[5],
-            'origin_name': location_map.get(ride[5], 'Unknown'),
             'destination': ride[6],
-            'destination_name': location_map.get(ride[6], 'Unknown'),
             'arrival_time': ride[7],
             'creation_time': ride[8],
             'updated_at': ride[9],
-            'current_riders': ride[10]
+            'current_riders': ride[10],
+            'note': ride[11]
         }
 
         updated_rides.append(updated_ride)
@@ -473,10 +473,27 @@ def notifications():
     
     try: 
         response = database.get_user_notifs(netid)
-        return jsonify({"notifications": response}), 200
+        print(response)
+        new_notifs = [notif for notif in response if not notif[4]]
+        past_notifs = [notif for notif in response if notif[4] == 'read']
+        return jsonify({"new_notifs": new_notifs,
+                        "past_notifs": past_notifs}), 200
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@app.route("/api/readnotification", methods=["POST"])
+def mark_as_read():
+    user_info = _cas.authenticate()
+    data = request.get_json()
+    notif_id = data.get('notif_id')
+    print("notif_id is ", notif_id)
+    try:
+        database.read_notification(user_info['netid'], notif_id)
+        return jsonify({'success': True, 'message': 'Notification marked as read'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to mark notification as read'}), 400
 
 # @app.route("/api/acceptriderequest", methods=["POST"])
 # def acceptriderequest():

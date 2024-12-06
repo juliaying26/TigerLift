@@ -30,7 +30,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [ridesData, setRidesData] = useState([]);
   const [createRideModal, setCreateRideModal] = useState(false);
-  //const [searchRideModal, setSearchRideModal] = useState(false);
 
   const [popupMessageInfo, setPopupMessageInfo] = useState({
     status: "",
@@ -47,14 +46,17 @@ export default function Dashboard() {
   const [rideNote, setRideNote] = useState("");
   const [isCreatingRide, setIsCreatingRide] = useState(false);
 
-  const [searchOrigin, setSearchOrigin] = useState("");
-  const [searchDest, setSearchDest] = useState("");
+  const searchOriginRef = useRef(null);
+  const searchDestinationRef = useRef(null);
+  const [searchOrigin, setSearchOrigin] = useState(null);
+  const [searchDest, setSearchDest] = useState(null);
   const [startSearchDate, setStartSearchDate] = useState();
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
 
   const autocompleteOptions = {
+    componentRestrictions: { country: "us" },
     fields: ["formatted_address", "geometry", "name", "place_id"],
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
@@ -96,23 +98,33 @@ export default function Dashboard() {
   };
 
   const flipSearchFields = () => {
-    let prevDest = searchDest;
-    let prevOrigin = searchOrigin;
-    setSearchOrigin(prevDest);
-    setSearchDest(prevOrigin);
-    return;
+    const tempSearchOrigin = searchOrigin;
+
+    setSearchOrigin(searchDest);
+    setSearchDest(tempSearchOrigin);
+
+    console.log(
+      "searchOriginRef.current when switchign fields:",
+      searchOriginRef.current.placeholder
+    );
+
+    if (searchOriginRef.current && searchDestinationRef.current) {
+      const tempSearchOriginValue = searchOriginRef.current.value;
+      searchOriginRef.current.value = searchDestinationRef.current.value;
+      searchDestinationRef.current.value = tempSearchOriginValue;
+    }
   };
 
   const searchRide = async () => {
-    console.log(dashboardData);
+    //console.log(dashboardData);
+
+    console.log("in search ride. search origin: ", searchOrigin);
 
     if (!searchOrigin && !searchDest) {
-      alert(
-        "You must provide at least one of 'starting point' or 'destination'."
-      );
+      alert("You must provide at least one of 'origin' or 'destination'.");
       return;
     }
-
+    setLoading(true);
     try {
       console.log("test, am in dashboard searchride");
 
@@ -148,9 +160,11 @@ export default function Dashboard() {
       //console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
       //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
 
+      //console.log("origin place id:", searchOrigin.place_id)
+
       const params = new URLSearchParams({
-        ...(searchOrigin && { origin: searchOrigin.label }),
-        ...(searchDest && { destination: searchDest.label }),
+        ...(searchOrigin && { origin: searchOrigin.place_id }),
+        ...(searchDest && { destination: searchDest.place_id }),
         ...(start_search_time_string && {
           start_search_time: start_search_time_iso,
         }),
@@ -163,21 +177,17 @@ export default function Dashboard() {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
-
       if (!response.ok) {
         throw new Error(`Failed to fetch rides: ${response.status}`);
       }
-
       const data = await response.json();
       console.log("DATA =", data);
-
       setRidesData(data.rides);
       setInSearch(true);
+      setLoading(false);
     } catch (error) {
       console.error("Error during fetch:", error);
-    } //finally {
-    //handleCloseSearchRideModal();
-    //}
+    }
   };
 
   const checkCreateRideParams = async () => {
@@ -249,16 +259,6 @@ export default function Dashboard() {
     setTime("");
   };
 
-  /*
-  const handleOpenSearchRideModal = async () => {
-    setSearchRideModal(true);
-  };
-
-  const handleCloseSearchRideModal = async () => {
-    setSearchRideModal(false);
-  };
-  */
-
   const fetchDashboardData = async () => {
     try {
       const response = await fetch("/api/dashboard");
@@ -324,6 +324,12 @@ export default function Dashboard() {
   };
 
   const resetSearch = async () => {
+    if (searchOriginRef.current.value) {
+      searchOriginRef.current.value = "";
+    }
+    if (searchDestinationRef.current.value) {
+      searchDestinationRef.current.value = "";
+    }
     setLoading(true);
     setInSearch(false);
     await fetchDashboardData();
@@ -339,6 +345,20 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    if (searchOrigin) {
+      console.log("searchOrigin updated:", searchOrigin);
+      searchRide();
+    }
+  }, [searchOrigin]);
+
+  useEffect(() => {
+    if (searchDest) {
+      console.log("searchDest updated:", searchDest);
+      searchRide();
+    }
+  }, [searchDest]);
 
   return (
     <div className="p-8">
@@ -366,16 +386,50 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center justify-between space-x-3">
-          <Dropdown
+          {/*
+         <Dropdown
             inputValue={searchOrigin}
             setInputValue={setSearchOrigin}
             options={locations}
             isClearable
             placeholder="Select starting point"
           />
+          */}
 
-          <IconButton type="flip" onClick={flipSearchFields} disabled={false} />
+          <div className="flex items-center gap-2">
+            <Autocomplete
+              key={"searchOrigin"}
+              className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
+              apiKey={google_api_key}
+              placeholder="Enter origin"
+              onPlaceSelected={(place) => {
+                console.log("Selected Place Details:", place);
+                console.log("Formatted Address:", place.formatted_address);
+                console.log(
+                  "Coordinates:",
+                  place.geometry.location.lat(),
+                  place.geometry.location.lng()
+                );
+                setSearchOrigin(place);
+                console.log("place:", place);
 
+                // TODO: need to call searchRide here so it works
+                //searchRide();
+              }}
+              options={autocompleteOptions}
+              ref={searchOriginRef}
+            />
+
+            <IconButton
+              className="flex-none"
+              type="flip"
+              onClick={flipSearchFields}
+              disabled={false}
+            ></IconButton>
+
+            {/* <IconButton type="flip" onClick={flipSearchFields} disabled={false} /> */}
+
+            {/*
           <Dropdown
             inputValue={searchDest}
             setInputValue={setSearchDest}
@@ -383,6 +437,27 @@ export default function Dashboard() {
             isClearable
             placeholder="Select destination"
           />
+          */}
+
+            <Autocomplete
+              key={"searchDestination"}
+              className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
+              apiKey={google_api_key}
+              placeholder="Enter destination"
+              onPlaceSelected={(place) => {
+                console.log("Selected Place Details:", place);
+                console.log("Formatted Address:", place.formatted_address);
+                console.log(
+                  "Coordinates:",
+                  place.geometry.location.lat(),
+                  place.geometry.location.lng()
+                );
+                setSearchDest(place);
+              }}
+              options={autocompleteOptions}
+              ref={searchDestinationRef}
+            />
+          </div>
 
           <div
             className="flex flex-col items-center"
@@ -495,16 +570,18 @@ export default function Dashboard() {
                         </span>
                       </span>
                     </p>
-                    <p className="text-center">
-                      Arrive by{" "}
-                      {new Date(ride.arrival_time).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      })}
+                    <p className="mt-2 mb-1 text-center">
+                      <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                        Arrive by{" "}
+                        {new Date(ride.arrival_time).toLocaleString("en-US", {
+                          year: "numeric",
+                          month: "numeric",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                          hour12: true,
+                        })}
+                      </span>
                     </p>
                   </div>
                   <hr className="border-1 my-3 border-theme_medium_1" />
@@ -522,7 +599,7 @@ export default function Dashboard() {
                     {ride.current_riders.length}/{ride.max_capacity}
                   </p>
                   {ride.note && (
-                    <div>
+                    <div className="mb-0.5">
                       <span className="font-semibold">Note:</span>
                       <div className="p-2 bg-zinc-100 rounded-lg">
                         <p>{ride.note}</p>
@@ -560,9 +637,10 @@ export default function Dashboard() {
                 <p className="font-medium">Origin & Destination</p>
                 <div className="flex items-center space-x-2 w-full">
                   <Autocomplete
-                    className="flex-grow max-w-[45%]"
+                    key={"createOrigin"}
+                    className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
                     apiKey={google_api_key}
-                    placeholder="Enter starting point"
+                    placeholder="Enter origin"
                     onPlaceSelected={(place) => {
                       console.log("Selected Place Details:", place);
                       console.log(
@@ -574,6 +652,11 @@ export default function Dashboard() {
                         place.geometry.location.lat(),
                         place.geometry.location.lng()
                       );
+                      console.log(place.name);
+                      // const placeName = place.name || place.formatted_address;
+                      // if (originRef.current) {
+                      //   originRef.current.value = placeName;
+                      // }
                       setOrigin(place); // Store selected place details in state
                     }}
                     options={autocompleteOptions}
@@ -586,8 +669,8 @@ export default function Dashboard() {
                     disabled={false}
                   ></IconButton>
                   <Autocomplete
-                    className="flex-grow max-w-[44%]"
-                    wrapperClassName="w-full"
+                    key={"createDestination"}
+                    className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
                     apiKey={google_api_key}
                     placeholder="Enter destination"
                     onPlaceSelected={(place) => {
