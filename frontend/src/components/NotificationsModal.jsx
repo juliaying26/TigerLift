@@ -20,10 +20,10 @@ export default function NotificationsModal({
   return (
     <div>
       <div
-        className="fixed inset-0 z-50 bg-zinc-800 bg-opacity-20 h-full"
+        className="fixed inset-0 z-20 bg-zinc-800 bg-opacity-20 h-full"
         onClick={handleBackdropClick}
       ></div>
-      <div className="z-50 absolute top-16 right-24 w-80 bg-white rounded-xl shadow-lg overflow-y-auto border-2 border-theme_medium_2">
+      <div className="z-20 absolute top-16 right-24 w-80 bg-white rounded-xl shadow-lg overflow-y-auto border-2 border-theme_medium_2">
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-lg font-bold">Notifications</h2>
           <IconButton

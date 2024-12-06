@@ -233,7 +233,7 @@ export default function Navbar({ user_info }) {
                 type="notification"
                 className={`${
                   showNotificationsModal ? "bg-theme_light_1" : ""
-                } hover:bg-theme_light_1 z-50`}
+                } hover:bg-theme_light_1 z-20`}
               ></IconButton>
               <p className="font-medium text-lg">{user_info.displayname}</p>
               <a
