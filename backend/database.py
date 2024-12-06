@@ -87,8 +87,8 @@ def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, dest
 
     sql_command = f"""
         INSERT INTO Rides (admin_netid, admin_name, admin_email, max_capacity, current_riders,
-        origin_dict, destination_dict, arrival_time, note) VALUES (%s, %s, %s, %s, 
-        %s, %s, %s, %s, %s);   
+        origin_dict, destination_dict, arrival_time, note, updated_at) VALUES (%s, %s, %s, %s, 
+        %s, %s, %s, %s, %s, CURRENT_TIMESTAMP);   
     """
 
     values = (admin_netid, admin_name, admin_email, max_capacity, current_riders, origin, destination, 
@@ -201,8 +201,9 @@ def create_ride_request(netid, full_name, mail, ride_id):
     """
 
     sql_command = f"""
-        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status, request_time) VALUES (%s, %s, %s, 
-        %s, %s, CURRENT_TIMESTAMP);
+        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status, request_time,
+        updated_at) VALUES (%s, %s, %s, 
+        %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
     """
 
     values = (netid, full_name, mail, ride_id, status)
@@ -270,7 +271,7 @@ def update_capacity(rideid, new_capacity):
 
     sql_command = f"""
         UPDATE Rides
-        SET max_capacity = %s
+        SET max_capacity = %s, updated_at = CURRENT_TIMESTAMP
         WHERE id = %s;
     """
 
@@ -297,7 +298,7 @@ def update_arrival_time(rideid, new_arrival_time):
     """
     sql_command = f"""
         UPDATE Rides
-        SET arrival_time = %s
+        SET arrival_time = %s, updated_at = CURRENT_TIMESTAMP
         WHERE id = %s;
     """
     values = (new_arrival_time, rideid)
