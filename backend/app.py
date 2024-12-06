@@ -276,13 +276,13 @@ def searchrides():
     print("destination:", destination)
 
     rides = database.search_rides(origin, destination, arrival_time, start_search_time)
-    locations = database.get_all_locations()
+    # locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
     print(rides)
 
     # mapping for location
-    location_map = {location[0]: location[1] for location in locations}
+    # location_map = {location[0]: location[1] for location in locations}
     
     # mapping for rides array 
     updated_rides = []
