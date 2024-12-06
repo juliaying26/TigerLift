@@ -11,7 +11,8 @@ export default function Navbar({ user_info }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [isNotifsLoading, setIsNotifsLoading] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [newNotifications, setNewNotifications] = useState([]);
+  const [pastNotifications, setPastNotifications] = useState([]);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
   const [myRidesViewType, setMyRidesViewType] = useState("");
 
@@ -48,13 +49,24 @@ export default function Navbar({ user_info }) {
       console.log("Raw data response:", data_response);
 
       // Make each array into dictionary
-      const data = data_response.notifications.map((row) => ({
+      const new_notifs = data_response.new_notifs.map((row) => ({
         id: row[0],
         message: row[1],
         notification_time: row[2],
         subject: row[3],
+        status: row[4],
       }));
-      setNotifications(data || []);
+      const past_notifs = data_response.past_notifs.map((row) => ({
+        id: row[0],
+        message: row[1],
+        notification_time: row[2],
+        subject: row[3],
+        status: row[4],
+      }));
+      console.log(new_notifs);
+      console.log(past_notifs);
+      setNewNotifications(new_notifs);
+      setPastNotifications(past_notifs);
       setIsNotifsLoading(false);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -68,6 +80,36 @@ export default function Navbar({ user_info }) {
 
   const handleCloseNotificationsModal = () => {
     setShowNotificationsModal(false);
+  };
+
+  const handleReadNotif = async (notif, notif_type) => {
+    console.log(notif.id);
+    if (notif_type === "ride_request") {
+      navigate("/myrides", { state: { viewType: "posted" } });
+    } else {
+      navigate("/myrides", { state: { viewType: "requested" } });
+    }
+    setShowNotificationsModal(false);
+    if (notif.status !== "read") {
+      try {
+        const response = await fetch("/api/readnotification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            notif_id: notif.id,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to mark notification as read: ${response.status}`
+          );
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    await fetchNotifs();
   };
 
   return (
@@ -191,14 +233,14 @@ export default function Navbar({ user_info }) {
         </div>
       )}
 
-      {
-        <NotificationsModal
-          isOpen={showNotificationsModal}
-          isLoading={isNotifsLoading}
-          onClose={handleCloseNotificationsModal}
-          notifications={notifications}
-        />
-      }
+      <NotificationsModal
+        isOpen={showNotificationsModal}
+        isLoading={isNotifsLoading}
+        onClose={handleCloseNotificationsModal}
+        new_notifs={newNotifications}
+        past_notifs={pastNotifications}
+        handleReadNotif={handleReadNotif}
+      />
 
       <nav className="bg-theme_medium_1">
         <div className="w-full">
@@ -226,15 +268,28 @@ export default function Navbar({ user_info }) {
 
             {/* Right Side */}
             <div className="hidden md:flex items-center gap-4">
-              <IconButton
-                onClick={() =>
-                  setShowNotificationsModal(!showNotificationsModal)
-                }
-                type="notification"
-                className={`${
-                  showNotificationsModal ? "bg-theme_light_1" : ""
-                } hover:bg-theme_light_1 z-20`}
-              ></IconButton>
+              <div className="relative">
+                <IconButton
+                  onClick={() =>
+                    setShowNotificationsModal(!showNotificationsModal)
+                  }
+                  type="notification"
+                  className={`${
+                    showNotificationsModal ? "bg-theme_light_1" : ""
+                  } hover:bg-theme_light_1 z-20`}
+                />
+                {newNotifications.length > 0 && (
+                  <div className="absolute top-2 right-2">
+                    <svg
+                      width="7"
+                      height="7"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="3.5" cy="3.5" r="3.5" fill="#6EE7B7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
               <p className="font-medium text-lg">{user_info.displayname}</p>
               <a
                 href="/api/logout"
