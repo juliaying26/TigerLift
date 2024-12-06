@@ -56,6 +56,7 @@ export default function Dashboard() {
   const [endSearchTime, setEndSearchTime] = useState();
 
   const autocompleteOptions = {
+    componentRestrictions: { country: "us" },
     fields: ["formatted_address", "geometry", "name", "place_id"],
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
@@ -102,7 +103,10 @@ export default function Dashboard() {
     setSearchOrigin(searchDest);
     setSearchDest(tempSearchOrigin);
 
-    console.log("searchOriginRef.current when switchign fields:", searchOriginRef.current.placeholder)
+    console.log(
+      "searchOriginRef.current when switchign fields:",
+      searchOriginRef.current.placeholder
+    );
 
     if (searchOriginRef.current && searchDestinationRef.current) {
       const tempSearchOriginValue = searchOriginRef.current.value;
@@ -114,15 +118,13 @@ export default function Dashboard() {
   const searchRide = async () => {
     //console.log(dashboardData);
 
-    console.log("in search ride. search origin: ", searchOrigin)
+    console.log("in search ride. search origin: ", searchOrigin);
 
     if (!searchOrigin && !searchDest) {
-      alert(
-        "You must provide at least one of 'starting point' or 'destination'."
-      );
+      alert("You must provide at least one of 'origin' or 'destination'.");
       return;
     }
-
+    setLoading(true);
     try {
       console.log("test, am in dashboard searchride");
 
@@ -160,7 +162,6 @@ export default function Dashboard() {
 
       //console.log("origin place id:", searchOrigin.place_id)
 
-      
       const params = new URLSearchParams({
         ...(searchOrigin && { origin: searchOrigin.place_id }),
         ...(searchDest && { destination: searchDest.place_id }),
@@ -172,11 +173,10 @@ export default function Dashboard() {
 
       console.log("params: " + params.toString());
 
-
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-    });
+      });
       if (!response.ok) {
         throw new Error(`Failed to fetch rides: ${response.status}`);
       }
@@ -184,15 +184,11 @@ export default function Dashboard() {
       console.log("DATA =", data);
       setRidesData(data.rides);
       setInSearch(true);
-      }
-        catch (error) {
-          console.error("Error during fetch:", error);
-        }
-      }
-
-
-
-
+      setLoading(false);
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
+  };
 
   const checkCreateRideParams = async () => {
     console.log(origin);
@@ -263,7 +259,6 @@ export default function Dashboard() {
     setTime("");
   };
 
-
   const fetchDashboardData = async () => {
     try {
       const response = await fetch("/api/dashboard");
@@ -329,6 +324,12 @@ export default function Dashboard() {
   };
 
   const resetSearch = async () => {
+    if (searchOriginRef.current.value) {
+      searchOriginRef.current.value = "";
+    }
+    if (searchDestinationRef.current.value) {
+      searchDestinationRef.current.value = "";
+    }
     setLoading(true);
     setInSearch(false);
     await fetchDashboardData();
@@ -339,12 +340,6 @@ export default function Dashboard() {
     setStartSearchTime(null);
     setEndSearchDate(null);
     setEndSearchTime(null);
-    if (searchOriginRef.current.value) {
-      searchOriginRef.current.value = "";
-    }
-    if (searchDestinationRef.current.value) {
-      searchDestinationRef.current.value = "";
-    }
   };
 
   useEffect(() => {
@@ -364,7 +359,6 @@ export default function Dashboard() {
       searchRide();
     }
   }, [searchDest]);
-  
 
   return (
     <div className="p-8">
@@ -391,8 +385,8 @@ export default function Dashboard() {
           </Button>
         </div>
 
-         <div className="flex items-center justify-between space-x-3">
-         {/*
+        <div className="flex items-center justify-between space-x-3">
+          {/*
          <Dropdown
             inputValue={searchOrigin}
             setInputValue={setSearchOrigin}
@@ -401,42 +395,41 @@ export default function Dashboard() {
             placeholder="Select starting point"
           />
           */}
-          
-          <Autocomplete
+
+          <div className="flex items-center gap-2">
+            <Autocomplete
+              key={"searchOrigin"}
+              className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
               apiKey={google_api_key}
               placeholder="Enter origin"
               onPlaceSelected={(place) => {
                 console.log("Selected Place Details:", place);
-                console.log(
-                  "Formatted Address:",
-                  place.formatted_address
-                );
+                console.log("Formatted Address:", place.formatted_address);
                 console.log(
                   "Coordinates:",
                   place.geometry.location.lat(),
                   place.geometry.location.lng()
                 );
-              setSearchOrigin(place);
-              console.log("place:", place)
+                setSearchOrigin(place);
+                console.log("place:", place);
 
-              // TODO: need to call searchRide here so it works
-              //searchRide();
+                // TODO: need to call searchRide here so it works
+                //searchRide();
+              }}
+              options={autocompleteOptions}
+              ref={searchOriginRef}
+            />
 
-            }}
-            options={autocompleteOptions}
-            ref={searchOriginRef}
-          />
+            <IconButton
+              className="flex-none"
+              type="flip"
+              onClick={flipSearchFields}
+              disabled={false}
+            ></IconButton>
 
-          <IconButton
-            className="flex-none"
-            type="flip"
-            onClick={flipSearchFields}
-            disabled={false}
-          ></IconButton>
+            {/* <IconButton type="flip" onClick={flipSearchFields} disabled={false} /> */}
 
-          {/* <IconButton type="flip" onClick={flipSearchFields} disabled={false} /> */}
-
-          {/*
+            {/*
           <Dropdown
             inputValue={searchDest}
             setInputValue={setSearchDest}
@@ -446,26 +439,25 @@ export default function Dashboard() {
           />
           */}
 
-
-          <Autocomplete
+            <Autocomplete
+              key={"searchDestination"}
+              className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
               apiKey={google_api_key}
               placeholder="Enter destination"
               onPlaceSelected={(place) => {
                 console.log("Selected Place Details:", place);
-                console.log(
-                  "Formatted Address:",
-                  place.formatted_address
-                );
+                console.log("Formatted Address:", place.formatted_address);
                 console.log(
                   "Coordinates:",
                   place.geometry.location.lat(),
                   place.geometry.location.lng()
                 );
-              setSearchDest(place);
-            }}
-            options={autocompleteOptions}
-            ref={searchDestinationRef}
-          />
+                setSearchDest(place);
+              }}
+              options={autocompleteOptions}
+              ref={searchDestinationRef}
+            />
+          </div>
 
           <div
             className="flex flex-col items-center"
@@ -509,7 +501,6 @@ export default function Dashboard() {
             <div>
               <Button
                 onClick={resetSearch}
-                
                 className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
               >
                 Clear Search Filters
@@ -646,9 +637,10 @@ export default function Dashboard() {
                 <p className="font-medium">Origin & Destination</p>
                 <div className="flex items-center space-x-2 w-full">
                   <Autocomplete
-                    className="flex-grow max-w-[45%]"
+                    key={"createOrigin"}
+                    className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
                     apiKey={google_api_key}
-                    placeholder="Enter starting point"
+                    placeholder="Enter origin"
                     onPlaceSelected={(place) => {
                       console.log("Selected Place Details:", place);
                       console.log(
@@ -660,6 +652,11 @@ export default function Dashboard() {
                         place.geometry.location.lat(),
                         place.geometry.location.lng()
                       );
+                      console.log(place.name);
+                      // const placeName = place.name || place.formatted_address;
+                      // if (originRef.current) {
+                      //   originRef.current.value = placeName;
+                      // }
                       setOrigin(place); // Store selected place details in state
                     }}
                     options={autocompleteOptions}
@@ -672,8 +669,8 @@ export default function Dashboard() {
                     disabled={false}
                   ></IconButton>
                   <Autocomplete
-                    className="flex-grow max-w-[44%]"
-                    wrapperClassName="w-full"
+                    key={"createDestination"}
+                    className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
                     apiKey={google_api_key}
                     placeholder="Enter destination"
                     onPlaceSelected={(place) => {

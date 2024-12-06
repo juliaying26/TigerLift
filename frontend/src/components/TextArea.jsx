@@ -17,7 +17,6 @@ export default function Input({
       label={label}
       variant="outlined"
       value={inputValue}
-      fullWidth
       placeholder={placeholder}
       onChange={handleChange}
       style={{ height: 80, resize: "none" }}

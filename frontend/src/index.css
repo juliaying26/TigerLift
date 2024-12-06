@@ -45,3 +45,15 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
+
+.pac-container {
+  border-radius: 6px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  font-family: "Inter", sans-serif;
+  font-size: "16px";
+  margin-bottom: 10px;
+}
+
+.pac-item {
+  padding: 2px 6px;
+}
