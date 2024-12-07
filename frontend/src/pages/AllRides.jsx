@@ -224,6 +224,8 @@ export default function AllRides() {
 
   const createRide = async () => {
     setIsCreatingRide(true);
+    setInSearch(false);
+    
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
