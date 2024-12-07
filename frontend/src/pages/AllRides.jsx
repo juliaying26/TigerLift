@@ -286,9 +286,9 @@ export default function AllRides() {
     try {
       console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
 
-      const formattedArrivalTime = dayjs(arrival_time).format(
-        "MMMM D, YYYY, h:mm A"
-      );
+      const formattedArrivalTime = dayjs(arrival_time)
+        .tz("America/New_York")
+        .format("MMMM D, YYYY, h:mm A");
 
       const formatted = new Date(arrival_time).toLocaleString("en-US", {
         year: "numeric",
@@ -310,7 +310,7 @@ export default function AllRides() {
           rideid: rideid,
           origin_name: origin["name"],
           destination_name: destination["name"],
-          arrival_time: formattedArrivalTime,
+          formatted_arrival_time: formattedArrivalTime,
         }),
       });
       await fetchDashboardData();

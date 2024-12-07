@@ -313,15 +313,21 @@ export default function MyRides() {
     }
 
     try {
+      const new_arrival_time_string = `${newArrivalDate.format(
+        "YYYY-MM-DD"
+      )}T${newArrivalTime.format("HH:mm:ss")}`;
+      const new_arrival_time_iso = new Date(
+        new_arrival_time_string
+      ).toISOString();
+
+      console.log(new_arrival_time_iso);
+
       // Parse arrival time for sending email purposes
-      const new_arrival_time = dayjs(newArrivalDate)
-        .hour(newArrivalTime.hour())
-        .minute(newArrivalTime.minute())
-        .second(newArrivalTime.second())
+      const formatted_arrival_time = dayjs(newArrivalDate)
         .tz("America/New_York") // Convert to EST
         .format("MMMM D, YYYY, h:mm A");
 
-      console.log(new_arrival_time, "is new arrival time");
+      console.log(new_arrival_time_iso, "is new arrival time");
 
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
@@ -334,7 +340,8 @@ export default function MyRides() {
           rejecting_riders: rejecting_riders,
           pending_riders: pending_riders,
           new_capacity: newCapacity?.label,
-          new_arrival_time: new_arrival_time,
+          new_arrival_time: new_arrival_time_iso,
+          formatted_arrival_time: formatted_arrival_time,
           origin_name: selectedRide.origin["name"],
           destination_name: selectedRide.destination["name"],
         }),
@@ -352,7 +359,7 @@ export default function MyRides() {
           const subj = "🚗 A rideshare you're in has changed arrival time!";
           const mess = `Your ride from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
           has changed arrrival time
-          to ${new_arrival_time}.`;
+          to ${formatted_arrival_time}.`;
 
           for (const rider of accepting_riders) {
             // console.log("rider's name is", rider.full_name)
