@@ -9,11 +9,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
 import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
-import Input from "../components/Input";
 import TextArea from "../components/TextArea";
 import CopyEmailButton from "../components/CopyEmailButton";
 import PopUpMessage from "../components/PopUpMessage";
 import LoadingIcon from "../components/LoadingIcon";
+import { getFormattedDate } from "../utils/utils";
 
 // For parsing date
 import utc from "dayjs/plugin/utc";
@@ -544,15 +544,7 @@ export default function MyRides() {
                 </p>
                 <p className="text-center">
                   <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    Arrive by{" "}
-                    {new Date(ride.arrival_time).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "numeric",
-                      hour12: true,
-                    })}
+                    Arrive by {getFormattedDate(new Date(ride.arrival_time))}
                   </span>
                 </p>
               </div>
@@ -568,7 +560,7 @@ export default function MyRides() {
               {ride.note && (
                 <div className="mb-0.5">
                   <span className="font-semibold">Note:</span>
-                  <div className="p-2 bg-zinc-100 rounded-lg">
+                  <div className="py-2 px-3 bg-zinc-100 rounded-lg">
                     <p>{ride.note}</p>
                   </div>
                 </div>
@@ -613,7 +605,7 @@ export default function MyRides() {
                       })}
                     </div>
                   ) : (
-                    <p className="text-zinc-800">
+                    <p className="text-zinc-500 text-sm">
                       {new Date(ride.arrival_time) > new Date()
                         ? "No current riders. Manage Rideshare to manage requests."
                         : "None."}
@@ -798,29 +790,17 @@ export default function MyRides() {
                 />
               ) : newArrivalDate || newArrivalTime ? (
                 <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                  {new Date(
-                    `${newArrivalDate.format(
-                      "YYYY-MM-DD"
-                    )}T${newArrivalTime.format("HH:mm:ss")}`
-                  ).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "numeric",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
+                  {getFormattedDate(
+                    new Date(
+                      `${newArrivalDate.format(
+                        "YYYY-MM-DD"
+                      )}T${newArrivalTime.format("HH:mm:ss")}`
+                    )
+                  )}
                 </span>
               ) : (
                 <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                  {new Date(selectedRide.arrival_time).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "numeric",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
+                  {getFormattedDate(new Date(selectedRide.arrival_time))}
                 </span>
               )}
               {isEditingArrivalTime ? (
@@ -896,7 +876,7 @@ export default function MyRides() {
             {selectedRide.note && (
               <div className="mb-0.5">
                 <span className="font-semibold">Note:</span>
-                <div className="p-2 bg-zinc-100 rounded-lg">
+                <div className="py-2 px-3 bg-zinc-100 rounded-lg">
                   <p>{selectedRide.note}</p>
                 </div>
               </div>
@@ -933,7 +913,7 @@ export default function MyRides() {
                 })}
               </div>
             ) : (
-              <p className="text-zinc-700">No current riders.</p>
+              <p className="text-zinc-500 text-sm">No current riders.</p>
             )}
             <div className="flex flex-col gap-2 mt-1 mb-4">
               <p className="-mb-1">
@@ -979,7 +959,7 @@ export default function MyRides() {
                     );
                   })
                 ) : (
-                  <p>No requests to join</p>
+                  <p className="text-sm">No requests to join</p>
                 )}
               </div>
             </div>
