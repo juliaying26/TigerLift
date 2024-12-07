@@ -12,7 +12,7 @@ import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
 import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import TextArea from "../components/TextArea.jsx";
-import { getFormattedDate } from "../utils/utils.js";
+import { getFormattedDate, MAX_CAPACITY } from "../utils/utils.js";
 
 export default function AllRides() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -63,14 +63,13 @@ export default function AllRides() {
 
   const [locations, setLocations] = useState([]); // delete this later
 
-  const max_capacity_option = 5;
   const capacity_options = [];
 
   const capitalizeFirstLetter = (val) => {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
   };
 
-  for (let i = 1; i < max_capacity_option + 1; i++) {
+  for (let i = 1; i < MAX_CAPACITY + 1; i++) {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
@@ -376,7 +375,7 @@ export default function AllRides() {
         <div className="flex items-center justify-between space-x-3 pb-4">
           <div className="flex items-center gap-2">
             <div>
-              <p className="font-medium mb-1">Origin: </p>
+              <p className="font-medium mb-1">Origin</p>
               <Autocomplete
                 key={"searchOrigin"}
                 className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
@@ -407,7 +406,7 @@ export default function AllRides() {
               disabled={false}
             ></IconButton>
             <div className="flex flex-col">
-              <p className="font-medium mb-1">Destination: </p>
+              <p className="font-medium mb-1">Destination</p>
               <Autocomplete
                 key={"searchDestination"}
                 className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
@@ -429,7 +428,7 @@ export default function AllRides() {
             </div>
           </div>
           <div className="flex flex-col">
-            <p className="font-medium mb-1">Arrive After: </p>
+            <p className="font-medium mb-1">Arrive After</p>
             <DateTimePicker
               date={startSearchDate}
               setDate={setStartSearchDate}
@@ -438,7 +437,7 @@ export default function AllRides() {
             />
           </div>
           <div className="flex flex-col">
-            <p className="font-medium mb-1">Arrive Before: </p>
+            <p className="font-medium mb-1">Arrive Before</p>
             <DateTimePicker
               date={endSearchDate}
               setDate={setEndSearchDate}
@@ -471,6 +470,9 @@ export default function AllRides() {
               <br />
             </div>
           )}
+          <h3 className="text-lg font-medium mt-2 mb-3">
+            Upcoming & available rides
+          </h3>
           {ridesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {ridesData.map((ride) => (
@@ -579,7 +581,11 @@ export default function AllRides() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
               <div>
-                <p className="font-medium mb-1">Capacity </p>
+                <p className="font-medium">Capacity</p>
+                <p className="text-sm text-zinc-500 mb-1">
+                  Number of people you'd like to rideshare with, not including
+                  yourself
+                </p>
                 <Dropdown
                   inputValue={capacity}
                   setInputValue={setCapacity}
@@ -647,7 +653,7 @@ export default function AllRides() {
                 </div>
               </div>
               <div>
-                <p className="font-medium mb-1">Arrival Time</p>
+                <p className="font-medium mb-1">Arrival Time (in ET)</p>
                 <DateTimePicker
                   date={date}
                   setDate={setDate}

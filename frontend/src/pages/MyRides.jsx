@@ -13,7 +13,7 @@ import TextArea from "../components/TextArea";
 import CopyEmailButton from "../components/CopyEmailButton";
 import PopUpMessage from "../components/PopUpMessage";
 import LoadingIcon from "../components/LoadingIcon";
-import { getFormattedDate } from "../utils/utils";
+import { getFormattedDate, MAX_CAPACITY } from "../utils/utils";
 
 // For parsing date
 import utc from "dayjs/plugin/utc";
@@ -26,7 +26,6 @@ export default function MyRides() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [userInfo, setUserInfo] = useState({});
   const [myUpcomingPostedRidesData, setMyUpcomingPostedRidesData] = useState(
     []
   );
@@ -90,8 +89,6 @@ export default function MyRides() {
       setMyPastRequestedRidesData(data.past_requested_rides);
 
       console.log(data);
-
-      setUserInfo(data.user_info);
     } catch (error) {
       console.error("Error fetching rides:", error);
     }
@@ -659,7 +656,7 @@ export default function MyRides() {
           My Requested Rideshares
         </Button>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2.5">
         <h3 className="text-lg font-medium">
           {viewType === "posted"
             ? "Upcoming posted rides"
@@ -668,7 +665,7 @@ export default function MyRides() {
         {viewType === "posted"
           ? renderRideCards(myUpcomingPostedRidesData, true)
           : renderRideCards(myUpcomingRequestedRidesData, true)}
-        <h3 className="text-lg font-medium">
+        <h3 className="text-lg font-medium pt-4">
           {viewType === "posted"
             ? "Past posted rides"
             : "Previously accepted rides"}
@@ -690,7 +687,7 @@ export default function MyRides() {
                 ? "You have unsaved changes. Do you want to discard them?"
                 : warningModalInfo.title === "Delete this Rideshare?"
                 ? "Are you sure you want to delete this rideshare?"
-                : "The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum 5)."}
+                : `The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum ${MAX_CAPACITY}).`}
             </p>
             {warningModalInfo.title === "Delete this Rideshare?" &&
               selectedRide.current_riders.length != 0 && (
@@ -840,7 +837,7 @@ export default function MyRides() {
                 <Dropdown
                   inputValue={newCapacity}
                   setInputValue={setNewCapacity}
-                  options={Array.from({ length: 5 }, (_, i) => {
+                  options={Array.from({ length: MAX_CAPACITY }, (_, i) => {
                     const start =
                       modalCurrentRiders?.length > 1
                         ? modalCurrentRiders.length
