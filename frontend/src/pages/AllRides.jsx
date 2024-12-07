@@ -225,7 +225,7 @@ export default function AllRides() {
   const createRide = async () => {
     setIsCreatingRide(true);
     setInSearch(false);
-    
+
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -296,6 +296,7 @@ export default function AllRides() {
     arrival_time
   ) => {
     console.log("IN HANDLE RIDE REQUEST");
+
     setPendingRideId(rideid);
     try {
       console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
@@ -316,12 +317,16 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
+
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
     } catch (error) {
       console.error("Error during fetch:", error);
+    }
+    if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
+      searchRide();
     }
     setPendingRideId(null);
   };
