@@ -304,6 +304,8 @@ def searchrides():
 
         updated_rides.append(updated_ride)
 
+    updated_rides.sort(key=lambda ride: ride['arrival_time'])
+
     ridereqs_map = {}
     for ridereq in ridereqs:
         ridereqs_map[ridereq[1]] = ridereq[2]

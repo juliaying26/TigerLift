@@ -138,11 +138,10 @@ export default function AllRides() {
           start_search_time_string = `${startSearchDate.format(
             "YYYY-MM-DD"
           )}T${startSearchTime.format("HH:mm:ss")}`;
-        }
-        else if (startSearchTime == null) {
+        } else if (startSearchTime == null) {
           start_search_time_string = `${startSearchDate.format(
             "YYYY-MM-DD"
-            )}T00:00:00`; // defaults to midnight to show all times on this day
+          )}T00:00:00`; // defaults to midnight to show all times on this day
         }
 
         start_search_time_iso = new Date(
@@ -155,8 +154,7 @@ export default function AllRides() {
           arrival_time_string = `${endSearchDate.format(
             "YYYY-MM-DD"
           )}T${endSearchTime.format("HH:mm:ss")}`;
-        }
-        else if (endSearchTime == null) {
+        } else if (endSearchTime == null) {
           arrival_time_string = `${endSearchDate.format(
             "YYYY-MM-DD"
           )}T23:59:00`; // defaults to 11:59pm to include all rides on that day
@@ -224,8 +222,6 @@ export default function AllRides() {
 
   const createRide = async () => {
     setIsCreatingRide(true);
-    setInSearch(false);
-
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -246,6 +242,8 @@ export default function AllRides() {
       });
       const responseData = await response.json();
       handleCloseRideModal();
+      resetSearch();
+      setInSearch(false);
       console.log(responseData.success);
       console.log(responseData.message);
       handleShowPopupMessage(responseData.success, responseData.message);
@@ -317,7 +315,6 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
-
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -355,7 +352,6 @@ export default function AllRides() {
   }, []);
 
   useEffect(() => {
-
     if (searchOrigin) {
       console.log("searchOrigin updated:", searchOrigin);
       searchRide();
@@ -373,7 +369,6 @@ export default function AllRides() {
     if (endSearchDate) {
       searchRide();
     }
-
   }, [searchOrigin, searchDest, startSearchDate, endSearchDate]);
 
   return (
@@ -392,7 +387,6 @@ export default function AllRides() {
           >
             My Rideshares
           </Link>
-
           <Button
             className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2 rounded-md"
             onClick={() => handleOpenRideModal()}
@@ -403,7 +397,6 @@ export default function AllRides() {
 
         <div className="flex items-center justify-between space-x-3 pb-4">
           <div className="flex items-center gap-2">
-
             <div>
               <p className="font-medium mb-1">Origin</p>
               <Autocomplete
@@ -473,26 +466,11 @@ export default function AllRides() {
               setTime={setEndSearchTime}
             />
           </div>
-          {/*
-          <Button
-            className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
-            onClick={searchRide}
-          >
-            Search
-          </Button>
-          */}
-        </div>
-      </div>
-
-      {loading ? (
-        <LoadingIcon carColor="bg-theme_medium_2" />
-      ) : (
-        <div>
           {inSearch && (
             <div>
               <Button
                 onClick={resetSearch}
-                className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-semibold"
+                className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-medium"
               >
                 Clear Search Filters
               </Button>
@@ -500,6 +478,13 @@ export default function AllRides() {
               <br />
             </div>
           )}
+        </div>
+      </div>
+
+      {loading ? (
+        <LoadingIcon carColor="bg-theme_medium_2" />
+      ) : (
+        <div>
           <h3 className="text-lg font-medium mt-2 mb-3">
             Upcoming & available rides
           </h3>
