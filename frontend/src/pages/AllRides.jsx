@@ -358,7 +358,7 @@ export default function AllRides() {
 
   useEffect(() => {
     fetchDashboardData();
-  });
+  }, []);
 
   useEffect(() => {
 
@@ -503,12 +503,14 @@ export default function AllRides() {
               setTime={setEndSearchTime}
             />
           </div>
+          {/*
           <Button
             className="bg-theme_dark_1 text-white px-4 py-2 rounded hover:text-theme_medium_1"
             onClick={searchRide}
           >
             Search
           </Button>
+          */}
         </div>
       </div>
 
