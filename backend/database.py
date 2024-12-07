@@ -201,9 +201,8 @@ def create_ride_request(netid, full_name, mail, ride_id):
     """
 
     sql_command = f"""
-        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status, request_time,
-        updated_at) VALUES (%s, %s, %s, 
-        %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO RideRequests (netid, full_name, mail, ride_id, status, request_time)
+        VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);
     """
 
     values = (netid, full_name, mail, ride_id, status)

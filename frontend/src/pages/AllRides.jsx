@@ -201,7 +201,8 @@ export default function AllRides() {
       date === "" ||
       time === "" ||
       !date ||
-      !time
+      !time ||
+      !capacity
     ) {
       alert("You must provide all fields.");
       return;
@@ -286,9 +287,9 @@ export default function AllRides() {
     try {
       console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
 
-      const formattedArrivalTime = dayjs(arrival_time).format(
-        "MMMM D, YYYY, h:mm A"
-      );
+      const formattedArrivalTime = dayjs(arrival_time)
+        .tz("America/New_York")
+        .format("MMMM D, YYYY, h:mm A");
 
       const formatted = new Date(arrival_time).toLocaleString("en-US", {
         year: "numeric",
@@ -310,7 +311,7 @@ export default function AllRides() {
           rideid: rideid,
           origin_name: origin["name"],
           destination_name: destination["name"],
-          arrival_time: formattedArrivalTime,
+          formatted_arrival_time: formattedArrivalTime,
         }),
       });
       await fetchDashboardData();
@@ -385,85 +386,63 @@ export default function AllRides() {
           </Button>
         </div>
 
-        <div className="flex items-center justify-between space-x-3">
-          {/*
-         <Dropdown
-            inputValue={searchOrigin}
-            setInputValue={setSearchOrigin}
-            options={locations}
-            isClearable
-            placeholder="Select starting point"
-          />
-          */}
-
+        <div className="flex items-center justify-between space-x-3 pb-4">
           <div className="flex items-center gap-2">
-            <Autocomplete
-              key={"searchOrigin"}
-              className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
-              apiKey={google_api_key}
-              placeholder="Enter origin"
-              onPlaceSelected={(place) => {
-                console.log("Selected Place Details:", place);
-                console.log("Formatted Address:", place.formatted_address);
-                console.log(
-                  "Coordinates:",
-                  place.geometry.location.lat(),
-                  place.geometry.location.lng()
-                );
-                setSearchOrigin(place);
-                console.log("place:", place);
+            <div>
+              <p className="font-medium mb-1">Origin: </p>
+              <Autocomplete
+                key={"searchOrigin"}
+                className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
+                apiKey={google_api_key}
+                placeholder="Enter origin"
+                onPlaceSelected={(place) => {
+                  console.log("Selected Place Details:", place);
+                  console.log("Formatted Address:", place.formatted_address);
+                  console.log(
+                    "Coordinates:",
+                    place.geometry.location.lat(),
+                    place.geometry.location.lng()
+                  );
+                  setSearchOrigin(place);
+                  console.log("place:", place);
 
-                // TODO: need to call searchRide here so it works
-                //searchRide();
-              }}
-              options={autocompleteOptions}
-              ref={searchOriginRef}
-            />
-
+                  // TODO: need to call searchRide here so it works
+                  //searchRide();
+                }}
+                options={autocompleteOptions}
+                ref={searchOriginRef}
+              />
+            </div>
             <IconButton
-              className="flex-none"
+              className="flex-none mt-[27px]"
               type="flip"
               onClick={flipSearchFields}
               disabled={false}
             ></IconButton>
-
-            {/* <IconButton type="flip" onClick={flipSearchFields} disabled={false} /> */}
-
-            {/*
-          <Dropdown
-            inputValue={searchDest}
-            setInputValue={setSearchDest}
-            options={locations}
-            isClearable
-            placeholder="Select destination"
-          />
-          */}
-
-            <Autocomplete
-              key={"searchDestination"}
-              className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
-              apiKey={google_api_key}
-              placeholder="Enter destination"
-              onPlaceSelected={(place) => {
-                console.log("Selected Place Details:", place);
-                console.log("Formatted Address:", place.formatted_address);
-                console.log(
-                  "Coordinates:",
-                  place.geometry.location.lat(),
-                  place.geometry.location.lng()
-                );
-                setSearchDest(place);
-              }}
-              options={autocompleteOptions}
-              ref={searchDestinationRef}
-            />
+            <div className="flex flex-col">
+              <p className="font-medium mb-1">Destination: </p>
+              <Autocomplete
+                key={"searchDestination"}
+                className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
+                apiKey={google_api_key}
+                placeholder="Enter destination"
+                onPlaceSelected={(place) => {
+                  console.log("Selected Place Details:", place);
+                  console.log("Formatted Address:", place.formatted_address);
+                  console.log(
+                    "Coordinates:",
+                    place.geometry.location.lat(),
+                    place.geometry.location.lng()
+                  );
+                  setSearchDest(place);
+                }}
+                options={autocompleteOptions}
+                ref={searchDestinationRef}
+              />
+            </div>
           </div>
-
-          <div
-            className="flex flex-col items-center"
-            style={{ transform: "translateY(-12px)" }}
-          >
-            <label>Arrive After:</label>
+          <div className="flex flex-col">
+            <p className="font-medium mb-1">Arrive After: </p>
             <DateTimePicker
               date={startSearchDate}
               setDate={setStartSearchDate}
@@ -471,12 +450,8 @@ export default function AllRides() {
               setTime={setStartSearchTime}
             />
           </div>
-
-          <div
-            className="flex flex-col items-center"
-            style={{ transform: "translateY(-12px)" }}
-          >
-            <label>Arrive Before:</label>
+          <div className="flex flex-col">
+            <p className="font-medium mb-1">Arrive Before: </p>
             <DateTimePicker
               date={endSearchDate}
               setDate={setEndSearchDate}
@@ -624,7 +599,7 @@ export default function AllRides() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
               <div>
-                <p className="font-medium">Capacity </p>
+                <p className="font-medium mb-1">Capacity </p>
                 <Dropdown
                   inputValue={capacity}
                   setInputValue={setCapacity}
@@ -633,8 +608,8 @@ export default function AllRides() {
                   placeholder="Select capacity"
                 ></Dropdown>
               </div>
-              <div className="flex flex-col gap-3">
-                <p className="font-medium">Origin & Destination</p>
+              <div className="flex flex-col">
+                <p className="font-medium mb-1">Origin & Destination</p>
                 <div className="flex items-center space-x-2 w-full">
                   <Autocomplete
                     key={"createOrigin"}
@@ -692,7 +667,7 @@ export default function AllRides() {
                 </div>
               </div>
               <div>
-                <p className="font-medium">Arrival Time</p>
+                <p className="font-medium mb-1">Arrival Time</p>
                 <DateTimePicker
                   date={date}
                   setDate={setDate}
@@ -700,15 +675,17 @@ export default function AllRides() {
                   setTime={setTime}
                 />
               </div>
-            </div>
-            <div>
-              <p className="font-medium">Optional Note to Riders</p>
-              <TextArea
-                placeholder={"Add an optional note here. (Max 250 characters)."}
-                inputValue={rideNote}
-                setInputValue={setRideNote}
-                maxLength={250}
-              />
+              <div>
+                <p className="font-medium mb-1">Optional Note to Riders</p>
+                <TextArea
+                  placeholder={
+                    "Add an optional note here. (Max 250 characters)."
+                  }
+                  inputValue={rideNote}
+                  setInputValue={setRideNote}
+                  maxLength={250}
+                />
+              </div>
             </div>
             <Button
               className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1"
