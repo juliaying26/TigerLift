@@ -4,12 +4,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        theme_light_1: "#ECE3EC",
-        theme_medium_1: "#C8A2C8",
-        theme_dark_1: "#594559",
-        theme_light_2: "#C4E5E3",
-        theme_medium_2: "#5AAFAA",
-        theme_dark_2: "#145F5B",
+        theme_light_1: "#f7eeeb",
+        theme_medium_1: "#f2773d",
+        theme_dark_1: "#db5313",
+        theme_light_2: "#E6E6EF",
+        theme_medium_2: "#7794e0",
+        theme_dark_2: "#3b64cf",
         info_light: "#FDF5EC",
       },
     },

@@ -507,7 +507,7 @@ export default function AllRides() {
                       ? "cursor-auto"
                       : dashboardData.ridereqs[ride.id]
                       ? "cursor-auto"
-                      : "bg-theme_dark_1 text-white hover:bg-theme_medium_1"
+                      : "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
                   buttonDisabled={pendingRideId === ride.id}

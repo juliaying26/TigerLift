@@ -242,7 +242,7 @@ export default function Navbar({ user_info }) {
         handleReadNotif={handleReadNotif}
       />
 
-      <nav className="bg-theme_medium_1">
+      <nav className="bg-theme_medium_2">
         <div className="w-full">
           <div className="flex h-16 items-center justify-between px-4 md:px-8">
             {/* Left Side - Dashboard and Logo */}

@@ -11,3 +11,6 @@ export const getFormattedDate = (date) => {
     hour12: true,
   });
 };
+
+export const inputStyling =
+  "outline-1 outline-zinc-200 focus:outline-theme_medium_1 text-sm font-normal hover:outline-theme_medium_1";
