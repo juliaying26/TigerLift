@@ -275,11 +275,11 @@ export default function Navbar({ user_info }) {
                   }
                   type="notification"
                   className={`${
-                    showNotificationsModal ? "bg-theme_light_1" : ""
-                  } hover:bg-theme_light_1 z-20`}
+                    showNotificationsModal ? "bg-theme_light_2" : ""
+                  } relative hover:bg-theme_light_2 z-[21]`}
                 />
                 {newNotifications.length > 0 && (
-                  <div className="absolute top-2 right-2.5">
+                  <div className="absolute top-2 right-2.5 z-[22]">
                     <svg
                       width="7"
                       height="7"
@@ -293,7 +293,7 @@ export default function Navbar({ user_info }) {
               <p className="font-medium text-lg">{user_info.displayname}</p>
               <a
                 href="/api/logout"
-                className="bg-theme_dark_1 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_1"
+                className="bg-theme_dark_2 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_2 hover:text-theme_dark_2"
               >
                 Log out
               </a>
