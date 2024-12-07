@@ -1,10 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar.jsx";
-import Input from "../components/Input.jsx";
 import DateTimePicker from "../components/DateTimePicker.jsx";
 import RideCard from "../components/RideCard.jsx";
-import Pill from "../components/Pill.jsx";
 import Button from "../components/Button.jsx";
 import Modal from "../components/Modal.jsx";
 import Dropdown from "../components/Dropdown.jsx";
@@ -15,6 +12,7 @@ import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
 import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import TextArea from "../components/TextArea.jsx";
+import { getFormattedDate } from "../utils/utils.js";
 
 export default function AllRides() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -291,17 +289,6 @@ export default function AllRides() {
         .tz("America/New_York")
         .format("MMMM D, YYYY, h:mm A");
 
-      const formatted = new Date(arrival_time).toLocaleString("en-US", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      });
-
-      console.log(formatted);
-
       const response = await fetch("/api/requestride", {
         method: "POST",
         headers: {
@@ -548,14 +535,7 @@ export default function AllRides() {
                     <p className="mt-2 mb-1 text-center">
                       <span className="px-3 py-1 bg-zinc-200 rounded-full">
                         Arrive by{" "}
-                        {new Date(ride.arrival_time).toLocaleString("en-US", {
-                          year: "numeric",
-                          month: "numeric",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "numeric",
-                          hour12: true,
-                        })}
+                        {getFormattedDate(new Date(ride.arrival_time))}
                       </span>
                     </p>
                   </div>
@@ -576,7 +556,7 @@ export default function AllRides() {
                   {ride.note && (
                     <div className="mb-0.5">
                       <span className="font-semibold">Note:</span>
-                      <div className="p-2 bg-zinc-100 rounded-lg">
+                      <div className="py-2 px-3 bg-zinc-100 rounded-lg">
                         <p>{ride.note}</p>
                       </div>
                     </div>
