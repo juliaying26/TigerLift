@@ -320,7 +320,6 @@ export default function AllRides() {
         }),
       });
 
-
       if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
         await fetchDashboardData();
         searchRide();
