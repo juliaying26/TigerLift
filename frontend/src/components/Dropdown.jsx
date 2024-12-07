@@ -19,6 +19,10 @@ export default function Dropdown({
       options={options}
       placeholder={placeholder}
       isClearable={isClearable}
+      styles={{
+        // Fixes the overlapping problem of the component
+        menu: (provided) => ({ ...provided, zIndex: 1000 }),
+      }}
     />
   );
 }
