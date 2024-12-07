@@ -297,8 +297,6 @@ export default function AllRides() {
   ) => {
     console.log("IN HANDLE RIDE REQUEST");
 
-    
-
     setPendingRideId(rideid);
     try {
       console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
