@@ -279,7 +279,7 @@ export default function Navbar({ user_info }) {
                   } hover:bg-theme_light_1 z-20`}
                 />
                 {newNotifications.length > 0 && (
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute top-2 right-2.5">
                     <svg
                       width="7"
                       height="7"
