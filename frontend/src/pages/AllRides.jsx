@@ -318,19 +318,15 @@ export default function AllRides() {
         }),
       });
 
-      if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
-        await fetchDashboardData();
-        searchRide();
-      }
-      else {
-        await fetchDashboardData();
-      }
-
+      await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
     } catch (error) {
       console.error("Error during fetch:", error);
+    }
+    if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
+      searchRide();
     }
     setPendingRideId(null);
   };
