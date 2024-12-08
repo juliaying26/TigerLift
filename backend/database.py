@@ -474,7 +474,7 @@ def get_all_rides():
 
 #     return locations
 
-def search_rides(origin_id, destination_id, arrival_time=None, start_search_time=None):
+def search_rides(origin_id=None, destination_id=None, arrival_time=None, start_search_time=None):
     query = """
         SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin_dict, 
         destination_dict, arrival_time, creation_time, updated_at, current_riders, note FROM Rides
@@ -503,8 +503,8 @@ def search_rides(origin_id, destination_id, arrival_time=None, start_search_time
         query += " AND arrival_time <= %s"
         values.append(arrival_time)
 
-    if not (origin_id or destination_id):
-        raise ValueError("At least one of 'origin' or 'destination' must be provided.")
+    if not (origin_id or destination_id or start_search_time or arrival_time):
+        raise ValueError("At least one of origin, destination, start time, or end time must be provided.")
 
     if conn:
         try: 

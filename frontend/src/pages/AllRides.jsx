@@ -117,8 +117,9 @@ export default function AllRides() {
 
     console.log("in search ride. search origin: ", searchOrigin);
 
-    if (!searchOrigin && !searchDest) {
-      alert("You must provide at least one of 'origin' or 'destination'.");
+    if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
+      // TODO: REMOVES (in allrides) and change alert message to be accurate
+      alert("(in allrides) You must provide at least one of 'origin' or 'destination'.");
       return;
     }
     setLoading(true);
