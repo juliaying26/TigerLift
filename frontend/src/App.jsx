@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
 import AllRides from "./pages/AllRides";
 import MyRides from "./pages/MyRides";
+import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import Button from "./components/Button";
 import LoadingIcon from "./components/LoadingIcon";
@@ -36,6 +37,7 @@ function App() {
             <Route path="/" element={<Navigate to="/allrides" replace />} />
             <Route path="/allrides" element={<AllRides />} />
             <Route path="/myrides" element={<MyRides />} />
+            <Route path="/*" element={<NotFound />}/>
           </Routes>
         </div>
       ) : (
