@@ -342,16 +342,16 @@ export default function AllRides() {
     if (searchDestinationRef.current.value) {
       searchDestinationRef.current.value = "";
     }
-    setLoading(true);
-    setInSearch(false);
-    await fetchDashboardData();
-    setLoading(false);
     setSearchOrigin("");
     setSearchDest("");
     setStartSearchDate(null);
     setStartSearchTime(null);
     setEndSearchDate(null);
     setEndSearchTime(null);
+    setLoading(true);
+    setInSearch(false);
+    await fetchDashboardData();
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -367,7 +367,7 @@ export default function AllRides() {
     if (searchDest) {
       console.log("searchDest updated:", searchDest);
       searchRide();
-    } 
+    }
 
     if (startSearchDate) {
       searchRide();
@@ -384,8 +384,14 @@ export default function AllRides() {
     if (endSearchTime && endSearchDate) {
       searchRide();
     }
-
-  }, [searchOrigin, searchDest, startSearchDate, endSearchDate, startSearchTime, endSearchTime]);
+  }, [
+    searchOrigin,
+    searchDest,
+    startSearchDate,
+    endSearchDate,
+    startSearchTime,
+    endSearchTime,
+  ]);
 
   return (
     <div className="p-8">
@@ -508,7 +514,7 @@ export default function AllRides() {
       ) : (
         <div>
           <h3 className="text-lg font-medium mt-2 mb-3">
-            Upcoming & available rides
+            Upcoming & available rideshares
           </h3>
           {ridesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
