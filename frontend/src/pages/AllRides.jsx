@@ -58,7 +58,7 @@ export default function AllRides() {
   const [endSearchTime, setEndSearchTime] = useState();
 
   const autocompleteOptions = {
-    componentRestrictions: { country: "us" },
+    // componentRestrictions: { country: "us" },
     fields: ["formatted_address", "geometry", "name", "place_id"],
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
