@@ -210,6 +210,18 @@ export default function AllRides() {
     console.log(origin);
     console.log(dest);
 
+    const now = new Date()
+
+    const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
+      "HH:mm:ss"
+    )}`;
+
+    const arrival_time_iso = new Date(arrival_time_string)
+
+    if(now.getTime() >= arrival_time_iso.getTime()) {
+      alert("Date cannot be in the past.")
+    }
+
     if (
       capacity === "" ||
       origin === "" ||
