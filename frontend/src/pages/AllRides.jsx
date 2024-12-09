@@ -58,7 +58,7 @@ export default function AllRides() {
   const [endSearchTime, setEndSearchTime] = useState();
 
   const autocompleteOptions = {
-    componentRestrictions: { country: "us" },
+    // componentRestrictions: { country: "us" },
     fields: ["formatted_address", "geometry", "name", "place_id"],
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
@@ -146,9 +146,18 @@ export default function AllRides() {
             "YYYY-MM-DD"
           )}T${startSearchTime.format("HH:mm:ss")}`;
         } else if (startSearchTime == null) {
-          start_search_time_string = `${startSearchDate.format(
-            "YYYY-MM-DD"
-          )}T00:00:00`; // defaults to midnight to show all times on this day
+          const today = dayjs().format("YYYY-MM-DD");
+          console.log("today:", today);
+          console.log("startsearchdate:", startSearchDate.format("YYYY-MM-DD"));
+          if (startSearchDate.format("YYYY-MM-DD") === today) {
+            start_search_time_string = `${startSearchDate.format(
+              "YYYY-MM-DD"
+            )}T${dayjs().format("HH:mm:ss")}`; // defaults to current time to show only upcoming rides if date is today
+          } else {
+            start_search_time_string = `${startSearchDate.format(
+              "YYYY-MM-DD"
+            )}T00:00:00`; // defaults to midnight to show all times on this day
+          }
         }
 
         start_search_time_iso = new Date(
@@ -209,6 +218,18 @@ export default function AllRides() {
   const checkCreateRideParams = async () => {
     console.log(origin);
     console.log(dest);
+
+    const now = new Date();
+
+    const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
+      "HH:mm:ss"
+    )}`;
+
+    const arrival_time_iso = new Date(arrival_time_string);
+
+    if (now.getTime() >= arrival_time_iso.getTime()) {
+      alert("Date cannot be in the past.");
+    }
 
     if (
       capacity === "" ||
@@ -394,7 +415,7 @@ export default function AllRides() {
   ]);
 
   return (
-    <div className="p-8">
+    <div className="p-8 pb-14">
       {popupMessageInfo.message && (
         <PopUpMessage
           status={popupMessageInfo.status}
@@ -514,7 +535,7 @@ export default function AllRides() {
       ) : (
         <div>
           <h3 className="text-lg font-medium mt-2 mb-3">
-            Upcoming & available rideshares
+            Upcoming & available rideshares ({ridesData.length})
           </h3>
           {ridesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
@@ -528,8 +549,6 @@ export default function AllRides() {
                         dashboardData.ridereqs[ride.id] !== null
                       ? "Status: " +
                         capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
-                      : ride.current_riders.length === ride.max_capacity
-                      ? "Ride filled"
                       : "Request to Join"
                   }
                   buttonOnClick={
@@ -578,7 +597,7 @@ export default function AllRides() {
                       </span>
                     </p>
                     <p className="mt-2 mb-1 text-center">
-                      <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                      <span className="px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
                         Arrive by{" "}
                         {getFormattedDate(new Date(ride.arrival_time))}
                       </span>

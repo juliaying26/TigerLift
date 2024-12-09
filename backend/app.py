@@ -286,6 +286,9 @@ def searchrides():
 
     # mapping for location
     # location_map = {location[0]: location[1] for location in locations}
+
+    current_time = datetime.now(timezone.utc)
+    current_time = current_time.replace(tzinfo=None)
     
     # mapping for rides array 
     updated_rides = []
@@ -305,7 +308,8 @@ def searchrides():
             'note': ride[11]
         }
 
-        updated_rides.append(updated_ride)
+        if updated_ride['arrival_time'] > current_time and len(updated_ride['current_riders']) < updated_ride['max_capacity']:
+            updated_rides.append(updated_ride)
 
     updated_rides.sort(key=lambda ride: ride['arrival_time'])
 

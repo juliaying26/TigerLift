@@ -548,7 +548,12 @@ export default function MyRides() {
               <hr className="border-1 my-3 border-theme_medium_1" />
               <p>
                 <span className="font-semibold">Posted by:</span>{" "}
-                {ride.admin_name}, {ride.admin_email}
+                <span>{ride.admin_name}</span>{" "}
+                <CopyEmailButton
+                  copy={[ride.admin_email]}
+                  text="Copy Email"
+                  className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle"
+                />
               </p>
               <p>
                 <span className="font-semibold">Seats Taken:</span>{" "}
@@ -621,12 +626,12 @@ export default function MyRides() {
     ) : viewType === "posted" ? (
       <p className="text-center">No upcoming posted rides.</p>
     ) : (
-      <p className="text-center">No upcoming requested rides.</p>
+      <p className="text-center">No previously accepted rides.</p>
     );
   };
 
   return (
-    <div className="flex flex-col gap-6 p-8">
+    <div className="flex flex-col gap-6 p-8 pb-14">
       {popupMessageInfo.message && (
         <PopUpMessage
           status={popupMessageInfo.status}
@@ -663,16 +668,16 @@ export default function MyRides() {
       <div className="flex flex-col gap-2.5">
         <h3 className="text-lg font-medium">
           {viewType === "posted"
-            ? "Upcoming posted rideshares"
-            : "Upcoming requested rideshares"}
+            ? `Upcoming posted rideshares (${myUpcomingPostedRidesData.length})`
+            : `Upcoming requested rideshares (${myUpcomingRequestedRidesData.length})`}
         </h3>
         {viewType === "posted"
           ? renderRideCards(myUpcomingPostedRidesData, true)
           : renderRideCards(myUpcomingRequestedRidesData, true)}
         <h3 className="text-lg font-medium pt-4">
           {viewType === "posted"
-            ? "Past posted rideshares"
-            : "Previously accepted rideshares"}
+            ? `Past posted rideshares (${myPastPostedRidesData.length})`
+            : `Previously accepted rideshares (${myPastRequestedRidesData.length})`}
         </h3>
         {/* past rides do not have copy email buttons */}
         {viewType === "posted"
@@ -747,9 +752,10 @@ export default function MyRides() {
           <div className="flex flex-col gap-1">
             <p className="text-sm text-zinc-700 mb-2 rounded-md bg-info_light p-2 flex flex-col gap-2">
               <span>
-                Any changes you make in this pop up will remain unsaved until
-                you click "Save"—you can discard changes by leaving the modal.
-                You can only edit the rideshare before the arrival time.
+                You can only edit the rideshare before the arrival time. When
+                you click "Save", any newly accepted riders will be notified. If
+                you changed the arrival time, all current riders will be
+                notified.
               </span>
               <span className="font-semibold">
                 After selecting your preferred riders, you are responsible for
@@ -778,61 +784,59 @@ export default function MyRides() {
               </span>
             </p>
             <div className="flex items-center gap-1">
-              <p>
-                <span className="font-semibold">Arrive by:</span>{" "}
-              </p>
-              {isEditingArrivalTime ? (
-                <DateTimePicker
-                  date={newArrivalDate}
-                  setDate={setNewArrivalDate}
-                  time={newArrivalTime}
-                  setTime={setNewArrivalTime}
-                  allowClear={false}
-                />
-              ) : newArrivalDate || newArrivalTime ? (
-                <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                  {getFormattedDate(
-                    new Date(
-                      `${newArrivalDate.format(
-                        "YYYY-MM-DD"
-                      )}T${newArrivalTime.format("HH:mm:ss")}`
+              <div className="grid grid-cols-1 md:flex items-center gap-1">
+                <p>
+                  <span className="font-semibold">Arrive by:</span>{" "}
+                </p>
+                {isEditingArrivalTime ? (
+                  <DateTimePicker
+                    date={newArrivalDate}
+                    setDate={setNewArrivalDate}
+                    time={newArrivalTime}
+                    setTime={setNewArrivalTime}
+                    allowClear={false}
+                  />
+                ) : newArrivalDate || newArrivalTime ? (
+                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                    {getFormattedDate(
+                      new Date(
+                        `${newArrivalDate.format(
+                          "YYYY-MM-DD"
+                        )}T${newArrivalTime.format("HH:mm:ss")}`
+                      )
+                    )}
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                    {getFormattedDate(new Date(selectedRide.arrival_time))}
+                  </span>
+                )}
+                {isEditingArrivalTime ? (
+                  <Button
+                    className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                    onClick={() => setIsEditingArrivalTime(false)}
+                  >
+                    {!dayjs(newArrivalDate).isSame(
+                      dayjs(selectedRide.arrival_time),
+                      "day"
+                    ) ||
+                    !dayjs(newArrivalTime).isSame(
+                      dayjs(selectedRide.arrival_time),
+                      "time"
                     )
-                  )}
-                </span>
-              ) : (
-                <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                  {getFormattedDate(new Date(selectedRide.arrival_time))}
-                </span>
-              )}
-              {isEditingArrivalTime ? (
-                <Button
-                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
-                  onClick={() => setIsEditingArrivalTime(false)}
-                >
-                  {!dayjs(newArrivalDate).isSame(
-                    dayjs(selectedRide.arrival_time),
-                    "day"
-                  ) ||
-                  !dayjs(newArrivalTime).isSame(
-                    dayjs(selectedRide.arrival_time),
-                    "time"
-                  )
-                    ? "Save"
-                    : "Cancel"}
-                </Button>
-              ) : (
-                <Button
-                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
-                  onClick={() => setIsEditingArrivalTime(true)}
-                >
-                  Edit
-                </Button>
-              )}
+                      ? "Save"
+                      : "Cancel"}
+                  </Button>
+                ) : (
+                  <Button
+                    className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                    onClick={() => setIsEditingArrivalTime(true)}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
             </div>
-            <p>
-              <span className="font-semibold">Posted by:</span>{" "}
-              {selectedRide.admin_name}, {selectedRide.admin_email}
-            </p>
             <div className="flex items-center gap-1">
               <span className="font-semibold">Seats Taken:</span>{" "}
               {modalCurrentRiders.length || 0}
@@ -973,7 +977,7 @@ export default function MyRides() {
               </Button>
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
-                className="hover:bg-theme_light_2 border border-zinc-300 text-zinc-700"
+                className="hover:bg-theme_light_1 bg-theme_medium_1 text-white hover:text-theme_dark_1"
                 disabled={isSaving}
               >
                 Save
