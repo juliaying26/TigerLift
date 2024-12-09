@@ -286,6 +286,9 @@ def searchrides():
 
     # mapping for location
     # location_map = {location[0]: location[1] for location in locations}
+
+    current_time = datetime.now(timezone.utc)
+    current_time = current_time.replace(tzinfo=None)
     
     # mapping for rides array 
     updated_rides = []
