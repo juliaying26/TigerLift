@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
+import { ConfigProvider, theme } from "antd";
 import AllRides from "./pages/AllRides";
 import MyRides from "./pages/MyRides";
 import Navbar from "./components/Navbar";
-import Button from "./components/Button";
+import tailwindConfig from "../tailwind.config.js";
 import LoadingIcon from "./components/LoadingIcon";
 
 function App() {
@@ -28,32 +29,55 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {user ? (
-        <div className="h-full">
-          <Navbar user_info={user} />
-          <Routes>
-            <Route path="/" element={<Navigate to="/allrides" replace />} />
-            <Route path="/allrides" element={<AllRides />} />
-            <Route path="/myrides" element={<MyRides />} />
-          </Routes>
-        </div>
-      ) : (
-        <div className="text-center h-screen flex items-center justify-center">
-          <div className="bg-white py-20 w-1/2 rounded">
-            <h1 className="text-4xl mb-4 font-serif">Welcome to TigerLift!</h1>
-            <br />
-            <br />
-            <a
-              href="/api/login"
-              className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded hover:bg-theme_medium_1 hover:text-white"
-            >
-              Login with CAS
-            </a>
+    <ConfigProvider
+      theme={{
+        components: {
+          DatePicker: {
+            hoverBorderColor: tailwindConfig.theme.extend.colors.theme_medium_1,
+            activeBorderColor:
+              tailwindConfig.theme.extend.colors.theme_medium_1,
+            activeShadow: "none",
+            cellRangeBorderColor:
+              tailwindConfig.theme.extend.colors.theme_medium_1,
+          },
+          Input: {
+            hoverBorderColor: tailwindConfig.theme.extend.colors.theme_medium_1,
+            activeBorderColor:
+              tailwindConfig.theme.extend.colors.theme_medium_1,
+            activeShadow: "none",
+          },
+        },
+      }}
+    >
+      <div className="flex flex-col h-full">
+        {user ? (
+          <div className="h-full">
+            <Navbar user_info={user} />
+            <Routes>
+              <Route path="/" element={<Navigate to="/allrides" replace />} />
+              <Route path="/allrides" element={<AllRides />} />
+              <Route path="/myrides" element={<MyRides />} />
+            </Routes>
           </div>
-        </div>
-      )}
-    </div>
+        ) : (
+          <div className="text-center h-screen flex items-center justify-center">
+            <div className="bg-white py-20 w-1/2 rounded">
+              <h1 className="text-4xl mb-4 font-serif">
+                Welcome to TigerLift!
+              </h1>
+              <br />
+              <br />
+              <a
+                href="/api/login"
+                className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded hover:bg-theme_medium_1 hover:text-white"
+              >
+                Login with CAS
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    </ConfigProvider>
   );
 }
 

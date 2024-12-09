@@ -11,8 +11,12 @@ import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
 import CopyEmailButton from "../components/CopyEmailButton.jsx";
-import TextArea from "../components/TextArea.jsx";
-import { getFormattedDate, MAX_CAPACITY } from "../utils/utils.js";
+import CustomTextArea from "../components/TextArea.jsx";
+import {
+  getFormattedDate,
+  MAX_CAPACITY,
+  autocompleteStyling,
+} from "../utils/utils.js";
 
 export default function AllRides() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -383,25 +387,24 @@ export default function AllRides() {
         <div className="flex justify-between items-center">
           <Link
             to="/myrides"
-            className="hidden md:inline-block bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
+            className="hidden md:inline-block bg-theme_medium_1 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
           >
             My Rideshares
           </Link>
           <Button
-            className="bg-theme_medium_2 text-white px-4 py-2 hover:bg-theme_dark_2 rounded-md"
+            className="bg-theme_medium_1 text-white px-4 py-2 hover:bg-theme_dark_2 rounded-md"
             onClick={() => handleOpenRideModal()}
           >
             Create a Rideshare
           </Button>
         </div>
-
-        <div className="flex items-center justify-between space-x-3 pb-4">
+        <div className="flex items-center justify-between pb-4 px-10 space-x-3">
           <div className="flex items-center gap-2">
             <div>
               <p className="font-medium mb-1">Origin</p>
               <Autocomplete
                 key={"searchOrigin"}
-                className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
+                className={autocompleteStyling}
                 apiKey={google_api_key}
                 placeholder="Enter origin"
                 onPlaceSelected={(place) => {
@@ -430,7 +433,7 @@ export default function AllRides() {
               <p className="font-medium mb-1">Destination</p>
               <Autocomplete
                 key={"searchDestination"}
-                className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
+                className={autocompleteStyling}
                 apiKey={google_api_key}
                 placeholder="Enter destination"
                 onPlaceSelected={(place) => {
@@ -470,12 +473,10 @@ export default function AllRides() {
             <div>
               <Button
                 onClick={resetSearch}
-                className="bg-theme_dark_1 text-white px-4 py-2 hover:text-theme_medium_1 font-medium"
+                className="text-theme_dark_1 px-4 py-2 hover:text-theme_medium_1 font-medium mt-6"
               >
                 Clear Search Filters
               </Button>
-              <br />
-              <br />
             </div>
           )}
         </div>
@@ -522,7 +523,7 @@ export default function AllRides() {
                       ? "cursor-auto"
                       : dashboardData.ridereqs[ride.id]
                       ? "cursor-auto"
-                      : "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
+                      : "bg-theme_medium_1 text-white hover:bg-theme_dark_2"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
                   buttonDisabled={pendingRideId === ride.id}
@@ -614,7 +615,7 @@ export default function AllRides() {
                 <div className="flex items-center space-x-2 w-full">
                   <Autocomplete
                     key={"createOrigin"}
-                    className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
+                    className={autocompleteStyling}
                     apiKey={google_api_key}
                     placeholder="Enter origin"
                     onPlaceSelected={(place) => {
@@ -646,7 +647,7 @@ export default function AllRides() {
                   ></IconButton>
                   <Autocomplete
                     key={"createDestination"}
-                    className="px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal"
+                    className={autocompleteStyling}
                     apiKey={google_api_key}
                     placeholder="Enter destination"
                     onPlaceSelected={(place) => {
@@ -678,7 +679,7 @@ export default function AllRides() {
               </div>
               <div>
                 <p className="font-medium mb-1">Optional Note to Riders</p>
-                <TextArea
+                <CustomTextArea
                   placeholder={
                     "Add an optional note here. (Max 250 characters)."
                   }

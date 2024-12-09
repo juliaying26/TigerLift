@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
 import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
-import TextArea from "../components/TextArea";
+import CustomTextArea from "../components/TextArea";
 import CopyEmailButton from "../components/CopyEmailButton";
 import PopUpMessage from "../components/PopUpMessage";
 import LoadingIcon from "../components/LoadingIcon";
@@ -697,7 +697,7 @@ export default function MyRides() {
                     you have currently accepted will be notified that this
                     rideshare was deleted.
                   </p>
-                  <TextArea
+                  <CustomTextArea
                     placeholder={"List reason here."}
                     inputValue={deleteRideMessage}
                     setInputValue={setDeleteRideMessage}
@@ -707,7 +707,7 @@ export default function MyRides() {
             <div className="flex items-center self-end gap-2">
               {warningModalInfo.title !== "Capacity Full" && (
                 <Button
-                  className="border-[1px] border-gray-300 text-theme_dark_1 hover:bg-zinc-100"
+                  className="border-[1px] border-gray-300 text-zinc-500 hover:bg-zinc-100"
                   onClick={handleCloseWarningModal}
                 >
                   Cancel

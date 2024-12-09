@@ -13,7 +13,7 @@ body {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  @apply bg-theme_light_2;
+  @apply bg-theme_bg;
 }
 
 :root {
@@ -34,7 +34,7 @@ a {
   text-decoration: inherit;
 }
 a:hover {
-  @apply text-theme_dark_2;
+  @apply text-zinc-700;
 }
 
 body {

@@ -9,7 +9,7 @@ export default function Button({
 }) {
   let buttonStyling = "";
   if (status === "pending") {
-    buttonStyling = "px-3 rounded-full bg-theme_light_1 text-theme_dark_1";
+    buttonStyling = "px-3 rounded-full bg-theme_light_2 text-theme_dark_2";
   } else if (status === "accepted") {
     buttonStyling = "px-3 rounded-full bg-theme_light_2 text-theme_dark_2";
   }

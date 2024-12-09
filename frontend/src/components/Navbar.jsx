@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import IconButton from "./IconButton";
 import { Link } from "react-router-dom";
 import NotificationsModal from "./NotificationsModal";
+import CarIcon from "./CarIcon";
 
 export default function Navbar({ user_info }) {
   const location = useLocation();
@@ -244,7 +245,7 @@ export default function Navbar({ user_info }) {
 
       <nav className="bg-theme_medium_2">
         <div className="w-full">
-          <div className="flex h-16 items-center justify-between px-4 md:px-8">
+          <div className="flex h-14 items-center justify-between px-4 md:px-8">
             {/* Left Side - Dashboard and Logo */}
             <div className="md:hidden absolute">
               <IconButton
@@ -258,10 +259,13 @@ export default function Navbar({ user_info }) {
               <div className="flex space-x-4">
                 <a
                   href="/"
-                  className="rounded-md theme_medium_1 text-3xl font-medium text-black"
+                  className="group rounded-md theme_medium_1 text-3xl font-medium text-black"
                   aria-current="page"
                 >
-                  TigerLift
+                  <div className="flex gap-5 items-center">
+                    <CarIcon />
+                    TigerLift
+                  </div>
                 </a>
               </div>
             </div>
