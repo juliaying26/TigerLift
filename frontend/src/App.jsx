@@ -62,9 +62,9 @@ function App() {
             </Routes>
           </div>
         ) : (
-          <div className="text-center h-screen flex items-center justify-center">
-            <div className="bg-white py-20 w-1/2 rounded">
-              <h1 className="text-4xl mb-4 font-serif">
+          <div className="text-center h-screen flex items-center justify-center px-8 py-14 md:p-0">
+            <div className="bg-white py-20 w-full md:h-auto md:w-1/2 rounded-lg">
+              <h1 className="text-4xl mb-4 font-serif px-8">
                 Welcome to TigerLift!
               </h1>
               <br />

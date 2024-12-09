@@ -626,7 +626,7 @@ export default function MyRides() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-8">
+    <div className="flex flex-col gap-6 p-8 pb-14">
       {popupMessageInfo.message && (
         <PopUpMessage
           status={popupMessageInfo.status}
