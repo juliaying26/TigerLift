@@ -936,7 +936,7 @@ export default function MyRides() {
                                   selectedRide.id
                                 )
                               }
-                              className="bg-theme_medium_2 text-theme_dark_2 hover:bg-theme_light_2"
+                              className="bg-theme_green text-theme_dark_green hover:bg-theme_light_green"
                             />
                             <IconButton
                               type="xmark"
@@ -948,7 +948,7 @@ export default function MyRides() {
                                   selectedRide.id
                                 )
                               }
-                              className="bg-theme_medium_1 text-theme_dark_1 hover:bg-theme_light_1"
+                              className="bg-theme_red text-theme_dark_red hover:bg-theme_light_red"
                             />
                           </div>
                         </div>
