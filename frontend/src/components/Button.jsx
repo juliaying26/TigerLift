@@ -15,7 +15,8 @@ export default function Button({
       "px-3 rounded-full bg-theme_light_green text-theme_dark_green";
   }
 
-  const disabledStyling = "bg-zinc-100 text-zinc-400 cursor-progress";
+  const disabledStyling =
+    "bg-zinc-100 text-zinc-400 cursor-progress hover:text-zinc-400 hover:bg-zinc-100";
 
   return (
     <button
