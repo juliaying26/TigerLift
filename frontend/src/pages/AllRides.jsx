@@ -146,9 +146,19 @@ export default function AllRides() {
             "YYYY-MM-DD"
           )}T${startSearchTime.format("HH:mm:ss")}`;
         } else if (startSearchTime == null) {
-          start_search_time_string = `${startSearchDate.format(
-            "YYYY-MM-DD"
-          )}T00:00:00`; // defaults to midnight to show all times on this day
+          const today = dayjs().format("YYYY-MM-DD");
+          console.log("today:", today)
+          console.log("startsearchdate:", startSearchDate.format("YYYY-MM-DD"))
+          if (startSearchDate.format("YYYY-MM-DD") === today) {
+            start_search_time_string = `${startSearchDate.format(
+              "YYYY-MM-DD"
+            )}T${dayjs().format("HH:mm:ss")}`; // defaults to current time to show only upcoming rides if date is today
+          }
+          else {
+            start_search_time_string = `${startSearchDate.format(
+              "YYYY-MM-DD"
+            )}T00:00:00`; // defaults to midnight to show all times on this day
+          }
         }
 
         start_search_time_iso = new Date(
