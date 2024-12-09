@@ -394,7 +394,7 @@ export default function AllRides() {
   ]);
 
   return (
-    <div className="p-8">
+    <div className="p-8 pb-14">
       {popupMessageInfo.message && (
         <PopUpMessage
           status={popupMessageInfo.status}
