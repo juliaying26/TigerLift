@@ -58,7 +58,7 @@ function App() {
               <Route path="/" element={<Navigate to="/allrides" replace />} />
               <Route path="/allrides" element={<AllRides />} />
               <Route path="/myrides" element={<MyRides />} />
-              <Route path="/*" element={<NotFound />}/>
+              <Route path="/*" element={<NotFound />} />
             </Routes>
           </div>
         ) : (
@@ -71,7 +71,7 @@ function App() {
               <br />
               <a
                 href="/api/login"
-                className="text-lg bg-theme_dark_1 text-white px-4 py-2 rounded hover:bg-theme_medium_1 hover:text-white"
+                className="text-lg bg-theme_medium_2 text-white px-4 py-2 rounded hover:bg-theme_dark_2 hover:text-white"
               >
                 Login with CAS
               </a>
