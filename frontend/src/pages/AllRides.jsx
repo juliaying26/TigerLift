@@ -124,7 +124,7 @@ export default function AllRides() {
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
       // TODO: REMOVES (in allrides) and change alert message to be accurate
       alert(
-        "(in allrides) You must provide at least one of 'origin' or 'destination'."
+        "You must provide at least one of origin, destination, start date, or end date."
       );
       return;
     }
@@ -376,7 +376,16 @@ export default function AllRides() {
     if (endSearchDate) {
       searchRide();
     }
-  }, [searchOrigin, searchDest, startSearchDate, endSearchDate]);
+
+    if (startSearchTime && startSearchDate) {
+      searchRide();
+    }
+
+    if (endSearchTime && endSearchDate) {
+      searchRide();
+    }
+
+  }, [searchOrigin, searchDest, startSearchDate, endSearchDate, startSearchTime, endSearchTime]);
 
   return (
     <div className="p-8">
