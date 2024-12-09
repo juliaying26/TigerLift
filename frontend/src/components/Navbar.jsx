@@ -226,7 +226,7 @@ export default function Navbar({ user_info }) {
             </p>
             <a
               href="/api/logout"
-              className="bg-theme_dark_1 text-white px-4 py-2 rounded-md text-center hover:bg-theme_light_1"
+              className="bg-theme_dark_2 text-white px-4 py-2 rounded-md text-center hover:bg-theme_light_2 hover:text-theme_dark_2"
             >
               Log out
             </a>

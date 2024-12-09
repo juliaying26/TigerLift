@@ -633,8 +633,12 @@ export default function MyRides() {
           message={popupMessageInfo.message}
         />
       )}
-      <div className="hidden md:flex gap-4">
-        <IconButton type="back" onClick={() => navigate("/allrides")} />
+      <div className="hidden md:flex gap-4 items-center">
+        <IconButton
+          type="back"
+          onClick={() => navigate("/allrides")}
+          className="w-9 h-9 hover:bg-theme_medium_2"
+        />
         <Button
           className={`${
             viewType == "posted"
@@ -659,16 +663,16 @@ export default function MyRides() {
       <div className="flex flex-col gap-2.5">
         <h3 className="text-lg font-medium">
           {viewType === "posted"
-            ? "Upcoming posted rides"
-            : "Upcoming requested rides"}
+            ? "Upcoming posted rideshares"
+            : "Upcoming requested rideshares"}
         </h3>
         {viewType === "posted"
           ? renderRideCards(myUpcomingPostedRidesData, true)
           : renderRideCards(myUpcomingRequestedRidesData, true)}
         <h3 className="text-lg font-medium pt-4">
           {viewType === "posted"
-            ? "Past posted rides"
-            : "Previously accepted rides"}
+            ? "Past posted rideshares"
+            : "Previously accepted rideshares"}
         </h3>
         {/* past rides do not have copy email buttons */}
         {viewType === "posted"

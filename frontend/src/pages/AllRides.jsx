@@ -124,7 +124,7 @@ export default function AllRides() {
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
       // TODO: REMOVES (in allrides) and change alert message to be accurate
       alert(
-        "(in allrides) You must provide at least one of 'origin' or 'destination'."
+        "You must provide at least one of origin, destination, start date, or end date."
       );
       return;
     }
@@ -342,16 +342,16 @@ export default function AllRides() {
     if (searchDestinationRef.current.value) {
       searchDestinationRef.current.value = "";
     }
-    setLoading(true);
-    setInSearch(false);
-    await fetchDashboardData();
-    setLoading(false);
     setSearchOrigin("");
     setSearchDest("");
     setStartSearchDate(null);
     setStartSearchTime(null);
     setEndSearchDate(null);
     setEndSearchTime(null);
+    setLoading(true);
+    setInSearch(false);
+    await fetchDashboardData();
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -376,7 +376,22 @@ export default function AllRides() {
     if (endSearchDate) {
       searchRide();
     }
-  }, [searchOrigin, searchDest, startSearchDate, endSearchDate]);
+
+    if (startSearchTime && startSearchDate) {
+      searchRide();
+    }
+
+    if (endSearchTime && endSearchDate) {
+      searchRide();
+    }
+  }, [
+    searchOrigin,
+    searchDest,
+    startSearchDate,
+    endSearchDate,
+    startSearchTime,
+    endSearchTime,
+  ]);
 
   return (
     <div className="p-8">
@@ -499,7 +514,7 @@ export default function AllRides() {
       ) : (
         <div>
           <h3 className="text-lg font-medium mt-2 mb-3">
-            Upcoming & available rides
+            Upcoming & available rideshares
           </h3>
           {ridesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
