@@ -3,6 +3,7 @@ import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
 import { ConfigProvider, theme } from "antd";
 import AllRides from "./pages/AllRides";
 import MyRides from "./pages/MyRides";
+import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import tailwindConfig from "../tailwind.config.js";
 import LoadingIcon from "./components/LoadingIcon";
@@ -57,6 +58,7 @@ function App() {
               <Route path="/" element={<Navigate to="/allrides" replace />} />
               <Route path="/allrides" element={<AllRides />} />
               <Route path="/myrides" element={<MyRides />} />
+              <Route path="/*" element={<NotFound />}/>
             </Routes>
           </div>
         ) : (
