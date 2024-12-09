@@ -669,8 +669,7 @@ export default function MyRides() {
         <h3 className="text-lg font-medium">
           {viewType === "posted"
             ? `Upcoming posted rideshares (${myUpcomingPostedRidesData.length})`
-            : `Upcoming requested rideshares (${myUpcomingRequestedRidesData.length})`
-          }
+            : `Upcoming requested rideshares (${myUpcomingRequestedRidesData.length})`}
         </h3>
         {viewType === "posted"
           ? renderRideCards(myUpcomingPostedRidesData, true)
@@ -678,8 +677,7 @@ export default function MyRides() {
         <h3 className="text-lg font-medium pt-4">
           {viewType === "posted"
             ? `Past posted rideshares (${myPastPostedRidesData.length})`
-            : `Previously accepted rideshares (${myPastRequestedRidesData.length})`
-          }
+            : `Previously accepted rideshares (${myPastRequestedRidesData.length})`}
         </h3>
         {/* past rides do not have copy email buttons */}
         {viewType === "posted"
