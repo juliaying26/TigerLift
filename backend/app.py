@@ -223,6 +223,22 @@ def deleteride():
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
+
+    # emails
+    if app.EMAILS_ON:
+        # send emails
+        try:
+            subject = data.get('subject')
+            message = data.get('message')
+            current_riders = data.get('current_riders')
+
+            for rider in current_riders:
+                netid = rider[2]
+                mail = rider[3]
+                send_email_notification(netid, mail, subject, message) # sends email notif
+        except Exception as e:
+            print("Error in sending emails from delete ride: ", e)
+
     try:
        database.delete_ride(str(user_info['netid']), rideid)
        return jsonify({'success': True, 'message': 'Ride successfully deleted.'})
@@ -351,26 +367,44 @@ def batchupdateriderequest():
     try:
         data = request.get_json()
         rideid = data.get('rideid')
-        print(data)
 
         new_arrival_time = data.get('new_arrival_time')
         origin_name = data.get('origin_name')
         destination_name = data.get('destination_name')
 
+        timeIsDiff = data.get('timeIsDiff') # whether time was updated
+        if timeIsDiff:
+            subject_changed_time = data.get('subject')
+            message_changed_time = data.get('message')                
+
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
-            status = database.accept_ride_request(requester_id, full_name, mail, rideid)
+            try:
+                status = database.accept_ride_request(requester_id, full_name, mail, rideid)
+            except Exception as e:
+                print("error acecpting rider with netid", requester_id)
             print("status is: " , status)
-            # if status is True (meaning new ride request was created)
-            if status:
-                # send email to accepted rider
-                subject = "🚗 Your Request to Join the Rideshare from " + origin_name + " to " + destination_name + " Was Accepted!"
-                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + new_arrival_time + " was recently accepted!"
-                send_email_notification(requester_id, mail, subject, message)
-                # PRINT
-                print("SENT EMAIL NOTIF BATCH UPDATE")
+
+            try:
+                # ENV variable check for testing
+                if app.EMAILS_ON:
+                    # if status is True (meaning new ride request was created)
+                    if status:
+                        # send email to accepted rider
+                        subject = "🚗 Your Request to Join the Rideshare from " + origin_name + " to " + destination_name + " Was Accepted!"
+                        message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + new_arrival_time + " was recently accepted!"
+                        send_email_notification(requester_id, mail, subject, message)
+                        # PRINT
+                        print("SENT EMAIL NOTIF BATCH UPDATE")
+                        
+                    # after sending acceptance email, also send emails for updated time
+                    if timeIsDiff:
+                        send_email_notification(requester_id, mail, subject_changed_time, message_changed_time)
+                        print("sent time/date change notification!")
+            except Exception as e:
+                print("Error sending emails:" , e)
 
         for rider in data.get('rejecting_riders', []):
             requester_id = rider.get('requester_id')
@@ -395,25 +429,25 @@ def batchupdateriderequest():
     except:
         return jsonify({'success': False, 'message': 'Failed to update ride.'}), 400
     
-@app.route("/api/notify", methods=["POST"])
-def notify():
-    """
-    Sends email notifications
-    """
-    if not app.EMAILS_ON:
-        return jsonify({'success': True, 'message': 'EMAIL_ON set to False!'})
+# @app.route("/api/notify", methods=["POST"])
+# def notify():
+#     """
+#     Sends email notifications
+#     """
+#     if not app.EMAILS_ON:
+#         return jsonify({'success': True, 'message': 'EMAIL_ON set to False!'})
 
-    print("EMAIL NOTIF!!")
+#     print("EMAIL NOTIF!!")
 
-    try:
-        data = request.get_json()        
-        netid = data.get('netid')
-        mail = data.get('mail')
-        subject = data.get('subject')
-        message = data.get('message')
-        return send_email_notification(netid, mail, subject, message)
-    except Exception as e:
-         return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
+#     try:
+#         data = request.get_json()        
+#         netid = data.get('netid')
+#         mail = data.get('mail')
+#         subject = data.get('subject')
+#         message = data.get('message')
+#         return send_email_notification(netid, mail, subject, message)
+#     except Exception as e:
+#          return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
 
 def send_email_notification(netid, mail, subject, message):
     print("EMAIL NOTIF!!")

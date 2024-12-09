@@ -181,6 +181,26 @@ export default function MyRides() {
   };
 
   const deleteRide = async (rideId) => {
+
+    // Extract and format ride date
+    const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
+      "en-US",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      }
+    );
+
+    // Email notification details
+    const subj = "🚗 Your Rideshare Has been Canceled ";
+    const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
+      deleteRideMessage || "No reason provided."
+    }`;
+
     try {
       const response = await fetch("/api/deleteride", {
         method: "POST",
@@ -189,59 +209,43 @@ export default function MyRides() {
         },
         body: JSON.stringify({
           rideid: rideId,
+          subject: subj,
+          message: mess,
+          current_riders: selectedRide.current_riders,
         }),
       });
 
       const responseData = await response.json();
+     
+      // for (const rider of selectedRide.current_riders) {
+      //   try {
+      //     const response_email = await fetch("/api/notify", {
+      //       method: "POST",
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //       },
+      //       body: JSON.stringify({
+      //         full_name: rider[1],
+      //         netid: rider[0],
+      //         mail: rider[2],
+      //         subject: subj,
+      //         message: mess,
+      //       }),
+      //     });
+      //     if (!response_email.ok) {
+      //       console.error(
+      //         `Failed to send email notification to ${rider[0]}:`,
+      //         response_email.statusText
+      //       );
+      //     }
+      //   } catch (error) {
+      //     console.error(
+      //       `Error sending email notification to ${rider[0]}:`,
+      //       error
+      //     );
+      //   }
+      // }
 
-      // Email all riders whose ride was cancelled
-      // Extract and format ride date
-      const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
-        "en-US",
-        {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          hour12: true,
-        }
-      );
-
-      // Email notification details
-      const subj = "🚗 Your Rideshare Has been Canceled ";
-      const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
-        deleteRideMessage || "No reason provided."
-      }`;
-
-      for (const rider of selectedRide.current_riders) {
-        try {
-          const response_email = await fetch("/api/notify", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              full_name: rider[1],
-              netid: rider[0],
-              mail: rider[2],
-              subject: subj,
-              message: mess,
-            }),
-          });
-          if (!response_email.ok) {
-            console.error(
-              `Failed to send email notification to ${rider[0]}:`,
-              response_email.statusText
-            );
-          }
-        } catch (error) {
-          console.error(
-            `Error sending email notification to ${rider[0]}:`,
-            error
-          );
-        }
-      }
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -323,76 +327,43 @@ export default function MyRides() {
 
       console.log(new_arrival_time, "is new arrival time");
 
+      let timeIsDiff = false;
+      let subj = ""; 
+      let mess = ""; 
+      
+      // Check if arrival time or date has changed
+      if (
+        !dayjs(newArrivalDate).isSame(dayjs(selectedRide.arrival_time), "day") ||
+        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
+      ) {
+        timeIsDiff = true;
+        subj = "🚗 A rideshare you're in has changed arrival time!";
+        mess = `Your ride from ${selectedRide.origin.name} to ${selectedRide.destination.name} 
+      has changed arrival time to ${new_arrival_time}.`;
+      }
+      
+      // batch update ride request call
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          rideid: rideId,
+          rideId: rideId,
           accepting_riders: accepting_riders,
           rejecting_riders: rejecting_riders,
           pending_riders: pending_riders,
           new_capacity: newCapacity?.label,
           new_arrival_time: new_arrival_time,
-          origin_name: selectedRide.origin["name"],
-          destination_name: selectedRide.destination["name"],
+          origin_name: selectedRide.origin.name,
+          destination_name: selectedRide.destination.name,
+          timeIsDiff: timeIsDiff, 
+          subject: subj, 
+          message: mess,
         }),
       });
+      
       const responseData = await response.json();
-
-      if (
-        !dayjs(newArrivalDate).isSame(
-          dayjs(selectedRide.arrival_time),
-          "day"
-        ) ||
-        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
-      ) {
-        try {
-          const subj = "🚗 A rideshare you're in has changed arrival time!";
-          const mess = `Your ride from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
-          has changed arrrival time
-          to ${new_arrival_time}.`;
-
-          for (const rider of accepting_riders) {
-            // console.log("rider's name is", rider.full_name)
-            // console.log("rider's mail is", rider.mail)
-            // console.log("rider's mail is", subject_a)
-            // console.log("message is", message_a)
-
-            try {
-              const response_1 = await fetch("/api/notify", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  full_name: rider.full_name,
-                  netid: rider.requester_id,
-                  mail: rider.mail,
-                  subject: subj,
-                  message: mess,
-                }),
-              });
-
-              if (!response_1.ok) {
-                console.error(
-                  `Failed to send email notification to ${rider.requester_id}:`,
-                  response_1.statusText
-                );
-              }
-            } catch (error) {
-              console.error(
-                `Error sending email notification to ${rider.requester_id}:`,
-                error
-              );
-            }
-          }
-        } catch (error) {
-          console.error("Error during fetch notify:", error);
-        }
-      }
-
       closeModal();
       console.log(responseData);
       handleShowPopupMessage(responseData.success, responseData.message);
