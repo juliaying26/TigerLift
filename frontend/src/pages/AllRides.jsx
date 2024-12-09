@@ -147,14 +147,13 @@ export default function AllRides() {
           )}T${startSearchTime.format("HH:mm:ss")}`;
         } else if (startSearchTime == null) {
           const today = dayjs().format("YYYY-MM-DD");
-          console.log("today:", today)
-          console.log("startsearchdate:", startSearchDate.format("YYYY-MM-DD"))
+          console.log("today:", today);
+          console.log("startsearchdate:", startSearchDate.format("YYYY-MM-DD"));
           if (startSearchDate.format("YYYY-MM-DD") === today) {
             start_search_time_string = `${startSearchDate.format(
               "YYYY-MM-DD"
             )}T${dayjs().format("HH:mm:ss")}`; // defaults to current time to show only upcoming rides if date is today
-          }
-          else {
+          } else {
             start_search_time_string = `${startSearchDate.format(
               "YYYY-MM-DD"
             )}T00:00:00`; // defaults to midnight to show all times on this day
@@ -404,7 +403,7 @@ export default function AllRides() {
   ]);
 
   return (
-    <div className="p-8">
+    <div className="p-8 pb-14">
       {popupMessageInfo.message && (
         <PopUpMessage
           status={popupMessageInfo.status}
@@ -538,8 +537,6 @@ export default function AllRides() {
                         dashboardData.ridereqs[ride.id] !== null
                       ? "Status: " +
                         capitalizeFirstLetter(dashboardData.ridereqs[ride.id])
-                      : ride.current_riders.length === ride.max_capacity
-                      ? "Ride filled"
                       : "Request to Join"
                   }
                   buttonOnClick={
