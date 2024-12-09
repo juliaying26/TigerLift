@@ -262,7 +262,7 @@ export default function Navbar({ user_info }) {
                   className="group rounded-md theme_medium_1 text-3xl font-medium text-black"
                   aria-current="page"
                 >
-                  <div className="flex gap-5 items-center">
+                  <div className="flex gap-5 items-center pl-3">
                     <CarIcon />
                     TigerLift
                   </div>
@@ -271,7 +271,7 @@ export default function Navbar({ user_info }) {
             </div>
 
             {/* Right Side */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-4">
               <div className="relative">
                 <IconButton
                   onClick={() =>
@@ -294,13 +294,15 @@ export default function Navbar({ user_info }) {
                   </div>
                 )}
               </div>
-              <p className="font-medium text-lg">{user_info.displayname}</p>
-              <a
-                href="/api/logout"
-                className="bg-theme_dark_2 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_2 hover:text-theme_dark_2"
-              >
-                Log out
-              </a>
+              <div className="hidden md:flex items-center gap-4">
+                <p className="font-medium text-lg">{user_info.displayname}</p>
+                <a
+                  href="/api/logout"
+                  className="bg-theme_dark_2 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_2 hover:text-theme_dark_2"
+                >
+                  Log out
+                </a>
+              </div>
             </div>
           </div>
         </div>
