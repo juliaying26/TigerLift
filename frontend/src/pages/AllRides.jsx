@@ -585,7 +585,7 @@ export default function AllRides() {
                       </span>
                     </p>
                     <p className="mt-2 mb-1 text-center">
-                      <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                      <span className="px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
                         Arrive by{" "}
                         {getFormattedDate(new Date(ride.arrival_time))}
                       </span>
