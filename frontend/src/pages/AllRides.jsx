@@ -123,7 +123,9 @@ export default function AllRides() {
 
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
       // TODO: REMOVES (in allrides) and change alert message to be accurate
-      alert("(in allrides) You must provide at least one of 'origin' or 'destination'.");
+      alert(
+        "(in allrides) You must provide at least one of 'origin' or 'destination'."
+      );
       return;
     }
     setLoading(true);
@@ -399,8 +401,14 @@ export default function AllRides() {
             Create a Rideshare
           </Button>
         </div>
-        <div className="flex items-center justify-between pb-4 px-10 space-x-3">
-          <div className="flex items-center gap-2">
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 ${
+            inSearch
+              ? "md:grid-cols-[7fr,5fr,5fr,2.5fr]"
+              : "md:grid-cols-[7fr,5fr,5fr]"
+          } items-center justify-between pb-4 sm:space-x-3`}
+        >
+          <div className="grid grid-cols-[5fr,1fr] gap-2 sm:flex justify-center mb-3 sm:mb-0">
             <div>
               <p className="font-medium mb-1">Origin</p>
               <Autocomplete
@@ -423,7 +431,6 @@ export default function AllRides() {
                 ref={searchOriginRef}
               />
             </div>
-
             <IconButton
               className="flex-none mt-[27px]"
               type="flip"
@@ -452,23 +459,27 @@ export default function AllRides() {
               />
             </div>
           </div>
-          <div className="flex flex-col">
-            <p className="font-medium mb-1">Arrive After</p>
-            <DateTimePicker
-              date={startSearchDate}
-              setDate={setStartSearchDate}
-              time={startSearchTime}
-              setTime={setStartSearchTime}
-            />
+          <div className="flex justify-start md:justify-center mb-2 sm:mb-0">
+            <div className="flex flex-col">
+              <p className="font-medium mb-1">Arrive After</p>
+              <DateTimePicker
+                date={startSearchDate}
+                setDate={setStartSearchDate}
+                time={startSearchTime}
+                setTime={setStartSearchTime}
+              />
+            </div>
           </div>
-          <div className="flex flex-col">
-            <p className="font-medium mb-1">Arrive Before</p>
-            <DateTimePicker
-              date={endSearchDate}
-              setDate={setEndSearchDate}
-              time={endSearchTime}
-              setTime={setEndSearchTime}
-            />
+          <div className="flex justify-start md:justify-center">
+            <div className="flex flex-col">
+              <p className="font-medium mb-1">Arrive Before</p>
+              <DateTimePicker
+                date={endSearchDate}
+                setDate={setEndSearchDate}
+                time={endSearchTime}
+                setTime={setEndSearchTime}
+              />
+            </div>
           </div>
           {inSearch && (
             <div>

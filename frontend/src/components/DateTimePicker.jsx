@@ -43,11 +43,11 @@ export default function MyDateTimePicker({
   };
 
   return (
-    <div>
+    <div className="flex w-full">
       <DatePicker
         onChange={handleDateChange}
         placeholder="Select date"
-        style={{ marginRight: "8px", height: "38px" }}
+        style={{ marginRight: "8px", height: "38px", minWidth: "120px" }}
         value={date}
         disabledDate={disabledDate}
         allowClear={allowClear}
@@ -56,7 +56,7 @@ export default function MyDateTimePicker({
         format="h:mm A"
         onChange={handleTimeChange}
         placeholder="Select time"
-        style={{ height: "38px" }}
+        style={{ height: "38px", minWidth: "120px" }}
         value={time}
         allowClear={allowClear}
         disabledTime={disabledTime}
