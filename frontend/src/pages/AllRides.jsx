@@ -390,12 +390,12 @@ export default function AllRides() {
         <div className="flex justify-between items-center">
           <Link
             to="/myrides"
-            className="hidden md:inline-block bg-theme_medium_1 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white"
+            className="hidden md:inline-block bg-theme_medium_1 text-white px-4 py-2 rounded-md hover:bg-theme_dark_1 hover:text-white"
           >
             My Rideshares
           </Link>
           <Button
-            className="bg-theme_medium_1 text-white px-4 py-2 hover:bg-theme_dark_2 rounded-md"
+            className="bg-theme_medium_1 text-white px-4 py-2 hover:bg-theme_dark_1 rounded-md"
             onClick={() => handleOpenRideModal()}
           >
             Create a Rideshare
@@ -535,7 +535,7 @@ export default function AllRides() {
                       ? "cursor-auto"
                       : dashboardData.ridereqs[ride.id]
                       ? "cursor-auto"
-                      : "bg-theme_medium_1 text-white hover:bg-theme_dark_2"
+                      : "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
                   buttonDisabled={pendingRideId === ride.id}
