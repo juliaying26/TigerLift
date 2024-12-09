@@ -33,7 +33,7 @@ export default function PopUpMessage({ status, message, duration = 1500 }) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6 text-theme_medium_2"
+              className="size-6 text-theme_green"
             >
               <path
                 strokeLinecap="round"
@@ -48,7 +48,7 @@ export default function PopUpMessage({ status, message, duration = 1500 }) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6 text-theme_medium_1"
+              className="size-6 text-theme_red"
             >
               <path
                 strokeLinecap="round"
