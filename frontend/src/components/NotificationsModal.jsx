@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import IconButton from "./IconButton";
 import LoadingIcon from "./LoadingIcon";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +13,21 @@ export default function NotificationsModal({
   handleReadNotif,
 }) {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isOpen && window.innerWidth < 768) {
+      // Disable scrolling on body when modal is open
+      document.body.style.overflow = "hidden";
+    } else {
+      // Enable scrolling on body when modal is closed
+      document.body.style.overflow = "auto";
+    }
+
+    // Cleanup when the component is unmounted or modal closes
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -109,7 +124,7 @@ export default function NotificationsModal({
         className="fixed inset-0 z-20 bg-zinc-800 bg-opacity-20 h-full"
         onClick={handleBackdropClick}
       ></div>
-      <div className="z-20 absolute top-16 right-24 w-80 bg-white rounded-xl shadow-lg overflow-y-auto border-2 border-theme_medium_2 max-h-[480px]">
+      <div className="z-[25] fixed md:absolute w-full md:w-80 md:top-16 md:right-24 bg-white rounded-xl shadow-lg overflow-y-auto border-2 border-theme_medium_2 h-full md:max-h-[480px]">
         <div className="flex justify-between items-center p-4 border-b border-zinc-200">
           <h2 className="text-lg font-bold">Notifications</h2>
           <IconButton

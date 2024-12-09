@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import IconButton from "./IconButton";
 import { Link } from "react-router-dom";
 import NotificationsModal from "./NotificationsModal";
+import CarIcon from "./CarIcon";
 
 export default function Navbar({ user_info }) {
   const location = useLocation();
@@ -132,10 +133,10 @@ export default function Navbar({ user_info }) {
               <button
                 onClick={() => {
                   setMyRidesViewType("");
-                  navigateTo("/dashboard");
+                  navigateTo("/allrides");
                 }}
                 className={`${
-                  isActive("/dashboard") ? "bg-theme_light_1 font-medium" : ""
+                  isActive("/allrides") ? "bg-theme_light_1 font-medium" : ""
                 } text-lg rounded-md py-3 hover:bg-theme_light_1`}
               >
                 All Rideshares
@@ -242,9 +243,9 @@ export default function Navbar({ user_info }) {
         handleReadNotif={handleReadNotif}
       />
 
-      <nav className="bg-theme_medium_1">
+      <nav className="bg-theme_medium_2">
         <div className="w-full">
-          <div className="flex h-16 items-center justify-between px-4 md:px-8">
+          <div className="flex h-14 items-center justify-between px-4 md:px-8">
             {/* Left Side - Dashboard and Logo */}
             <div className="md:hidden absolute">
               <IconButton
@@ -258,16 +259,19 @@ export default function Navbar({ user_info }) {
               <div className="flex space-x-4">
                 <a
                   href="/"
-                  className="rounded-md theme_medium_1 text-3xl font-medium text-black"
+                  className="group rounded-md theme_medium_1 text-3xl font-medium text-black"
                   aria-current="page"
                 >
-                  TigerLift
+                  <div className="flex gap-5 items-center pl-3">
+                    <CarIcon />
+                    TigerLift
+                  </div>
                 </a>
               </div>
             </div>
 
             {/* Right Side */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-4">
               <div className="relative">
                 <IconButton
                   onClick={() =>
@@ -275,11 +279,11 @@ export default function Navbar({ user_info }) {
                   }
                   type="notification"
                   className={`${
-                    showNotificationsModal ? "bg-theme_light_1" : ""
-                  } hover:bg-theme_light_1 z-20`}
+                    showNotificationsModal ? "bg-theme_light_2" : ""
+                  } relative hover:bg-theme_light_2 z-[21]`}
                 />
                 {newNotifications.length > 0 && (
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute top-2 right-2.5 z-[22]">
                     <svg
                       width="7"
                       height="7"
@@ -290,13 +294,15 @@ export default function Navbar({ user_info }) {
                   </div>
                 )}
               </div>
-              <p className="font-medium text-lg">{user_info.displayname}</p>
-              <a
-                href="/api/logout"
-                className="bg-theme_dark_1 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_1"
-              >
-                Log out
-              </a>
+              <div className="hidden md:flex items-center gap-4">
+                <p className="font-medium text-lg">{user_info.displayname}</p>
+                <a
+                  href="/api/logout"
+                  className="bg-theme_dark_2 text-white px-4 py-2 rounded-md self-end hover:bg-theme_light_2 hover:text-theme_dark_2"
+                >
+                  Log out
+                </a>
+              </div>
             </div>
           </div>
         </div>
