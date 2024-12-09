@@ -263,10 +263,6 @@ export default function MyRides() {
     } else return false;
   };
 
-  useEffect(() => {
-    console.log(deleteRideMessage);
-  }, [deleteRideMessage]);
-
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
     setIsSaving(true);
@@ -487,7 +483,7 @@ export default function MyRides() {
 
   const renderRideCards = (rides, isUpcoming) => {
     return rides.length > 0 ? (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-5">
         {rides.map((ride) => (
           <RideCard
             key={ride.id}
@@ -624,9 +620,9 @@ export default function MyRides() {
         carColor={isUpcoming ? "bg-theme_medium_2" : "bg-theme_medium_1"}
       />
     ) : viewType === "posted" ? (
-      <p className="text-center">No upcoming posted rides.</p>
+      <p className="text-center">No upcoming posted rideshares.</p>
     ) : (
-      <p className="text-center">No previously accepted rides.</p>
+      <p className="text-center">No previously accepted rideshares.</p>
     );
   };
 
