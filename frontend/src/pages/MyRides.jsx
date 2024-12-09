@@ -626,7 +626,7 @@ export default function MyRides() {
     ) : viewType === "posted" ? (
       <p className="text-center">No upcoming posted rides.</p>
     ) : (
-      <p className="text-center">No upcoming requested rides.</p>
+      <p className="text-center">No previously accepted rides.</p>
     );
   };
 
