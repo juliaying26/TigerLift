@@ -367,7 +367,7 @@ export default function AllRides() {
     if (searchDest) {
       console.log("searchDest updated:", searchDest);
       searchRide();
-    }
+    } 
 
     if (startSearchDate) {
       searchRide();
