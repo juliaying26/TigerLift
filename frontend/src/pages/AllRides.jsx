@@ -514,7 +514,7 @@ export default function AllRides() {
       ) : (
         <div>
           <h3 className="text-lg font-medium mt-2 mb-3">
-            Upcoming & available rideshares
+            Upcoming & available rideshares ({ridesData.length})
           </h3>
           {ridesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">

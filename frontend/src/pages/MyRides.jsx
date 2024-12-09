@@ -663,8 +663,9 @@ export default function MyRides() {
       <div className="flex flex-col gap-2.5">
         <h3 className="text-lg font-medium">
           {viewType === "posted"
-            ? "Upcoming posted rideshares"
-            : "Upcoming requested rideshares"}
+            ? `Upcoming posted rideshares (${myUpcomingPostedRidesData.length})`
+            : `Upcoming requested rideshares (${myUpcomingRequestedRidesData.length})`
+          }
         </h3>
         {viewType === "posted"
           ? renderRideCards(myUpcomingPostedRidesData, true)
