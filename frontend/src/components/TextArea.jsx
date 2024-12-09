@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import TextArea from "antd/lib/input/TextArea";
+import { Input } from "antd";
 
-export default function Input({
+export default function CustomTextArea({
   label,
   inputValue,
   setInputValue,
@@ -12,6 +11,8 @@ export default function Input({
     setInputValue(e.target.value);
   };
 
+  const { TextArea } = Input;
+
   return (
     <TextArea
       label={label}
@@ -19,7 +20,10 @@ export default function Input({
       value={inputValue}
       placeholder={placeholder}
       onChange={handleChange}
-      style={{ height: 80, resize: "none" }}
+      style={{
+        height: 80,
+        resize: "none",
+      }}
       {...(maxLength ? { maxLength, showCount: true } : {})}
     />
   );

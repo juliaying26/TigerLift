@@ -9,11 +9,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
 import dayjs from "dayjs";
 import WarningModal from "../components/WarningModal";
-import Input from "../components/Input";
-import TextArea from "../components/TextArea";
+import CustomTextArea from "../components/TextArea";
 import CopyEmailButton from "../components/CopyEmailButton";
 import PopUpMessage from "../components/PopUpMessage";
 import LoadingIcon from "../components/LoadingIcon";
+import { getFormattedDate, MAX_CAPACITY } from "../utils/utils";
 
 // For parsing date
 import utc from "dayjs/plugin/utc";
@@ -26,7 +26,6 @@ export default function MyRides() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [userInfo, setUserInfo] = useState({});
   const [myUpcomingPostedRidesData, setMyUpcomingPostedRidesData] = useState(
     []
   );
@@ -90,8 +89,6 @@ export default function MyRides() {
       setMyPastRequestedRidesData(data.past_requested_rides);
 
       console.log(data);
-
-      setUserInfo(data.user_info);
     } catch (error) {
       console.error("Error fetching rides:", error);
     }
@@ -317,15 +314,21 @@ export default function MyRides() {
     }
 
     try {
+      const new_arrival_time_string = `${newArrivalDate.format(
+        "YYYY-MM-DD"
+      )}T${newArrivalTime.format("HH:mm:ss")}`;
+      const new_arrival_time_iso = new Date(
+        new_arrival_time_string
+      ).toISOString();
+
+      console.log(new_arrival_time_iso);
+
       // Parse arrival time for sending email purposes
-      const new_arrival_time = dayjs(newArrivalDate)
-        .hour(newArrivalTime.hour())
-        .minute(newArrivalTime.minute())
-        .second(newArrivalTime.second())
+      const formatted_arrival_time = dayjs(newArrivalDate)
         .tz("America/New_York") // Convert to EST
         .format("MMMM D, YYYY, h:mm A");
 
-      console.log(new_arrival_time, "is new arrival time");
+      console.log(new_arrival_time_iso, "is new arrival time");
 
       let timeIsDiff = false;
       let subj = ""; 
@@ -354,16 +357,66 @@ export default function MyRides() {
           rejecting_riders: rejecting_riders,
           pending_riders: pending_riders,
           new_capacity: newCapacity?.label,
-          new_arrival_time: new_arrival_time,
-          origin_name: selectedRide.origin.name,
-          destination_name: selectedRide.destination.name,
-          timeIsDiff: timeIsDiff, 
-          subject: subj, 
-          message: mess,
+          new_arrival_time: new_arrival_time_iso,
+          formatted_arrival_time: formatted_arrival_time,
+          origin_name: selectedRide.origin["name"],
+          destination_name: selectedRide.destination["name"],
         }),
       });
-      
       const responseData = await response.json();
+
+      if (
+        !dayjs(newArrivalDate).isSame(
+          dayjs(selectedRide.arrival_time),
+          "day"
+        ) ||
+        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
+      ) {
+        try {
+          const subj = "🚗 A rideshare you're in has changed arrival time!";
+          const mess = `Your ride from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
+          has changed arrrival time
+          to ${formatted_arrival_time}.`;
+
+          for (const rider of accepting_riders) {
+            // console.log("rider's name is", rider.full_name)
+            // console.log("rider's mail is", rider.mail)
+            // console.log("rider's mail is", subject_a)
+            // console.log("message is", message_a)
+
+            try {
+              const response_1 = await fetch("/api/notify", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  full_name: rider.full_name,
+                  netid: rider.requester_id,
+                  mail: rider.mail,
+                  subject: subj,
+                  message: mess,
+                }),
+              });
+
+              if (!response_1.ok) {
+                console.error(
+                  `Failed to send email notification to ${rider.requester_id}:`,
+                  response_1.statusText
+                );
+              }
+            } catch (error) {
+              console.error(
+                `Error sending email notification to ${rider.requester_id}:`,
+                error
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error during fetch notify:", error);
+        }
+      }
+
       closeModal();
       console.log(responseData);
       handleShowPopupMessage(responseData.success, responseData.message);
@@ -508,15 +561,7 @@ export default function MyRides() {
                 </p>
                 <p className="text-center">
                   <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    Arrive by{" "}
-                    {new Date(ride.arrival_time).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "numeric",
-                      hour12: true,
-                    })}
+                    Arrive by {getFormattedDate(new Date(ride.arrival_time))}
                   </span>
                 </p>
               </div>
@@ -532,7 +577,7 @@ export default function MyRides() {
               {ride.note && (
                 <div className="mb-0.5">
                   <span className="font-semibold">Note:</span>
-                  <div className="p-2 bg-zinc-100 rounded-lg">
+                  <div className="py-2 px-3 bg-zinc-100 rounded-lg">
                     <p>{ride.note}</p>
                   </div>
                 </div>
@@ -577,7 +622,7 @@ export default function MyRides() {
                       })}
                     </div>
                   ) : (
-                    <p className="text-zinc-800">
+                    <p className="text-zinc-500 text-sm">
                       {new Date(ride.arrival_time) > new Date()
                         ? "No current riders. Manage Rideshare to manage requests."
                         : "None."}
@@ -631,7 +676,7 @@ export default function MyRides() {
           My Requested Rideshares
         </Button>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2.5">
         <h3 className="text-lg font-medium">
           {viewType === "posted"
             ? "Upcoming posted rides"
@@ -640,7 +685,7 @@ export default function MyRides() {
         {viewType === "posted"
           ? renderRideCards(myUpcomingPostedRidesData, true)
           : renderRideCards(myUpcomingRequestedRidesData, true)}
-        <h3 className="text-lg font-medium">
+        <h3 className="text-lg font-medium pt-4">
           {viewType === "posted"
             ? "Past posted rides"
             : "Previously accepted rides"}
@@ -662,7 +707,7 @@ export default function MyRides() {
                 ? "You have unsaved changes. Do you want to discard them?"
                 : warningModalInfo.title === "Delete this Rideshare?"
                 ? "Are you sure you want to delete this rideshare?"
-                : "The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum 5)."}
+                : `The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum ${MAX_CAPACITY}).`}
             </p>
             {warningModalInfo.title === "Delete this Rideshare?" &&
               selectedRide.current_riders.length != 0 && (
@@ -672,7 +717,7 @@ export default function MyRides() {
                     you have currently accepted will be notified that this
                     rideshare was deleted.
                   </p>
-                  <TextArea
+                  <CustomTextArea
                     placeholder={"List reason here."}
                     inputValue={deleteRideMessage}
                     setInputValue={setDeleteRideMessage}
@@ -682,7 +727,7 @@ export default function MyRides() {
             <div className="flex items-center self-end gap-2">
               {warningModalInfo.title !== "Capacity Full" && (
                 <Button
-                  className="border-[1px] border-gray-300 text-theme_dark_1 hover:bg-zinc-100"
+                  className="border-[1px] border-gray-300 text-zinc-500 hover:bg-zinc-100"
                   onClick={handleCloseWarningModal}
                 >
                   Cancel
@@ -762,29 +807,17 @@ export default function MyRides() {
                 />
               ) : newArrivalDate || newArrivalTime ? (
                 <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                  {new Date(
-                    `${newArrivalDate.format(
-                      "YYYY-MM-DD"
-                    )}T${newArrivalTime.format("HH:mm:ss")}`
-                  ).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "numeric",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
+                  {getFormattedDate(
+                    new Date(
+                      `${newArrivalDate.format(
+                        "YYYY-MM-DD"
+                      )}T${newArrivalTime.format("HH:mm:ss")}`
+                    )
+                  )}
                 </span>
               ) : (
                 <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                  {new Date(selectedRide.arrival_time).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "numeric",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
+                  {getFormattedDate(new Date(selectedRide.arrival_time))}
                 </span>
               )}
               {isEditingArrivalTime ? (
@@ -824,7 +857,7 @@ export default function MyRides() {
                 <Dropdown
                   inputValue={newCapacity}
                   setInputValue={setNewCapacity}
-                  options={Array.from({ length: 5 }, (_, i) => {
+                  options={Array.from({ length: MAX_CAPACITY }, (_, i) => {
                     const start =
                       modalCurrentRiders?.length > 1
                         ? modalCurrentRiders.length
@@ -860,7 +893,7 @@ export default function MyRides() {
             {selectedRide.note && (
               <div className="mb-0.5">
                 <span className="font-semibold">Note:</span>
-                <div className="p-2 bg-zinc-100 rounded-lg">
+                <div className="py-2 px-3 bg-zinc-100 rounded-lg">
                   <p>{selectedRide.note}</p>
                 </div>
               </div>
@@ -897,7 +930,7 @@ export default function MyRides() {
                 })}
               </div>
             ) : (
-              <p className="text-zinc-700">No current riders.</p>
+              <p className="text-zinc-500 text-sm">No current riders.</p>
             )}
             <div className="flex flex-col gap-2 mt-1 mb-4">
               <p className="-mb-1">
@@ -923,7 +956,7 @@ export default function MyRides() {
                                   selectedRide.id
                                 )
                               }
-                              className="bg-theme_medium_2 text-theme_dark_2 hover:bg-theme_light_2"
+                              className="bg-theme_green text-theme_dark_green hover:bg-theme_light_green"
                             />
                             <IconButton
                               type="xmark"
@@ -935,7 +968,7 @@ export default function MyRides() {
                                   selectedRide.id
                                 )
                               }
-                              className="bg-theme_medium_1 text-theme_dark_1 hover:bg-theme_light_1"
+                              className="bg-theme_red text-theme_dark_red hover:bg-theme_light_red"
                             />
                           </div>
                         </div>
@@ -943,7 +976,7 @@ export default function MyRides() {
                     );
                   })
                 ) : (
-                  <p>No requests to join</p>
+                  <p className="text-sm">No requests to join</p>
                 )}
               </div>
             </div>

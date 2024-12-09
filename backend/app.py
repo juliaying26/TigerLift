@@ -280,13 +280,16 @@ def searchrides():
     arrival_time = request.args.get('arrival_time')
     start_search_time = request.args.get('start_search_time')
 
-    #print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
-    #print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
+    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
+    print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
 
     origin = request.args.get('origin')
     destination = request.args.get('destination')
-    if not origin and not destination:
-        return jsonify({"error": "You must provide at least one of 'origin' or 'destination'"}), 400
+    if not origin and not destination and not arrival_time and not start_search_time:
+        return jsonify({"error": "You must provide at least one of origin, destination, start time, or end time."}), 400
+
+    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
+    
 
     print("origin:", origin)
     print("destination:", destination)
@@ -295,7 +298,7 @@ def searchrides():
     # locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
 
-    print(rides)
+    #print(rides)
 
     # mapping for location
     # location_map = {location[0]: location[1] for location in locations}
@@ -320,11 +323,13 @@ def searchrides():
 
         updated_rides.append(updated_ride)
 
+    updated_rides.sort(key=lambda ride: ride['arrival_time'])
+
     ridereqs_map = {}
     for ridereq in ridereqs:
         ridereqs_map[ridereq[1]] = ridereq[2]
 
-    print("UPDATED RIDES = ", updated_rides)
+    #print("UPDATED RIDES = ", updated_rides)
 
     return jsonify({
         'user_info': user_info,
@@ -339,7 +344,7 @@ def requestride():
     rideid = data.get('rideid')
     origin_name = data.get('origin_name')
     destination_name = data.get('destination_name')
-    arrival_time = data.get('arrival_time')
+    formatted_arrival_time = data.get('formatted_arrival_time')
     print("REQUESTING RIDE")
     if not rideid:
         return jsonify({'success': False, 'message': 'Ride ID is required'}), 400
@@ -352,7 +357,7 @@ def requestride():
             admin_info = database.rideid_to_admin_id_email(rideid)
             print("Admin info is", admin_info)
             subject = '🚗 ' + str(user_info['displayname']) + ' requested to join your Rideshare!'
-            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + arrival_time + '!'
+            message = str(user_info['displayname']) + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + formatted_arrival_time + '!'
             send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, message)
         except:
             return jsonify({'success': False, 'message': 'Failed to email ride request'}), 400
