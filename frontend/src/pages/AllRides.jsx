@@ -12,6 +12,7 @@ import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
 import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import CustomTextArea from "../components/TextArea.jsx";
+import WarningModal from "../components/WarningModal.jsx";
 
 import {
   getFormattedDate,
@@ -701,12 +702,11 @@ export default function AllRides() {
         </Modal>
       )}
       {showValidationModal && (
-        <Modal
+        <WarningModal
           isOpen={showValidationModal}
           onClose={() => setShowValidationModal(false)}
           title={"Missing Fields"}
         >
-          <div className="flex flex-col gap-4">
             <p>You must provide all fields to create a ride.</p>
             <Button
               onClick={() => setShowValidationModal(false)}
@@ -714,8 +714,7 @@ export default function AllRides() {
             >
               OK
             </Button>
-          </div>
-        </Modal>
+        </WarningModal>
       )}
     </div>
   );
