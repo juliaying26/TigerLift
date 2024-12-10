@@ -367,11 +367,6 @@ export default function MyRides() {
           to ${formatted_new_arrival_time}.`;
 
           for (const rider of accepting_riders) {
-            // console.log("rider's name is", rider.full_name)
-            // console.log("rider's mail is", rider.mail)
-            // console.log("rider's mail is", subject_a)
-            // console.log("message is", message_a)
-
             try {
               const response_1 = await fetch("/api/notify", {
                 method: "POST",
@@ -571,7 +566,7 @@ export default function MyRides() {
                 <div className="mb-0.5">
                   <span className="font-semibold">Note:</span>
                   <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                    <p>{ride.note}</p>
+                    <p className="break-words">{ride.note}</p>
                   </div>
                 </div>
               )}
@@ -890,7 +885,7 @@ export default function MyRides() {
               <div className="mb-0.5">
                 <span className="font-semibold">Note:</span>
                 <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                  <p>{selectedRide.note}</p>
+                  <p className="break-words">{selectedRide.note}</p>
                 </div>
               </div>
             )}
