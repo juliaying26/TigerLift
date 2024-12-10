@@ -541,7 +541,7 @@ export default function MyRides() {
                 </p>
                 <p className="text-center">
                   <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    Arrive by {getFormattedDate(new Date(ride.arrival_time))}
+                    Arrive at Destination by {getFormattedDate(new Date(ride.arrival_time))}
                   </span>
                 </p>
               </div>
@@ -786,7 +786,7 @@ export default function MyRides() {
             <div className="flex items-center gap-1">
               <div className="grid grid-cols-1 md:flex items-center gap-1">
                 <p>
-                  <span className="font-semibold">Arrive by:</span>{" "}
+                  <span className="font-semibold">Arrive at Destination by:</span>{" "}
                 </p>
                 {isEditingArrivalTime ? (
                   <DateTimePicker
