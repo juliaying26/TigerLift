@@ -365,6 +365,7 @@ def batchupdateriderequest():
         new_arrival_time = data.get('new_arrival_time')
         origin_name = data.get('origin_name')
         destination_name = data.get('destination_name')
+        formatted_new_arrival_time = data.get('formatted_new_arrival_time')
 
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
@@ -376,7 +377,7 @@ def batchupdateriderequest():
             if status:
                 # send email to accepted rider
                 subject = "🚗 Your Request to Join the Rideshare from " + origin_name + " to " + destination_name + " Was Accepted!"
-                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + new_arrival_time + " was recently accepted!"
+                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + formatted_new_arrival_time + " was recently accepted!"
                 send_email_notification(requester_id, mail, subject, message)
                 # PRINT
                 print("SENT EMAIL NOTIF BATCH UPDATE")
@@ -397,7 +398,7 @@ def batchupdateriderequest():
         if data.get('new_capacity'):
             database.update_capacity(rideid, data.get('new_capacity'))
 
-        if data.get('new_arrival_time'):
+        if new_arrival_time:
             database.update_arrival_time(rideid, data.get('new_arrival_time'))
 
         return jsonify({'success': True, 'message': 'Ride successfully updated!'})
