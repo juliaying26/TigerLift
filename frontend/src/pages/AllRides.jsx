@@ -12,6 +12,7 @@ import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
 import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import CustomTextArea from "../components/TextArea.jsx";
+
 import {
   getFormattedDate,
   MAX_CAPACITY,
@@ -37,6 +38,7 @@ export default function AllRides() {
     status: "",
     message: "",
   });
+  const [showValidationModal, setShowValidationModal] = useState(false);
 
   const [capacity, setCapacity] = useState("");
   const originRef = useRef(null);
@@ -218,9 +220,18 @@ export default function AllRides() {
   const checkCreateRideParams = async () => {
     console.log(origin);
     console.log(dest);
-
+    console.log("Current date:", date); // Log to debug
     const now = new Date();
 
+    const parsedDate = dayjs(date);
+    const parsedTime = dayjs(time);
+  
+    if (!parsedDate.isValid() || !parsedTime.isValid()) {
+      console.error("Invalid date or time provided:", date, time);
+      setShowValidationModal(true); // Show validation error
+      return;
+    }
+    
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -232,16 +243,19 @@ export default function AllRides() {
     }
 
     if (
+      !capacity ||
+      !origin ||
+      !dest ||
+      !date ||
+      !time ||
       capacity === "" ||
       origin === "" ||
       dest === "" ||
       date === "" ||
-      time === "" ||
-      !date ||
-      !time ||
-      !capacity
+      time === ""
     ) {
-      handleShowPopupMessage("error", "You must provide all fields.");
+      console.log("SHOWING")
+      setShowValidationModal(true); // Show the validation modal
       return;
     } else {
       createRide();
@@ -654,7 +668,7 @@ export default function AllRides() {
                   options={capacity_options}
                   isClearable
                   placeholder="Select capacity"
-                ></Dropdown>
+                />
               </div>
               <div className="flex flex-col">
                 <p className="font-medium mb-1">Origin & Destination</p>
@@ -741,6 +755,23 @@ export default function AllRides() {
               disabled={isCreatingRide}
             >
               Submit
+            </Button>
+          </div>
+        </Modal>
+      )}
+      {showValidationModal && (
+        <Modal
+          isOpen={showValidationModal}
+          onClose={() => setShowValidationModal(false)}
+          title={"Missing Fields"}
+        >
+          <div className="flex flex-col gap-4">
+            <p>You must provide all fields to create a ride.</p>
+            <Button
+              onClick={() => setShowValidationModal(false)}
+              className="bg-theme_dark_1 text-white py-1 px-4"
+            >
+              OK
             </Button>
           </div>
         </Modal>
