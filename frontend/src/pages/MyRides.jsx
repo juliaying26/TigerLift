@@ -715,7 +715,7 @@ export default function MyRides() {
                 className={`${
                   warningModalInfo.title !== "Capacity Full"
                     ? "bg-red-400 text-white hover:bg-red-500"
-                    : "bg-theme_green text-white hover:bg-theme_dark_green"
+                    : "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
                 }`}
                 onClick={
                   warningModalInfo.title === "Unsaved Changes"
