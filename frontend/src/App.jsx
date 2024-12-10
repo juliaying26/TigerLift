@@ -68,12 +68,13 @@ function App() {
                 Welcome to TigerLift!
               </h1>
               <p className="text-lg mb-4 font-serif max-w-lg mx-auto">
-                Tired of shelling out money on Ubers?
+                Tired of shelling out money on Lyft? Don't want to spam the
+                ListServs to find other students going to the same place?
               </p>
               <p className="text-lg mb-6 font-serif max-w-lg mx-auto">
-                TigerLift helps Princeton students connect with each other so
-                they can split costs on rideshares! Get in touch with other
-                students who want to go the same place.
+                Say goodbye to NJ Transit delays and expensive Ubers. TigerLift
+                helps Princeton students connect with each other so they can
+                split costs on rideshares!
               </p>
               <a
                 href="/api/login"
