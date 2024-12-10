@@ -67,8 +67,14 @@ function App() {
               <h1 className="text-4xl mb-4 font-serif px-8">
                 Welcome to TigerLift!
               </h1>
-              <br />
-              <br />
+              <br/>
+              <p className="text-lg px-8 mb-4 font-serif max-w-lg mx-auto text-base">
+                Tired of shelling out money on ubers?
+              </p>
+              <p className="text-lg px-8 mb-6 font-serif max-w-lg mx-auto text-base">
+                TigerLift helps Princeton students connect with each other so they can split costs on rideshares! Get in touch with other students who want to go the same place.
+              </p>
+              <br/>
               <a
                 href="/api/login"
                 className="text-lg bg-theme_medium_2 text-white px-4 py-2 rounded hover:bg-theme_dark_2 hover:text-white"
