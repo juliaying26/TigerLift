@@ -612,10 +612,14 @@ export default function MyRides() {
       <LoadingIcon
         carColor={isUpcoming ? "bg-theme_medium_2" : "bg-theme_medium_1"}
       />
-    ) : viewType === "posted" ? (
-      <p className="text-center">No upcoming posted rideshares.</p>
     ) : (
-      <p className="text-center">No previously accepted rideshares.</p>
+      <p className="text-center">
+        {isUpcoming
+          ? `No upcoming ${viewType} rideshares.`
+          : viewType === "posted"
+          ? "No past posted rideshares."
+          : "No previously accepted ridesehares."}
+      </p>
     );
   };
 
