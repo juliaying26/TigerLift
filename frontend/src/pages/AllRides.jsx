@@ -621,7 +621,7 @@ export default function AllRides() {
                     <div className="mb-0.5">
                       <span className="font-semibold">Note:</span>
                       <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                        <p>{ride.note}</p>
+                        <p className="break-words">{ride.note}</p>
                       </div>
                     </div>
                   )}
