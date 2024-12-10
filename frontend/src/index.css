@@ -57,3 +57,8 @@ h1 {
 .pac-item {
   padding: 2px 6px;
 }
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5); /* Thumb (scroll indicator) color */
+  border-radius: 4px; /* Rounded corners */
+}
