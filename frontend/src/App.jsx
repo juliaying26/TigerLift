@@ -81,6 +81,9 @@ function App() {
               >
                 Login with CAS
               </a>
+              <p className="text-sm text-gray-500 absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                Created by Julia Ying, Grace Kim, Ritika Bhatnagar, Aasha Jain
+              </p>
             </div>
           </div>
         )}
