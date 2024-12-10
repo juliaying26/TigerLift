@@ -363,8 +363,10 @@ def batchupdateriderequest():
         print(data)
 
         new_arrival_time = data.get('new_arrival_time')
+        formatted_arrival_time = data.get('formatted_arrival_time')
         origin_name = data.get('origin_name')
         destination_name = data.get('destination_name')
+        capacity = data.get('new_capacity')
 
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
@@ -376,7 +378,7 @@ def batchupdateriderequest():
             if status:
                 # send email to accepted rider
                 subject = "🚗 Your Request to Join the Rideshare from " + origin_name + " to " + destination_name + " Was Accepted!"
-                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + new_arrival_time + " was recently accepted!"
+                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + formatted_arrival_time + " was recently accepted!"
                 send_email_notification(requester_id, mail, subject, message)
                 # PRINT
                 print("SENT EMAIL NOTIF BATCH UPDATE")
@@ -394,11 +396,11 @@ def batchupdateriderequest():
             mail = rider.get('mail')
             database.remove_rider(requester_id, full_name, mail, rideid)
 
-        if data.get('new_capacity'):
-            database.update_capacity(rideid, data.get('new_capacity'))
+        if capacity:
+            database.update_capacity(rideid, capacity)
 
-        if data.get('new_arrival_time'):
-            database.update_arrival_time(rideid, data.get('new_arrival_time'))
+        if new_arrival_time:
+            database.update_arrival_time(rideid, new_arrival_time)
 
         return jsonify({'success': True, 'message': 'Ride successfully updated!'})
     except:
@@ -503,6 +505,16 @@ def mark_as_read():
         return jsonify({'success': True, 'message': 'Notification marked as read'})
     except:
         return jsonify({'success': False, 'message': 'Failed to mark notification as read'}), 400
+    
+@app.route("/api/markallread", methods=["POST"])
+def mark_all_as_read():
+    user_info = _cas.authenticate()
+    print("hello am i here")
+    try:
+        database.read_all_users_notifications(user_info['netid'])
+        return jsonify({'success': True, 'message': 'All notifications marked as read'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to mark all notifications as read'}), 400
 
 # @app.route("/api/acceptriderequest", methods=["POST"])
 # def acceptriderequest():
