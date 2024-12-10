@@ -43,7 +43,7 @@ export default function MyDateTimePicker({
   };
 
   return (
-    <div className="flex w-full">
+    <div className="flex">
       <DatePicker
         onChange={handleDateChange}
         placeholder="Select date"

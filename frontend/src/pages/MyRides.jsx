@@ -537,7 +537,7 @@ export default function MyRides() {
                 </p>
                 <p className="text-center">
                   <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    Arrive by {getFormattedDate(new Date(ride.arrival_time))}
+                    Arrives by {getFormattedDate(new Date(ride.arrival_time))}
                   </span>
                 </p>
               </div>
@@ -749,7 +749,7 @@ export default function MyRides() {
             <p className="text-sm text-zinc-700 mb-2 rounded-md bg-info_light p-2 flex flex-col gap-2">
               <span>
                 You can only edit the rideshare before the arrival time. When
-                you click "Save", any newly accepted riders will be notified. If
+                you click "Save", all newly accepted riders will be notified. If
                 you changed the arrival time, all current riders will be
                 notified.
               </span>
@@ -782,7 +782,7 @@ export default function MyRides() {
             <div className="flex items-center gap-1">
               <div className="grid grid-cols-1 md:flex items-center gap-1">
                 <p>
-                  <span className="font-semibold">Arrive by:</span>{" "}
+                  <span className="font-semibold">Arrives by:</span>{" "}
                 </p>
                 {isEditingArrivalTime ? (
                   <DateTimePicker
@@ -967,7 +967,7 @@ export default function MyRides() {
             <div className="flex justify-between">
               <Button
                 onClick={() => handleDeleteRide(selectedRide.id)}
-                className="hover:bg-red-300 border border-zinc-300 text-zinc-700"
+                className="hover:bg-theme_red border border-zinc-300 text-zinc-700 hover:text-white"
               >
                 Delete this Rideshare
               </Button>
