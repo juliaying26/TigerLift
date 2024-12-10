@@ -378,7 +378,7 @@ def batchupdateriderequest():
             if status:
                 # send email to accepted rider
                 subject = "🚗 Your Request to Join the Rideshare from " + origin_name + " to " + destination_name + " Was Accepted!"
-                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + str(formatted_arrival_time) + " was recently accepted!"
+                message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + formatted_arrival_time + " was recently accepted!"
                 send_email_notification(requester_id, mail, subject, message)
                 # PRINT
                 print("SENT EMAIL NOTIF BATCH UPDATE")

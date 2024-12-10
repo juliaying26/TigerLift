@@ -351,7 +351,6 @@ export default function MyRides() {
           const subj = "🚗 A rideshare you're in has changed arrival time!";
           const mess = `Your ride from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
           has changed arrrival time to ${formatted_arrival_time}.`;
-          console.log("message: " + mess);
 
           for (const rider of accepting_riders) {
             try {
