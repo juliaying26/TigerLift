@@ -106,7 +106,7 @@ export default function AllRides() {
 
     setSearchOrigin(searchDest);
     setSearchDest(tempSearchOrigin);
-    
+
     if (searchOriginRef.current && searchDestinationRef.current) {
       const tempSearchOriginValue = searchOriginRef.current.value;
       searchOriginRef.current.value = searchDestinationRef.current.value;
@@ -115,7 +115,6 @@ export default function AllRides() {
   };
 
   const searchRide = async () => {
-
     console.log("in search ride. search origin: ", searchOrigin);
 
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
@@ -211,13 +210,13 @@ export default function AllRides() {
 
     const parsedDate = dayjs(date);
     const parsedTime = dayjs(time);
-  
+
     if (!parsedDate.isValid() || !parsedTime.isValid()) {
       console.error("Invalid date or time provided:", date, time);
       setShowValidationModal(true); // Show validation error
       return;
     }
-    
+
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -240,7 +239,7 @@ export default function AllRides() {
       date === "" ||
       time === ""
     ) {
-      console.log("SHOWING")
+      console.log("SHOWING");
       setShowValidationModal(true); // Show the validation modal
       return;
     } else {
@@ -707,13 +706,17 @@ export default function AllRides() {
           onClose={() => setShowValidationModal(false)}
           title={"Missing Fields"}
         >
+          <div className="flex flex-col gap-3">
             <p>You must provide all fields to create a ride.</p>
-            <Button
-              onClick={() => setShowValidationModal(false)}
-              className="bg-theme_dark_1 text-white py-1 px-4"
-            >
-              OK
-            </Button>
+            <div className="flex self-end">
+              <Button
+                onClick={() => setShowValidationModal(false)}
+                className="bg-theme_green text-white hover:bg-theme_dark_green"
+              >
+                Okay
+              </Button>
+            </div>
+          </div>
         </WarningModal>
       )}
     </div>
