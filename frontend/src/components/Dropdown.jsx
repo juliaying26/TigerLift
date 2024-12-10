@@ -15,8 +15,6 @@ export default function Dropdown({
   };
 
   const fullConfig = resolveConfig(tailwindConfig);
-  console.log(fullConfig.theme.colors);
-  console.log(fullConfig.theme.colors.theme_medium_1);
 
   return (
     <Select

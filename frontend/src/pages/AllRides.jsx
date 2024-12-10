@@ -103,12 +103,7 @@ export default function AllRides() {
 
     setSearchOrigin(searchDest);
     setSearchDest(tempSearchOrigin);
-
-    console.log(
-      "searchOriginRef.current when switchign fields:",
-      searchOriginRef.current.placeholder
-    );
-
+    
     if (searchOriginRef.current && searchDestinationRef.current) {
       const tempSearchOriginValue = searchOriginRef.current.value;
       searchOriginRef.current.value = searchDestinationRef.current.value;
@@ -117,7 +112,6 @@ export default function AllRides() {
   };
 
   const searchRide = async () => {
-    //console.log(dashboardData);
 
     console.log("in search ride. search origin: ", searchOrigin);
 
@@ -182,11 +176,6 @@ export default function AllRides() {
       console.log("arrive after iso: " + start_search_time_iso);
       console.log("arrive before iso: " + arrival_time_iso);
 
-      //console.log("start date: " + startSearchDate.format("YYYY-MM-DD"))
-      //console.log("end date: " + endSearchDate.format("YYYY-MM-DD"))
-
-      //console.log("origin place id:", searchOrigin.place_id)
-
       const params = new URLSearchParams({
         ...(searchOrigin && { origin: searchOrigin.place_id }),
         ...(searchDest && { destination: searchDest.place_id }),
@@ -206,7 +195,6 @@ export default function AllRides() {
         throw new Error(`Failed to fetch rides: ${response.status}`);
       }
       const data = await response.json();
-      console.log("DATA =", data);
       setRidesData(data.rides);
       setInSearch(true);
       setLoading(false);
@@ -216,9 +204,6 @@ export default function AllRides() {
   };
 
   const checkCreateRideParams = async () => {
-    console.log(origin);
-    console.log(dest);
-
     const now = new Date();
 
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
@@ -272,8 +257,6 @@ export default function AllRides() {
       handleCloseRideModal();
       resetSearch();
       setInSearch(false);
-      console.log(responseData.success);
-      console.log(responseData.message);
       handleShowPopupMessage(responseData.success, responseData.message);
       await fetchDashboardData();
       if (!response.ok) {
@@ -381,12 +364,10 @@ export default function AllRides() {
 
   useEffect(() => {
     if (searchOrigin) {
-      console.log("searchOrigin updated:", searchOrigin);
       searchRide();
     }
 
     if (searchDest) {
-      console.log("searchDest updated:", searchDest);
       searchRide();
     }
 
@@ -453,15 +434,7 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter origin"
                 onPlaceSelected={(place) => {
-                  console.log("Selected Place Details:", place);
-                  console.log("Formatted Address:", place.formatted_address);
-                  console.log(
-                    "Coordinates:",
-                    place.geometry.location.lat(),
-                    place.geometry.location.lng()
-                  );
                   setSearchOrigin(place);
-                  console.log("place:", place);
                 }}
                 options={autocompleteOptions}
                 ref={searchOriginRef}
@@ -481,13 +454,6 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter destination"
                 onPlaceSelected={(place) => {
-                  console.log("Selected Place Details:", place);
-                  console.log("Formatted Address:", place.formatted_address);
-                  console.log(
-                    "Coordinates:",
-                    place.geometry.location.lat(),
-                    place.geometry.location.lng()
-                  );
                   setSearchDest(place);
                 }}
                 options={autocompleteOptions}
@@ -665,21 +631,6 @@ export default function AllRides() {
                     apiKey={google_api_key}
                     placeholder="Enter origin"
                     onPlaceSelected={(place) => {
-                      console.log("Selected Place Details:", place);
-                      console.log(
-                        "Formatted Address:",
-                        place.formatted_address
-                      );
-                      console.log(
-                        "Coordinates:",
-                        place.geometry.location.lat(),
-                        place.geometry.location.lng()
-                      );
-                      console.log(place.name);
-                      // const placeName = place.name || place.formatted_address;
-                      // if (originRef.current) {
-                      //   originRef.current.value = placeName;
-                      // }
                       setOrigin(place); // Store selected place details in state
                     }}
                     options={autocompleteOptions}
@@ -697,16 +648,6 @@ export default function AllRides() {
                     apiKey={google_api_key}
                     placeholder="Enter destination"
                     onPlaceSelected={(place) => {
-                      console.log("Selected Place Details:", place);
-                      console.log(
-                        "Formatted Address:",
-                        place.formatted_address
-                      );
-                      console.log(
-                        "Coordinates:",
-                        place.geometry.location.lat(),
-                        place.geometry.location.lng()
-                      );
                       setDest(place); // Store selected place details in state
                     }}
                     options={autocompleteOptions}
@@ -727,11 +668,11 @@ export default function AllRides() {
                 <p className="font-medium mb-1">Optional Note to Riders</p>
                 <CustomTextArea
                   placeholder={
-                    "Add an optional note here. (Max 250 characters)."
+                    "Add an optional note here, such as a suggested time to meet up, if you're flexible with the arrival time, or anything else. (Max 200 characters)."
                   }
                   inputValue={rideNote}
                   setInputValue={setRideNote}
-                  maxLength={250}
+                  maxLength={200}
                 />
               </div>
             </div>

@@ -503,6 +503,16 @@ def mark_as_read():
         return jsonify({'success': True, 'message': 'Notification marked as read'})
     except:
         return jsonify({'success': False, 'message': 'Failed to mark notification as read'}), 400
+    
+@app.route("/api/markallread", methods=["POST"])
+def mark_all_as_read():
+    user_info = _cas.authenticate()
+    print("hello am i here")
+    try:
+        database.read_all_users_notifications(user_info['netid'])
+        return jsonify({'success': True, 'message': 'All notifications marked as read'})
+    except:
+        return jsonify({'success': False, 'message': 'Failed to mark all notifications as read'}), 400
 
 # @app.route("/api/acceptriderequest", methods=["POST"])
 # def acceptriderequest():

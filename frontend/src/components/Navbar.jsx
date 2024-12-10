@@ -39,15 +39,11 @@ export default function Navbar({ user_info }) {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
-
-      console.log(response, "is response");
-
       if (!response.ok) {
         throw new Error(`Failed to fetch notifications: ${response.status}`);
       }
 
       const data_response = await response.json();
-      console.log("Raw data response:", data_response);
 
       // Make each array into dictionary
       const new_notifs = data_response.new_notifs.map((row) => ({
@@ -64,8 +60,6 @@ export default function Navbar({ user_info }) {
         subject: row[3],
         status: row[4],
       }));
-      console.log(new_notifs);
-      console.log(past_notifs);
       setNewNotifications(new_notifs);
       setPastNotifications(past_notifs);
       setIsNotifsLoading(false);
@@ -84,7 +78,6 @@ export default function Navbar({ user_info }) {
   };
 
   const handleReadNotif = async (notif, notif_type) => {
-    console.log(notif.id);
     if (notif_type === "ride_request") {
       navigate("/myrides", { state: { viewType: "posted" } });
     } else {
@@ -109,6 +102,23 @@ export default function Navbar({ user_info }) {
       } catch (error) {
         console.error(error);
       }
+    }
+    await fetchNotifs();
+  };
+
+  const markAllRead = async () => {
+    try {
+      const response = await fetch("/api/markallread", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to mark all notifications as read`);
+      }
+    } catch (error) {
+      console.error(error);
     }
     await fetchNotifs();
   };
@@ -241,6 +251,7 @@ export default function Navbar({ user_info }) {
         new_notifs={newNotifications}
         past_notifs={pastNotifications}
         handleReadNotif={handleReadNotif}
+        markAllRead={markAllRead}
       />
 
       <nav className="bg-theme_medium_2">

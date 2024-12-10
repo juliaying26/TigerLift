@@ -713,12 +713,6 @@ def remove_rider(requester_id, full_name, mail, ride_id):
     Rejects a ride request and moves it back into 'Manage Rides' as a pending ride request
     """
 
-    print("INTO remove_rider function now!")
-    print("Requester id is ", requester_id)
-    print("Ride id is ", ride_id)
-    print("Mail is", mail)
-    print("Full name is", full_name)
-
     sql_command_ride_requests = """
         UPDATE RideRequests
         SET status = 'pending', response_time = CURRENT_TIMESTAMP
@@ -940,6 +934,35 @@ def read_notification(netid, notif_id):
                 return True
         except Exception as e:
             print(f"Error marking notification as read: {e}")
+            return None # meaning error
+        finally:
+            conn.close()
+    else:
+        print("Failed to establish a database connection.")
+        return None
+    
+def read_all_users_notifications(netid):
+    """
+    Marks all notifications as read
+    """
+    sql_command =  """
+            UPDATE Notifications
+            SET status = 'read'
+            WHERE netid = %s
+        """
+    
+    values = (netid,)
+    
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                conn.commit()
+                print("All notifications marked as read successfully.")
+                return True
+        except Exception as e:
+            print(f"Error marking all notifications as read: {e}")
             return None # meaning error
         finally:
             conn.close()

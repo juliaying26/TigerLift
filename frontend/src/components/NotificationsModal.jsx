@@ -11,6 +11,7 @@ export default function NotificationsModal({
   new_notifs,
   past_notifs,
   handleReadNotif,
+  markAllRead,
 }) {
   const navigate = useNavigate();
 
@@ -60,20 +61,19 @@ export default function NotificationsModal({
         </p>
         <hr className="mb-2" />
         {notifs.map((notification, index) => (
-          <div>
+          <div key={index}>
             <div
               className={`${
                 !isNew && "opacity-50"
               } border-zinc-300 cursor-pointer hover:bg-zinc-200 rounded-lg p-2`}
             >
               <li
-                key={index}
                 onClick={() =>
                   handleReadNotif(notification, getNotifType(notification))
                 }
               >
                 <div className="flex flex-col gap-2">
-                  <p className="font-bold">{notification.subject}</p>
+                  <p className="font-semibold">{notification.subject}</p>
                   <p>{notification.message}</p>
                   <Button
                     className="text-theme_medium_2 hover:text-theme_dark_2 !text-sm"
@@ -124,16 +124,24 @@ export default function NotificationsModal({
         className="fixed inset-0 z-20 bg-zinc-800 bg-opacity-20 h-full"
         onClick={handleBackdropClick}
       ></div>
-      <div className="z-[25] fixed md:absolute w-full md:w-80 md:top-16 md:right-24 bg-white rounded-xl shadow-lg overflow-y-auto border-2 border-theme_medium_2 h-full md:max-h-[480px]">
+      <div className="z-[25] relative md:absolute w-full md:w-[340px] md:top-16 md:right-24 bg-white rounded-xl shadow-lg border-2 border-theme_medium_2 h-full md:h-[480px]">
         <div className="flex justify-between items-center p-4 border-b border-zinc-200">
-          <h2 className="text-lg font-bold">Notifications</h2>
+          <h2 className="text-lg font-semibold flex gap-4 items-center">
+            Notifications
+            <Button
+              onClick={markAllRead}
+              className="text-theme_medium_2 hover:text-theme_dark_2 text-sm py-0 px-0 mt-0.5"
+            >
+              Mark All As Read
+            </Button>
+          </h2>
           <IconButton
             type="xmark"
             onClick={onClose}
             className="text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100"
           ></IconButton>
         </div>
-        <div className="p-4">
+        <div className="p-4 overflow-y-auto md:h-[400px] w-full">
           {isLoading ? (
             <LoadingIcon carColor="bg-theme_medium_2" />
           ) : (
