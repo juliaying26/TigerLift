@@ -263,10 +263,6 @@ export default function MyRides() {
     } else return false;
   };
 
-  useEffect(() => {
-    console.log(deleteRideMessage);
-  }, [deleteRideMessage]);
-
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
     setIsSaving(true);
@@ -487,7 +483,7 @@ export default function MyRides() {
 
   const renderRideCards = (rides, isUpcoming) => {
     return rides.length > 0 ? (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-5">
         {rides.map((ride) => (
           <RideCard
             key={ride.id}
@@ -541,7 +537,7 @@ export default function MyRides() {
                 </p>
                 <p className="text-center">
                   <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    Arrive at Destination by {getFormattedDate(new Date(ride.arrival_time))}
+                    Arrives by {getFormattedDate(new Date(ride.arrival_time))}
                   </span>
                 </p>
               </div>
@@ -624,9 +620,9 @@ export default function MyRides() {
         carColor={isUpcoming ? "bg-theme_medium_2" : "bg-theme_medium_1"}
       />
     ) : viewType === "posted" ? (
-      <p className="text-center">No upcoming posted rides.</p>
+      <p className="text-center">No upcoming posted rideshares.</p>
     ) : (
-      <p className="text-center">No previously accepted rides.</p>
+      <p className="text-center">No previously accepted rideshares.</p>
     );
   };
 
@@ -786,7 +782,7 @@ export default function MyRides() {
             <div className="flex items-center gap-1">
               <div className="grid grid-cols-1 md:flex items-center gap-1">
                 <p>
-                  <span className="font-semibold">Arrive at Destination by:</span>{" "}
+                  <span className="font-semibold">Arrives by:</span>{" "}
                 </p>
                 {isEditingArrivalTime ? (
                   <DateTimePicker

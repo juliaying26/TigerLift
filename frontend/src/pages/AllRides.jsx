@@ -228,7 +228,7 @@ export default function AllRides() {
     const arrival_time_iso = new Date(arrival_time_string);
 
     if (now.getTime() >= arrival_time_iso.getTime()) {
-      alert("Date cannot be in the past.");
+      handleShowPopupMessage("error", "Date cannot be in the past.");
     }
 
     if (
@@ -241,7 +241,7 @@ export default function AllRides() {
       !time ||
       !capacity
     ) {
-      alert("You must provide all fields.");
+      handleShowPopupMessage("error", "You must provide all fields.");
       return;
     } else {
       createRide();
@@ -598,7 +598,7 @@ export default function AllRides() {
                     </p>
                     <p className="mt-2 mb-1 text-center">
                       <span className="px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
-                        Arrive at Destination by{" "}
+                        Arrives by{" "}
                         {getFormattedDate(new Date(ride.arrival_time))}
                       </span>
                     </p>
