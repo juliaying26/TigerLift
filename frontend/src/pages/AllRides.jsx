@@ -711,7 +711,7 @@ export default function AllRides() {
             <div className="flex self-end">
               <Button
                 onClick={() => setShowValidationModal(false)}
-                className="bg-theme_green text-white hover:bg-theme_dark_green"
+                className="bg-theme_medium_1 text-white hover:bg-theme_dark_1"
               >
                 Okay
               </Button>
