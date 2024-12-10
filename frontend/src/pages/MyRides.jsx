@@ -307,52 +307,39 @@ export default function MyRides() {
     }
 
     try {
-      const parsedArrivalDate = dayjs(newArrivalDate);
-      const parsedArrivalTime = dayjs(newArrivalTime);
-
-      if (!parsedArrivalDate.isValid() || !parsedArrivalTime.isValid()) {
-        handleShowPopupMessage("error", "Invalid date or time provided.");
-        setIsSaving(false);
-        return;
-      }
-
-      const new_arrival_time_string = `${parsedArrivalDate.format(
+      const new_arrival_time_string = `${newArrivalDate.format(
         "YYYY-MM-DD"
-      )}T${parsedArrivalTime.format("HH:mm:ss")}`;
-      const new_arrival_time_iso = new Date(new_arrival_time_string).toISOString();
-  
-      const formatted_new_arrival_time = parsedArrivalDate
-        .tz("America/New_York")
+      )}T${newArrivalTime.format("HH:mm:ss")}`;
+      const new_arrival_time_iso = new Date(
+        new_arrival_time_string
+      ).toISOString();
+
+      console.log(new_arrival_time_iso);
+
+      // Parse arrival time for sending email purposes
+      const formatted_arrival_time = dayjs(newArrivalDate)
+        .tz("America/New_York") // Convert to EST
         .format("MMMM D, YYYY, h:mm A");
-  
-      const subj = "🚗 A rideshare you're in has changed arrival time!";
-      const mess = `Your ride from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
-          has changed arrival time to ${formatted_new_arrival_time}.`;
-  
+
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           rideid: rideId,
-          accepting_riders,
-          rejecting_riders,
-          pending_riders,
+          accepting_riders: accepting_riders,
+          rejecting_riders: rejecting_riders,
+          pending_riders: pending_riders,
           new_capacity: newCapacity?.label,
           new_arrival_time: new_arrival_time_iso,
-          formatted_new_arrival_time,
+          formatted_arrival_time: formatted_arrival_time,
           origin_name: selectedRide.origin["name"],
           destination_name: selectedRide.destination["name"],
         }),
       });
-    
       const responseData = await response.json();
 
-      if (!response.ok) {
-        handleShowPopupMessage("error", "Failed to save changes.");
-        setIsSaving(false);
-        return;
-      }
-  
       if (
         !dayjs(newArrivalDate).isSame(
           dayjs(selectedRide.arrival_time),
@@ -363,8 +350,8 @@ export default function MyRides() {
         try {
           const subj = "🚗 A rideshare you're in has changed arrival time!";
           const mess = `Your ride from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
-          has changed arrrival time
-          to ${formatted_new_arrival_time}.`;
+          has changed arrrival time to ${formatted_arrival_time}.`;
+          console.log("message: " + mess);
 
           for (const rider of accepting_riders) {
             try {
