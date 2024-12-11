@@ -223,10 +223,6 @@ export default function AllRides() {
 
     const arrival_time_iso = new Date(arrival_time_string);
 
-    if (now.getTime() >= arrival_time_iso.getTime()) {
-      handleShowPopupMessage("error", "Date cannot be in the past.");
-    }
-
     if (
       !capacity ||
       !origin ||
@@ -237,7 +233,7 @@ export default function AllRides() {
       origin === "" ||
       dest === "" ||
       date === "" ||
-      time === ""
+      time === "" || now.getTime() >= arrival_time_iso.getTime()
     ) {
       console.log("SHOWING");
       setShowValidationModal(true); // Show the validation modal
