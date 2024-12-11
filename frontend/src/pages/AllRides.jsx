@@ -96,6 +96,8 @@ export default function AllRides() {
       const tempOriginValue = originRef.current.value;
       originRef.current.value = destinationRef.current.value;
       destinationRef.current.value = tempOriginValue;
+      console.log(originRef.current.value);
+      console.log(destinationRef.current.value);
     }
 
     console.log("Locations flipped!");
@@ -431,17 +433,18 @@ export default function AllRides() {
           </Button>
         </div>
         <div
-          className={`grid grid-cols-1 sm:grid-cols-2 ${
+          className={`grid grid-cols-1 md:grid-cols-2 ${
             inSearch
-              ? "md:grid-cols-[7fr,5fr,5fr,2.5fr]"
-              : "md:grid-cols-[7fr,5fr,5fr]"
+              ? "lg:grid-cols-[9fr,5fr,5fr,2.5fr]"
+              : "lg:grid-cols-[9fr,5fr,5fr]"
           } items-center justify-between pb-4 sm:space-x-3`}
         >
-          <div className="grid grid-cols-[5fr,1fr] gap-2 sm:flex justify-center mb-3 sm:mb-0">
+          <div className="grid grid-cols-[5fr,1fr] gap-2 md:flex justify-center mb-3 md:mb-0">
             <div>
               <p className="font-medium mb-1">Origin</p>
               <Autocomplete
                 key={"searchOrigin"}
+                id={"searchOrigin"}
                 className={autocompleteStyling}
                 apiKey={google_api_key}
                 placeholder="Enter origin"
@@ -453,7 +456,7 @@ export default function AllRides() {
               />
             </div>
             <IconButton
-              className="flex-none mt-[27px]"
+              className="flex-none mt-[27px] w-9 h-9 hover:bg-theme_medium_2"
               type="flip"
               onClick={flipSearchFields}
             ></IconButton>
@@ -461,6 +464,7 @@ export default function AllRides() {
               <p className="font-medium mb-1">Destination</p>
               <Autocomplete
                 key={"searchDestination"}
+                id={"searchDest"}
                 className={autocompleteStyling}
                 apiKey={google_api_key}
                 placeholder="Enter destination"
@@ -635,7 +639,7 @@ export default function AllRides() {
               </div>
               <div className="flex flex-col">
                 <p className="font-medium mb-1">Origin & Destination</p>
-                <div className="flex items-center space-x-2 w-full">
+                <div className="flex items-center space-x-2 w-full justify-between">
                   <Autocomplete
                     key={"createOrigin"}
                     className={autocompleteStyling}
@@ -648,7 +652,7 @@ export default function AllRides() {
                     ref={originRef}
                   />
                   <IconButton
-                    className="flex-none"
+                    className="flex-none w-9 h-9 hover:bg-theme_light_1"
                     type="flip"
                     onClick={flipCreateRideFields}
                   ></IconButton>
