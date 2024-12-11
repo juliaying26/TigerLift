@@ -294,6 +294,7 @@ export default function AllRides() {
     setDest("");
     setDate("");
     setTime("");
+    setRideNote("");
   };
 
   const fetchDashboardData = async () => {
