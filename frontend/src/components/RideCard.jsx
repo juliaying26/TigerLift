@@ -7,7 +7,7 @@ export default function RideCard({
   buttonOnClick,
   buttonClassName,
   buttonStatus = "",
-  buttonDisabled = false,
+  buttonLoading = false,
   secondaryButtonText = "",
   secondaryButtonOnClick = () => {},
   secondaryButtonClassName = "",
@@ -32,7 +32,7 @@ export default function RideCard({
             onClick={buttonOnClick}
             className={buttonClassName}
             status={buttonStatus}
-            disabled={buttonDisabled}
+            loading={buttonLoading}
           >
             {buttonText}
           </Button>

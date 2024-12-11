@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function IconButton({ type, onClick, disabled, className }) {
+export default function IconButton({
+  type,
+  onClick,
+  disabled = false,
+  className,
+}) {
   const renderIcon = () => {
     switch (type) {
       case "back":
