@@ -124,6 +124,26 @@ export default function MyRides() {
     }
   }, [selectedRide]);
 
+  const checkAndSetEditArrivalTime = () => {
+
+    const now = new Date();
+
+
+    const arrival_time_string = `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
+      "HH:mm:ss"
+    )}`;
+
+    const arrival_time_iso = new Date(arrival_time_string);
+
+    if (now.getTime() >= arrival_time_iso.getTime()) {
+      handleShowPopupMessage("error", "Date cannot be in the past.");
+    }
+    else {
+      setIsEditingArrivalTime(false)
+    }
+
+  }
+
   // states for modal
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);

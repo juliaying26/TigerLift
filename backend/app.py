@@ -240,16 +240,16 @@ def cancelriderequest():
     except:
         return jsonify({'success': False, 'message': 'Failed to cancel ride request.'}), 400
     
-@app.route("/addlocation", methods=["GET"])
-def addlocation():
-    database.create_location(1, "Princeton")
-    database.create_location(2, "Airport")
-    return redirect("/allrides")
+# @app.route("/addlocation", methods=["GET"])
+# def addlocation():
+#     database.create_location(1, "Princeton")
+#     database.create_location(2, "Airport")
+#     return redirect("/allrides")
 
-@app.route("/deletelocations", methods=["GET"])
-def deletelocations():
-    database.delete_all_locations()
-    return redirect("/allrides")
+# @app.route("/deletelocations", methods=["GET"])
+# def deletelocations():
+#     database.delete_all_locations()
+#     return redirect("/allrides")
 
 @app.route("/deleteallrides", methods=["GET"])
 def deleteallrides():
@@ -356,6 +356,9 @@ def requestride():
     
 @app.route("/api/batchupdateriderequest", methods=["POST"])
 def batchupdateriderequest():
+
+    user_info = _cas.authenticate()
+
     print("IN BATCH UPDATE RIDE REQUEST")
     try:
         data = request.get_json()
@@ -411,6 +414,8 @@ def notify():
     """
     Sends email notifications
     """
+
+    user_info = _cas.authenticate()
     if not app.EMAILS_ON:
         return jsonify({'success': True, 'message': 'EMAIL_ON set to False!'})
 
@@ -431,6 +436,9 @@ def send_email_notification(netid, mail, subject, message):
     """
     Sends email notifications
     """
+
+    user_info = _cas.authenticate()
+
     if not app.EMAILS_ON:
         return jsonify({'success': True, 'message': 'EMAILS_ON set to False'})
 
