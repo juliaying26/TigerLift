@@ -789,45 +789,24 @@ export default function MyRides() {
                     setTime={setNewArrivalTime}
                     allowClear={false}
                   />
-                ) : newArrivalDate || newArrivalTime ? (
-                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    {getFormattedDate(
-                      new Date(
-                        `${newArrivalDate.format(
-                          "YYYY-MM-DD"
-                        )}T${newArrivalTime.format("HH:mm:ss")}`
-                      )
-                    )}
-                  </span>
                 ) : (
                   <span className="px-3 py-1 bg-zinc-200 rounded-full">
                     {getFormattedDate(new Date(selectedRide.arrival_time))}
                   </span>
                 )}
-                {isEditingArrivalTime ? (
-                  <Button
-                    className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
-                    onClick={() => setIsEditingArrivalTime(false)}
-                  >
-                    {!dayjs(newArrivalDate).isSame(
-                      dayjs(selectedRide.arrival_time),
-                      "day"
-                    ) ||
-                    !dayjs(newArrivalTime).isSame(
-                      dayjs(selectedRide.arrival_time),
-                      "time"
-                    )
-                      ? "Save"
-                      : "Cancel"}
-                  </Button>
-                ) : (
-                  <Button
-                    className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
-                    onClick={() => setIsEditingArrivalTime(true)}
-                  >
-                    Edit
-                  </Button>
-                )}
+                <Button
+                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => {
+                    console.log(newArrivalDate, newArrivalTime);
+                    if (isEditingArrivalTime) {
+                      setNewArrivalDate(dayjs(selectedRide.arrival_time));
+                      setNewArrivalTime(dayjs(selectedRide.arrival_time));
+                    }
+                    setIsEditingArrivalTime(!isEditingArrivalTime);
+                  }}
+                >
+                  {isEditingArrivalTime ? "Cancel" : "Edit"}
+                </Button>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -851,25 +830,23 @@ export default function MyRides() {
                   }).slice(0, 6 - (modalCurrentRiders?.length || 0))}
                 ></Dropdown>
               ) : (
-                newCapacity?.label || selectedRide.max_capacity
+                selectedRide.max_capacity
               )}
-              {isEditingCapacity ? (
-                <Button
-                  className="text-theme_medium_2 hover:text-theme_dark_2"
-                  onClick={() => setIsEditingCapacity(false)}
-                >
-                  {newCapacity?.label !== selectedRide.max_capacity
-                    ? "Save"
-                    : "Cancel"}
-                </Button>
-              ) : (
-                <Button
-                  className="text-theme_medium_2 hover:text-theme_dark_2"
-                  onClick={() => setIsEditingCapacity(true)}
-                >
-                  Edit capacity
-                </Button>
-              )}
+              <Button
+                className="text-theme_medium_2 hover:text-theme_dark_2"
+                onClick={() => {
+                  console.log(newCapacity);
+                  if (isEditingCapacity) {
+                    setNewCapacity({
+                      value: selectedRide.max_capacity,
+                      label: selectedRide.max_capacity,
+                    });
+                  }
+                  setIsEditingCapacity(!isEditingCapacity);
+                }}
+              >
+                {isEditingCapacity ? "Cancel" : "Edit capacity"}
+              </Button>
             </div>
             {selectedRide.note && (
               <div className="mb-0.5">
