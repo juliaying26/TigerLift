@@ -198,6 +198,7 @@ export default function MyRides() {
   };
 
   const deleteRide = async (rideId) => {
+    setIsSaving(true);
     try {
       const response = await fetch("/api/deleteride", {
         method: "POST",
@@ -268,6 +269,7 @@ export default function MyRides() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+    setIsSaving(false);
   };
 
   const hasRideChanges = () => {
@@ -519,7 +521,7 @@ export default function MyRides() {
                 ? "cursor-auto"
                 : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
             }`}
-            buttonDisabled={ride.id === cancelRequestRideId}
+            buttonLoading={ride.id === cancelRequestRideId}
             secondaryButtonText={
               viewType === "requested" &&
               "Status: " + capitalizeFirstLetter(ride.request_status)
@@ -748,6 +750,10 @@ export default function MyRides() {
                     ? () => deleteRide(selectedRide.id)
                     : handleCloseWarningModal
                 }
+                loading={isSaving}
+                disabled={
+                  selectedRide.current_riders.length != 0 && !deleteRideMessage
+                }
               >
                 {warningModalInfo.buttonText}
               </Button>
@@ -968,7 +974,7 @@ export default function MyRides() {
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
                 className="hover:bg-theme_light_1 bg-theme_medium_1 text-white hover:text-theme_dark_1"
-                disabled={isSaving}
+                loading={isSaving}
               >
                 Save
               </Button>

@@ -23,7 +23,7 @@ import {
 export default function AllRides() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
 
-  const [pendingRideId, setPendingRideId] = useState(null);
+  const [pendingRideId, setPendingRideId] = useState([]);
 
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
@@ -233,7 +233,8 @@ export default function AllRides() {
       origin === "" ||
       dest === "" ||
       date === "" ||
-      time === "" || now.getTime() >= arrival_time_iso.getTime()
+      time === "" ||
+      now.getTime() >= arrival_time_iso.getTime()
     ) {
       console.log("SHOWING");
       setShowValidationModal(true); // Show the validation modal
@@ -317,7 +318,7 @@ export default function AllRides() {
   ) => {
     console.log("IN HANDLE RIDE REQUEST");
 
-    setPendingRideId(rideid);
+    setPendingRideId((prev) => [...prev, rideid]);
     try {
       console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
 
@@ -347,7 +348,7 @@ export default function AllRides() {
     if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
       searchRide();
     }
-    setPendingRideId(null);
+    setPendingRideId((prev) => prev.filter((id) => id !== rideid));
   };
 
   const resetSearch = async () => {
@@ -455,7 +456,6 @@ export default function AllRides() {
               className="flex-none mt-[27px]"
               type="flip"
               onClick={flipSearchFields}
-              disabled={false}
             ></IconButton>
             <div className="flex flex-col">
               <p className="font-medium mb-1">Destination</p>
@@ -549,7 +549,7 @@ export default function AllRides() {
                       : "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
-                  buttonDisabled={pendingRideId === ride.id}
+                  buttonLoading={pendingRideId.includes(ride.id)}
                 >
                   <div className="flex flex-col gap-2">
                     <p className="text-xl flex items-center justify-center gap-2">
@@ -651,7 +651,6 @@ export default function AllRides() {
                     className="flex-none"
                     type="flip"
                     onClick={flipCreateRideFields}
-                    disabled={false}
                   ></IconButton>
                   <Autocomplete
                     key={"createDestination"}
@@ -690,7 +689,7 @@ export default function AllRides() {
             <Button
               className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1"
               onClick={checkCreateRideParams}
-              disabled={isCreatingRide}
+              loading={isCreatingRide}
             >
               Submit
             </Button>
