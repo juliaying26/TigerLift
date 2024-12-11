@@ -60,6 +60,19 @@ export default function AllRides() {
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
 
+  function getCookie(name="csrf_token") {
+
+    console.log("IN GET COOKIE")
+
+    const cookies = document.cookie.split(";").map(cookie => cookie.trim());
+    const prefix = `${name}=`;
+    const cookie = cookies.find(cookie => cookie.startsWith(prefix));
+
+    console.log("COOKIE = ", cookie)
+
+    return cookie ? cookie.substring(prefix.length) : null;
+}
+
   const autocompleteOptions = {
     // componentRestrictions: { country: "us" },
     fields: ["formatted_address", "geometry", "name", "place_id"],
@@ -253,11 +266,17 @@ export default function AllRides() {
       "HH:mm:ss"
     )}`;
     const arrival_time_iso = new Date(arrival_time_string).toISOString();
+
+    const csrfToken = getCookie("csrf_token");
+
+    // console.log("token from before post request = ", csrfToken);
+
     try {
       const response = await fetch("/api/addride", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
         },
         body: JSON.stringify({
           capacity: capacity["label"],
@@ -328,11 +347,15 @@ export default function AllRides() {
       const formattedArrivalTime = dayjs(arrival_time)
         .tz("America/New_York")
         .format("MMMM D, YYYY, h:mm A");
+      
+      const csrfToken = getCookie()
+      console.log("token from before post request = ", csrfToken);
 
       const response = await fetch("/api/requestride", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
         },
         body: JSON.stringify({
           rideid: rideid,
@@ -344,6 +367,8 @@ export default function AllRides() {
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
+        console.error("Status Text:", response.statusText);
+        console.error("Response body:", response.text);
       }
     } catch (error) {
       console.error("Error during fetch:", error);
@@ -372,6 +397,18 @@ export default function AllRides() {
     await fetchDashboardData();
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetch("/api/dashboard", {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+      });
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();

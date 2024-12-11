@@ -68,7 +68,7 @@ export default function MyRides() {
   const capitalizeFirstLetter = (val) => {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
   };
-
+  
   const handleShowPopupMessage = (status, message) => {
     setPopupMessageInfo({ status: status, message: message });
     setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
@@ -136,7 +136,7 @@ export default function MyRides() {
     const arrival_time_iso = new Date(arrival_time_string);
 
     if (now.getTime() >= arrival_time_iso.getTime()) {
-      handleShowPopupMessage("error", "Date cannot be in the past.");
+      alert("Date cannot be in the past.");
     }
     else {
       setIsEditingArrivalTime(false)
