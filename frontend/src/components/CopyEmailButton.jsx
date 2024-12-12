@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 export default function CopyEmailIcon({ text, copy, className = "" }) {
   const [copied, setCopied] = useState(false);

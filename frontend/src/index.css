@@ -28,22 +28,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
 a:hover {
   @apply text-zinc-700;
-}
-
-body {
-  margin: 0;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
 }
 
 .pac-target-input#searchOrigin,
@@ -70,7 +56,10 @@ h1 {
   padding: 2px 6px;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.5); /* Thumb (scroll indicator) color */
-  border-radius: 4px; /* Rounded corners */
+.notification-panel {
+  height: 400px;
+}
+
+.notification-panel-mobile {
+  height: var(--dynamic-height);
 }
