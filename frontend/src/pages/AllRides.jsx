@@ -19,7 +19,9 @@ import {
   autocompleteStyling,
   capitalizeFirstLetter,
   handleShowPopupMessage,
-} from "../utils/utils.js";
+  renderRideCardInfo,
+  bigButtonStyling1,
+} from "../utils/utils";
 
 export default function AllRides() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -348,7 +350,6 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
-      await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -358,6 +359,7 @@ export default function AllRides() {
     if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
       searchRide();
     }
+    await fetchDashboardData();
     setPendingRideId((prev) => prev.filter((id) => id !== rideid));
   };
 
@@ -429,12 +431,12 @@ export default function AllRides() {
         <div className="flex justify-between items-center">
           <Link
             to="/myrides"
-            className="hidden md:inline-block bg-theme_medium_1 text-white px-4 py-2 rounded-md hover:bg-theme_dark_1 hover:text-white"
+            className={`hidden md:inline-block ${bigButtonStyling1}`}
           >
             My Rideshares
           </Link>
           <Button
-            className="bg-theme_medium_1 text-white px-4 py-2 hover:bg-theme_dark_1 rounded-md"
+            className={`${bigButtonStyling1}`}
             onClick={() => handleOpenRideModal()}
           >
             Create a Rideshare
@@ -563,57 +565,7 @@ export default function AllRides() {
                   buttonStatus={dashboardData.ridereqs[ride.id]}
                   buttonLoading={pendingRideId.includes(ride.id)}
                 >
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xl flex items-center justify-center gap-2">
-                      <span className="flex text-center flex-col">
-                        <strong>{ride.origin["name"]}</strong>
-                        <span className="text-sm">
-                          {ride.origin["address"]
-                            .split(" ")
-                            .slice(0, -2)
-                            .join(" ")}
-                        </span>
-                      </span>
-                      →
-                      <span className="flex text-center flex-col">
-                        <strong>{ride.destination["name"]}</strong>
-                        <span className="text-sm">
-                          {ride.destination["address"]
-                            .split(" ")
-                            .slice(0, -2)
-                            .join(" ")}
-                        </span>
-                      </span>
-                    </p>
-                    <p className="mt-2 mb-1 text-center">
-                      <span className="px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
-                        Arrives by{" "}
-                        {getFormattedDate(new Date(ride.arrival_time))}
-                      </span>
-                    </p>
-                  </div>
-                  <hr className="border-1 my-3 border-theme_medium_1" />
-                  <p>
-                    <span className="font-semibold">Posted by:</span>{" "}
-                    <span>{ride.admin_name}</span>{" "}
-                    <CopyEmailButton
-                      copy={[ride.admin_email]}
-                      text="Copy Email"
-                      className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle"
-                    />
-                  </p>
-                  <p>
-                    <span className="font-semibold">Seats Taken:</span>{" "}
-                    {ride.current_riders.length}/{ride.max_capacity}
-                  </p>
-                  {ride.note && (
-                    <div className="mb-0.5">
-                      <span className="font-semibold">Note:</span>
-                      <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                        <p className="break-words">{ride.note}</p>
-                      </div>
-                    </div>
-                  )}
+                  {renderRideCardInfo(ride)}
                 </RideCard>
               ))}
             </div>
@@ -622,7 +574,6 @@ export default function AllRides() {
           )}
         </div>
       )}
-
       {createRideModal && (
         <Modal
           isOpen={createRideModal}
