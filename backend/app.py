@@ -223,12 +223,30 @@ def deleteride():
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
+
+    # assuming email is on
     try:
-       database.delete_ride(str(user_info['netid']), rideid)
-       return jsonify({'success': True, 'message': 'Ride successfully deleted.'})
+       database.delete_ride(str(user_info['netid']), rideid)     
+       print("RIDE DELETED") 
     except:
         return jsonify({'success': False, 'message': 'Failed to delete ride.'}), 400
 
+    try:
+        subject = data.get('subject')
+        message = data.get('message')
+        current_riders = data.get('current_riders')
+        for rider in current_riders:
+            netid = rider[0]
+            mail = rider[2]
+            send_email_notification(netid, mail, subject, message)
+
+        print("DELETE EMAIL SENT")
+        return jsonify({'success': True, 'message': 'Ride successfully deleted and email sent.'})
+
+    except:
+        return jsonify({'success': False, 'message': 'Failed to email riders.'}), 400
+  
+ 
 @app.route("/api/cancelriderequest", methods=["POST"])
 def cancelriderequest():
     user_info = _cas.authenticate()
