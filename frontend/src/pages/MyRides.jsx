@@ -13,7 +13,16 @@ import CustomTextArea from "../components/TextArea";
 import CopyEmailButton from "../components/CopyEmailButton";
 import PopUpMessage from "../components/PopUpMessage";
 import LoadingIcon from "../components/LoadingIcon";
-import { getFormattedDate, MAX_CAPACITY } from "../utils/utils";
+import {
+  getFormattedDate,
+  MAX_CAPACITY,
+  capitalizeFirstLetter,
+  handleShowPopupMessage,
+  renderRideCardInfo,
+  renderToAndFrom,
+  renderRideNote,
+  bigButtonStyling1,
+} from "../utils/utils";
 
 // For parsing date
 import utc from "dayjs/plugin/utc";
@@ -22,7 +31,6 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export default function MyRides() {
-  // myRidesData = array of dictionaries
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -42,6 +50,7 @@ export default function MyRides() {
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
   const [warningModalInfo, setWarningModalInfo] = useState({
     title: "",
+    message: "",
     buttonText: "",
   });
   const [deleteRideMessage, setDeleteRideMessage] = useState("");
@@ -64,15 +73,6 @@ export default function MyRides() {
 
   const [cancelRequestRideId, setCancelRequestRideId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  const capitalizeFirstLetter = (val) => {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-  };
-
-  const handleShowPopupMessage = (status, message) => {
-    setPopupMessageInfo({ status: status, message: message });
-    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
-  };
 
   const fetchMyRidesData = async () => {
     const endpoint = "/api/myrides";
@@ -124,26 +124,6 @@ export default function MyRides() {
     }
   }, [selectedRide]);
 
-  const checkAndSetEditArrivalTime = () => {
-
-    const now = new Date();
-
-
-    const arrival_time_string = `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
-      "HH:mm:ss"
-    )}`;
-
-    const arrival_time_iso = new Date(arrival_time_string);
-
-    if (now.getTime() >= arrival_time_iso.getTime()) {
-      handleShowPopupMessage("error", "Date cannot be in the past.");
-    }
-    else {
-      setIsEditingArrivalTime(false)
-    }
-
-  }
-
   // states for modal
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);
@@ -157,6 +137,7 @@ export default function MyRides() {
       setIsWarningModalOpen(true);
       setWarningModalInfo({
         title: "Unsaved Changes",
+        message: "You have unsaved changes. Do you want to discard them?",
         buttonText: "Discard Changes",
       });
     } else {
@@ -175,15 +156,16 @@ export default function MyRides() {
     setModalRejectedRiders([]);
     setIsEditingCapacity(false);
     setNewCapacity(null);
-    setIsEditingArrivalTime(false);
     setNewArrivalDate(null);
     setNewArrivalTime(null);
+    setIsEditingArrivalTime(false);
   };
 
   const handleCloseWarningModal = () => {
     setIsWarningModalOpen(false);
     setWarningModalInfo({
       title: "",
+      message: "",
       buttonText: "",
     });
     setDeleteRideMessage("");
@@ -193,6 +175,7 @@ export default function MyRides() {
     setIsWarningModalOpen(true);
     setWarningModalInfo({
       title: "Delete this Rideshare?",
+      message: "Are you sure you want to delete this rideshare?",
       buttonText: "Delete Rideshare",
     });
   };
@@ -200,7 +183,7 @@ export default function MyRides() {
   const deleteRide = async (rideId) => {
     setIsSaving(true);
 
-      // Extract and format ride date
+    // Extract and format ride date
       const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
         "en-US",
         {
@@ -233,7 +216,11 @@ export default function MyRides() {
         console.error("Request failed:", response.status);
       }
       closeModal();
-      handleShowPopupMessage(responseData.success, responseData.message);
+      handleShowPopupMessage(
+        setPopupMessageInfo,
+        responseData.success,
+        responseData.message
+      );
       await fetchMyRidesData();
     } catch (error) {
       console.error("Error during fetch:", error);
@@ -257,6 +244,23 @@ export default function MyRides() {
 
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
+    // Check time is not in the past
+    const now = new Date();
+    const arrival_time_string = `${newArrivalDate.format(
+      "YYYY-MM-DD"
+    )}T${newArrivalTime.format("HH:mm:ss")}`;
+    const arrival_time_iso = new Date(arrival_time_string);
+
+    if (now.getTime() >= arrival_time_iso.getTime()) {
+      setWarningModalInfo({
+        title: "Invalid Input",
+        message: "Cannot enter a date in the past.",
+        buttonText: "Okay",
+      });
+      setIsWarningModalOpen(true);
+      return;
+    }
+
     setIsSaving(true);
     // POST for any states that were changed
     let accepting_riders = [];
@@ -309,26 +313,30 @@ export default function MyRides() {
       console.log(new_arrival_time_iso);
 
       // Parse arrival time for sending email purposes
-      const new_arrival_time = dayjs
-      .tz(`${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format("HH:mm:ss")}`, "America/New_York");
-      
-      const formatted_arrival_time = new_arrival_time
-      .tz("America/New_York")
-      .format("MMMM D, YYYY, h:mm A");
+      const new_arrival_time = dayjs.tz(
+        `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
+          "HH:mm:ss"
+        )}`,
+        "America/New_York"
+      );
 
-      var changedTime = false
+      const formatted_arrival_time = new_arrival_time
+        .tz("America/New_York")
+        .format("MMMM D, YYYY, h:mm A");
+
+      var changedTime = false;
       const mess = `Your Rideshare from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
       has changed arrrival time to ${formatted_arrival_time}.`;
       const subj = "🚗 A Rideshare you're in has changed arrival time!";
       if (
-          !dayjs(newArrivalDate).isSame(
-            dayjs(selectedRide.arrival_time),
-            "day"
-          ) ||
-          !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
-        ) {
-          changedTime = true
-        }
+        !dayjs(newArrivalDate).isSame(
+          dayjs(selectedRide.arrival_time),
+          "day"
+        ) ||
+        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
+      ) {
+        changedTime = true;
+      }
 
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
@@ -354,7 +362,11 @@ export default function MyRides() {
 
       closeModal();
       console.log(responseData);
-      handleShowPopupMessage(responseData.success, responseData.message);
+      handleShowPopupMessage(
+        setPopupMessageInfo,
+        responseData.success,
+        responseData.message
+      );
       await fetchMyRidesData();
 
       if (!response.ok) {
@@ -374,6 +386,7 @@ export default function MyRides() {
     ) {
       setWarningModalInfo({
         title: "Capacity Full",
+        message: `The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum ${MAX_CAPACITY}).`,
         buttonText: "Okay",
       });
       setIsWarningModalOpen(true);
@@ -429,7 +442,11 @@ export default function MyRides() {
         }),
       });
       const responseData = await response.json();
-      handleShowPopupMessage(responseData.success, responseData.message);
+      handleShowPopupMessage(
+        setPopupMessageInfo,
+        responseData.success,
+        responseData.message
+      );
       await fetchMyRidesData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -475,53 +492,7 @@ export default function MyRides() {
             secondaryButtonStatus={ride.request_status}
           >
             <div>
-              <div className="flex flex-col gap-2">
-                <p className="text-xl flex items-center justify-center gap-2">
-                  <span className="flex text-center flex-col">
-                    <strong>{ride.origin["name"]}</strong>
-                    <span className="text-sm">
-                      {ride.origin["address"].split(" ").slice(0, -2).join(" ")}
-                    </span>
-                  </span>
-                  →
-                  <span className="flex text-center flex-col">
-                    <strong>{ride.destination["name"]}</strong>
-                    <span className="text-sm">
-                      {ride.destination["address"]
-                        .split(" ")
-                        .slice(0, -2)
-                        .join(" ")}
-                    </span>
-                  </span>
-                </p>
-                <p className="text-center">
-                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    Arrives by {getFormattedDate(new Date(ride.arrival_time))}
-                  </span>
-                </p>
-              </div>
-              <hr className="border-1 my-3 border-theme_medium_1" />
-              <p>
-                <span className="font-semibold">Posted by:</span>{" "}
-                <span>{ride.admin_name}</span>{" "}
-                <CopyEmailButton
-                  copy={[ride.admin_email]}
-                  text="Copy Email"
-                  className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle"
-                />
-              </p>
-              <p>
-                <span className="font-semibold">Seats Taken:</span>{" "}
-                {ride.current_riders.length}/{ride.max_capacity}
-              </p>
-              {ride.note && (
-                <div className="mb-0.5">
-                  <span className="font-semibold">Note:</span>
-                  <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                    <p className="break-words">{ride.note}</p>
-                  </div>
-                </div>
-              )}
+              {renderRideCardInfo(ride)}
               {viewType === "posted" && (
                 <div>
                   <p>
@@ -606,9 +577,9 @@ export default function MyRides() {
         <Button
           className={`${
             viewType == "posted"
-              ? "bg-theme_dark_1 font-medium"
-              : "bg-theme_medium_1"
-          } text-white px-4 py-2 hover:bg-theme_dark_1`}
+              ? `!bg-theme_dark_1 !font-medium ${bigButtonStyling1}`
+              : bigButtonStyling1
+          }`}
           onClick={() => setViewType("posted")}
         >
           My Posted Rideshares
@@ -616,9 +587,9 @@ export default function MyRides() {
         <Button
           className={`${
             viewType == "requested"
-              ? "bg-theme_dark_1 font-medium"
-              : "bg-theme_medium_1"
-          } text-white px-4 py-2 hover:bg-theme_dark_1`}
+              ? `!bg-theme_dark_1 !font-medium ${bigButtonStyling1}`
+              : bigButtonStyling1
+          }`}
           onClick={() => setViewType("requested")}
         >
           My Requested Rideshares
@@ -650,13 +621,7 @@ export default function MyRides() {
           title={warningModalInfo.title}
         >
           <div className="flex flex-col gap-3">
-            <p>
-              {warningModalInfo.title === "Unsaved Changes"
-                ? "You have unsaved changes. Do you want to discard them?"
-                : warningModalInfo.title === "Delete this Rideshare?"
-                ? "Are you sure you want to delete this rideshare?"
-                : `The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum ${MAX_CAPACITY}).`}
-            </p>
+            <p>{warningModalInfo.message}</p>
             {warningModalInfo.title === "Delete this Rideshare?" &&
               selectedRide.current_riders.length != 0 && (
                 <div className="flex flex-col gap-4">
@@ -673,17 +638,19 @@ export default function MyRides() {
                 </div>
               )}
             <div className="flex items-center self-end gap-2">
-              {warningModalInfo.title !== "Capacity Full" && (
-                <Button
-                  className="border-[1px] border-gray-300 text-zinc-500 hover:bg-zinc-100"
-                  onClick={handleCloseWarningModal}
-                >
-                  Cancel
-                </Button>
-              )}
+              {warningModalInfo.title !== "Capacity Full" &&
+                warningModalInfo.title !== "Invalid Input" && (
+                  <Button
+                    className="border-[1px] border-gray-300 text-zinc-500 hover:bg-zinc-100"
+                    onClick={handleCloseWarningModal}
+                  >
+                    Cancel
+                  </Button>
+                )}
               <Button
                 className={`${
-                  warningModalInfo.title !== "Capacity Full"
+                  warningModalInfo.title !== "Capacity Full" &&
+                  warningModalInfo.title !== "Invalid Input"
                     ? "bg-red-400 text-white hover:bg-red-500"
                     : "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
                 }`}
@@ -725,27 +692,7 @@ export default function MyRides() {
                 coordinating logistics to meet up.
               </span>
             </p>
-            <p className="text-xl flex items-center justify-center gap-2 my-1">
-              <span className="flex text-center flex-col">
-                <strong>{selectedRide.origin["name"]}</strong>
-                <span className="text-sm">
-                  {selectedRide.origin["address"]
-                    .split(" ")
-                    .slice(0, -2)
-                    .join(" ")}
-                </span>
-              </span>
-              →
-              <span className="flex text-center flex-col">
-                <strong>{selectedRide.destination["name"]}</strong>
-                <span className="text-sm">
-                  {selectedRide.destination["address"]
-                    .split(" ")
-                    .slice(0, -2)
-                    .join(" ")}
-                </span>
-              </span>
-            </p>
+            <div className="my-1">{renderToAndFrom(selectedRide)}</div>
             <div className="flex items-center gap-1">
               <div className="grid grid-cols-1 md:flex items-center gap-1">
                 <p>
@@ -760,7 +707,7 @@ export default function MyRides() {
                     allowClear={false}
                   />
                 ) : (
-                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                  <span className="px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
                     {getFormattedDate(new Date(selectedRide.arrival_time))}
                   </span>
                 )}
@@ -818,14 +765,7 @@ export default function MyRides() {
                 {isEditingCapacity ? "Cancel" : "Edit capacity"}
               </Button>
             </div>
-            {selectedRide.note && (
-              <div className="mb-0.5">
-                <span className="font-semibold">Note:</span>
-                <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                  <p className="break-words">{selectedRide.note}</p>
-                </div>
-              </div>
-            )}
+            {renderRideNote(selectedRide)}
             <p>
               <span className="font-semibold">Current Riders:</span>
             </p>
