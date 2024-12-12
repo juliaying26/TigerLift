@@ -17,3 +17,16 @@ export const inputStyling =
 
 export const autocompleteStyling =
   "w-full md:max-w-full min-w-[100px] px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal hover:outline-theme_medium_1";
+
+export const capitalizeFirstLetter = (val) => {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+};
+
+export const handleShowPopupMessage = (
+  setPopupMessageInfo,
+  status,
+  message
+) => {
+  setPopupMessageInfo({ status: status, message: message });
+  setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
+};
