@@ -389,7 +389,7 @@ def batchupdateriderequest():
 
         # for time only
         time_subject =  "🚗 The Arrival Time of your Rideshare has been changed!"
-        time_message = "Your Rideshare from " + origin_name + " to " + destination_name + "has changed arrival time to " + formatted_arrival_time + ".\n"  
+        time_message = "Your Rideshare from " + origin_name + " to " + destination_name + " has changed arrival time to " + formatted_arrival_time + ".\n"  
 
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
