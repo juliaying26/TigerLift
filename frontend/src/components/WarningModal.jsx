@@ -1,7 +1,3 @@
-import React from "react";
-import Button from "./Button";
-import IconButton from "./IconButton";
-
 export default function WarningModal({ isOpen, title, children }) {
   if (!isOpen) return null; // means modal not open
 

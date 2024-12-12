@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 export default function PopUpMessage({ status, message, duration = 1500 }) {
   const [isVisible, setIsVisible] = useState(false);
