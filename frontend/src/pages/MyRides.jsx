@@ -612,8 +612,7 @@ export default function MyRides() {
                 <div className="flex flex-col gap-4 pb-5">
                   <p>
                     Please give a reason for deleting this rideshare. The riders
-                    you have currently accepted will be notified that this
-                    rideshare was deleted.
+                    you have currently accepted will be notified.
                   </p>
                   <CustomTextArea
                     placeholder={"List reason here."}
