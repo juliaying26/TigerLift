@@ -13,7 +13,12 @@ import CustomTextArea from "../components/TextArea";
 import CopyEmailButton from "../components/CopyEmailButton";
 import PopUpMessage from "../components/PopUpMessage";
 import LoadingIcon from "../components/LoadingIcon";
-import { getFormattedDate, MAX_CAPACITY } from "../utils/utils";
+import {
+  getFormattedDate,
+  MAX_CAPACITY,
+  capitalizeFirstLetter,
+  handleShowPopupMessage,
+} from "../utils/utils";
 
 // For parsing date
 import utc from "dayjs/plugin/utc";
@@ -22,7 +27,6 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export default function MyRides() {
-  // myRidesData = array of dictionaries
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -42,6 +46,7 @@ export default function MyRides() {
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
   const [warningModalInfo, setWarningModalInfo] = useState({
     title: "",
+    message: "",
     buttonText: "",
   });
   const [deleteRideMessage, setDeleteRideMessage] = useState("");
@@ -50,10 +55,6 @@ export default function MyRides() {
     status: "",
     message: "",
   });
-
-  const [showValidationModal, setShowValidationModal] = useState(false);
-  const [validationModalMessage, setValidationModalMessage] = useState("");
-  const [validationModalTitle, setValidationModalTitle] = useState("");
 
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
@@ -68,15 +69,6 @@ export default function MyRides() {
 
   const [cancelRequestRideId, setCancelRequestRideId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  const capitalizeFirstLetter = (val) => {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-  };
-
-  const handleShowPopupMessage = (status, message) => {
-    setPopupMessageInfo({ status: status, message: message });
-    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
-  };
 
   const fetchMyRidesData = async () => {
     const endpoint = "/api/myrides";
@@ -128,26 +120,6 @@ export default function MyRides() {
     }
   }, [selectedRide]);
 
-  // const checkAndSetEditArrivalTime = () => {
-
-  //   const now = new Date();
-
-
-  //   const arrival_time_string = `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
-  //     "HH:mm:ss"
-  //   )}`;
-
-  //   const arrival_time_iso = new Date(arrival_time_string);
-
-  //   if (now.getTime() >= arrival_time_iso.getTime()) {
-  //     handleShowPopupMessage("error", "Date cannot be in the past.");
-  //   }
-  //   else {
-  //     setIsEditingArrivalTime(false)
-  //   }
-
-  // }
-
   // states for modal
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);
@@ -161,6 +133,7 @@ export default function MyRides() {
       setIsWarningModalOpen(true);
       setWarningModalInfo({
         title: "Unsaved Changes",
+        message: "You have unsaved changes. Do you want to discard them?",
         buttonText: "Discard Changes",
       });
     } else {
@@ -179,15 +152,16 @@ export default function MyRides() {
     setModalRejectedRiders([]);
     setIsEditingCapacity(false);
     setNewCapacity(null);
-    setIsEditingArrivalTime(false);
     setNewArrivalDate(null);
     setNewArrivalTime(null);
+    setIsEditingArrivalTime(false);
   };
 
   const handleCloseWarningModal = () => {
     setIsWarningModalOpen(false);
     setWarningModalInfo({
       title: "",
+      message: "",
       buttonText: "",
     });
     setDeleteRideMessage("");
@@ -197,6 +171,7 @@ export default function MyRides() {
     setIsWarningModalOpen(true);
     setWarningModalInfo({
       title: "Delete this Rideshare?",
+      message: "Are you sure you want to delete this rideshare?",
       buttonText: "Delete Rideshare",
     });
   };
@@ -204,25 +179,24 @@ export default function MyRides() {
   const deleteRide = async (rideId) => {
     setIsSaving(true);
 
-      // Extract and format ride date
-      const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
-        "en-US",
-        {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          hour12: true,
-        }
-      );
+    // Extract and format ride date
+    const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
+      "en-US",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      }
+    );
 
-      // Email notification details
-      const subj = "🚗 Your Rideshare Has been Canceled ";
-      const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
-        deleteRideMessage || "No reason provided."
-      }\n`;
-
+    // Email notification details
+    const subj = "🚗 Your Rideshare Has been Canceled ";
+    const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
+      deleteRideMessage || "No reason provided."
+    }\n`;
 
     try {
       const response = await fetch("/api/deleteride", {
@@ -234,7 +208,7 @@ export default function MyRides() {
           rideid: rideId,
           subject: subj,
           message: mess,
-          current_riders: selectedRide.current_riders
+          current_riders: selectedRide.current_riders,
         }),
       });
 
@@ -244,7 +218,11 @@ export default function MyRides() {
         console.error("Request failed:", response.status);
       }
       closeModal();
-      handleShowPopupMessage(responseData.success, responseData.message);
+      handleShowPopupMessage(
+        setPopupMessageInfo,
+        responseData.success,
+        responseData.message
+      );
       await fetchMyRidesData();
     } catch (error) {
       console.error("Error during fetch:", error);
@@ -268,25 +246,21 @@ export default function MyRides() {
 
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
-  
     // Check time is not in the past
     const now = new Date();
-    const arrival_time_string = `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
-      "HH:mm:ss"
-    )}`;
+    const arrival_time_string = `${newArrivalDate.format(
+      "YYYY-MM-DD"
+    )}T${newArrivalTime.format("HH:mm:ss")}`;
     const arrival_time_iso = new Date(arrival_time_string);
 
     if (now.getTime() >= arrival_time_iso.getTime()) {
-      setShowValidationModal(true)
-      setValidationModalTitle("Invalid input");
-      setValidationModalMessage("Cannot enter a date in the past.")
-
-      console.log("IN SAVE RIDE, TIME IN PAST")
-
-      return
-    }
-    else {
-      setIsEditingArrivalTime(false)
+      setWarningModalInfo({
+        title: "Invalid Input",
+        message: "Cannot enter a date in the past.",
+        buttonText: "Okay",
+      });
+      setIsWarningModalOpen(true);
+      return;
     }
 
     setIsSaving(true);
@@ -294,7 +268,6 @@ export default function MyRides() {
     let accepting_riders = [];
     let rejecting_riders = [];
     let pending_riders = [];
-
 
     modalCurrentRiders.forEach(([requester_id, fullName, mail]) => {
       const rider = {
@@ -342,26 +315,30 @@ export default function MyRides() {
       console.log(new_arrival_time_iso);
 
       // Parse arrival time for sending email purposes
-      const new_arrival_time = dayjs
-      .tz(`${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format("HH:mm:ss")}`, "America/New_York");
-      
-      const formatted_arrival_time = new_arrival_time
-      .tz("America/New_York")
-      .format("MMMM D, YYYY, h:mm A");
+      const new_arrival_time = dayjs.tz(
+        `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
+          "HH:mm:ss"
+        )}`,
+        "America/New_York"
+      );
 
-      var changedTime = false
+      const formatted_arrival_time = new_arrival_time
+        .tz("America/New_York")
+        .format("MMMM D, YYYY, h:mm A");
+
+      var changedTime = false;
       const mess = `Your Rideshare from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
       has changed arrrival time to ${formatted_arrival_time}.`;
       const subj = "🚗 A Rideshare you're in has changed arrival time!";
       if (
-          !dayjs(newArrivalDate).isSame(
-            dayjs(selectedRide.arrival_time),
-            "day"
-          ) ||
-          !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
-        ) {
-          changedTime = true
-        }
+        !dayjs(newArrivalDate).isSame(
+          dayjs(selectedRide.arrival_time),
+          "day"
+        ) ||
+        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
+      ) {
+        changedTime = true;
+      }
 
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
@@ -387,7 +364,11 @@ export default function MyRides() {
 
       closeModal();
       console.log(responseData);
-      handleShowPopupMessage(responseData.success, responseData.message);
+      handleShowPopupMessage(
+        setPopupMessageInfo,
+        responseData.success,
+        responseData.message
+      );
       await fetchMyRidesData();
 
       if (!response.ok) {
@@ -407,6 +388,7 @@ export default function MyRides() {
     ) {
       setWarningModalInfo({
         title: "Capacity Full",
+        message: `The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum ${MAX_CAPACITY}).`,
         buttonText: "Okay",
       });
       setIsWarningModalOpen(true);
@@ -462,7 +444,11 @@ export default function MyRides() {
         }),
       });
       const responseData = await response.json();
-      handleShowPopupMessage(responseData.success, responseData.message);
+      handleShowPopupMessage(
+        setPopupMessageInfo,
+        responseData.success,
+        responseData.message
+      );
       await fetchMyRidesData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -683,13 +669,7 @@ export default function MyRides() {
           title={warningModalInfo.title}
         >
           <div className="flex flex-col gap-3">
-            <p>
-              {warningModalInfo.title === "Unsaved Changes"
-                ? "You have unsaved changes. Do you want to discard them?"
-                : warningModalInfo.title === "Delete this Rideshare?"
-                ? "Are you sure you want to delete this rideshare?"
-                : `The capacity for this rideshare is full. Please remove a rider before accepting another, or increase the capacity of the rideshare (maximum ${MAX_CAPACITY}).`}
-            </p>
+            <p>{warningModalInfo.message}</p>
             {warningModalInfo.title === "Delete this Rideshare?" &&
               selectedRide.current_riders.length != 0 && (
                 <div className="flex flex-col gap-4">
@@ -706,17 +686,19 @@ export default function MyRides() {
                 </div>
               )}
             <div className="flex items-center self-end gap-2">
-              {warningModalInfo.title !== "Capacity Full" && (
-                <Button
-                  className="border-[1px] border-gray-300 text-zinc-500 hover:bg-zinc-100"
-                  onClick={handleCloseWarningModal}
-                >
-                  Cancel
-                </Button>
-              )}
+              {warningModalInfo.title !== "Capacity Full" &&
+                warningModalInfo.title !== "Invalid Input" && (
+                  <Button
+                    className="border-[1px] border-gray-300 text-zinc-500 hover:bg-zinc-100"
+                    onClick={handleCloseWarningModal}
+                  >
+                    Cancel
+                  </Button>
+                )}
               <Button
                 className={`${
-                  warningModalInfo.title !== "Capacity Full"
+                  warningModalInfo.title !== "Capacity Full" &&
+                  warningModalInfo.title !== "Invalid Input"
                     ? "bg-red-400 text-white hover:bg-red-500"
                     : "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
                 }`}
@@ -959,26 +941,6 @@ export default function MyRides() {
           </div>
         </Modal>
       )}
-
-      {showValidationModal && (
-              <WarningModal
-                isOpen={showValidationModal}
-                onClose={() => setShowValidationModal(false)}
-                title={validationModalTitle}
-              >
-                <div className="flex flex-col gap-3">
-                  <p>{validationModalMessage}</p>
-                  <div className="flex self-end">
-                    <Button
-                      onClick={() => setShowValidationModal(false)}
-                      className="bg-theme_medium_1 text-white hover:bg-theme_dark_1"
-                    >
-                      Okay
-                    </Button>
-                  </div>
-                </div>
-              </WarningModal>
-            )}
     </div>
   );
 }

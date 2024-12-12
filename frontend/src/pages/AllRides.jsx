@@ -13,11 +13,12 @@ import Autocomplete from "react-google-autocomplete";
 import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import CustomTextArea from "../components/TextArea.jsx";
 import WarningModal from "../components/WarningModal.jsx";
-
 import {
   getFormattedDate,
   MAX_CAPACITY,
   autocompleteStyling,
+  capitalizeFirstLetter,
+  handleShowPopupMessage,
 } from "../utils/utils.js";
 
 export default function AllRides() {
@@ -43,11 +44,10 @@ export default function AllRides() {
   const [validationModalMessage, setValidationModalMessage] = useState("");
   const [validationModalTitle, setValidationModalTitle] = useState("");
 
-
-  const [capacity, setCapacity] = useState("");
   const originRef = useRef(null);
   const destinationRef = useRef(null);
   const [origin, setOrigin] = useState(null);
+  const [capacity, setCapacity] = useState("");
   const [dest, setDest] = useState(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -62,6 +62,7 @@ export default function AllRides() {
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
+  const [inSearch, setInSearch] = useState(false);
 
   const autocompleteOptions = {
     // componentRestrictions: { country: "us" },
@@ -69,36 +70,23 @@ export default function AllRides() {
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
 
-  const [inSearch, setInSearch] = useState(false);
-
-  const [locations, setLocations] = useState([]); // delete this later
-
   const capacity_options = [];
-
-  const capitalizeFirstLetter = (val) => {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-  };
 
   for (let i = 1; i < MAX_CAPACITY + 1; i++) {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
 
-  const handleShowPopupMessage = (status, message) => {
-    setPopupMessageInfo({ status: status, message: message });
-    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
-  };
-
   const flipCreateRideFields = () => {
     const tempOrigin = origin;
 
     setOrigin(dest);
     setDest(tempOrigin);
-    
-    console.log("origin state = ", origin)
-    console.log("destd state = ", dest)
-    console.log("origin ref = ", originRef.current.value)
-    console.log("destd ref= ", destinationRef.current.value)
+
+    console.log("origin state = ", origin);
+    console.log("destd state = ", dest);
+    console.log("origin ref = ", originRef.current.value);
+    console.log("destd ref= ", destinationRef.current.value);
 
     if (originRef.current && destinationRef.current) {
       const tempOriginValue = originRef.current.value;
@@ -221,15 +209,6 @@ export default function AllRides() {
     const parsedDate = dayjs(date);
     const parsedTime = dayjs(time);
 
-    if (!parsedDate.isValid() || !parsedTime.isValid()) {
-      console.error("Invalid date or time provided:", date, time);
-      setShowValidationModal(true); // Show validation error
-      setValidationModalTitle("Missing fields");
-      setValidationModalMessage("You must provide all fields to create a ride.")
-
-      return;
-    }
-
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -237,11 +216,12 @@ export default function AllRides() {
     const arrival_time_iso = new Date(arrival_time_string);
 
     if (time === "" || now.getTime() >= arrival_time_iso.getTime()) {
+      setValidationModalTitle("Invalid Input");
+      setValidationModalMessage("Cannot enter a date in the past.");
       setShowValidationModal(true); // Show the validation modal
-      setValidationModalTitle("Invalid input");
-      setValidationModalMessage("Cannot enter a date in the past.")
       return;
     }
+
     if (
       !capacity ||
       !origin ||
@@ -251,12 +231,15 @@ export default function AllRides() {
       capacity === "" ||
       origin === "" ||
       dest === "" ||
-      date === ""
+      date === "" ||
+      !parsedDate.isValid() ||
+      !parsedTime.isValid()
     ) {
-      console.log("SHOWING");
-      setShowValidationModal(true); // Show the validation modal
       setValidationModalTitle("Missing fields");
-      setValidationModalMessage("You must provide all fields to create a ride.")
+      setValidationModalMessage(
+        "You must provide all fields to create a ride."
+      );
+      setShowValidationModal(true); // Show the validation modal
       return;
     } else {
       createRide();
@@ -287,7 +270,11 @@ export default function AllRides() {
       handleCloseRideModal();
       resetSearch();
       setInSearch(false);
-      handleShowPopupMessage(responseData.success, responseData.message);
+      handleShowPopupMessage(
+        setPopupMessageInfo,
+        responseData.success,
+        responseData.message
+      );
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -300,8 +287,8 @@ export default function AllRides() {
   };
 
   const handleOpenRideModal = async () => {
-    console.log("origin state = ", origin)
-    console.log("destd state = ", dest)
+    console.log("origin state = ", origin);
+    console.log("destd state = ", dest);
     setCreateRideModal(true);
   };
 
@@ -314,7 +301,7 @@ export default function AllRides() {
     setTime("");
     setRideNote("");
     originRef.current = null;
-    destinationRef.current = null
+    destinationRef.current = null;
   };
 
   const fetchDashboardData = async () => {
