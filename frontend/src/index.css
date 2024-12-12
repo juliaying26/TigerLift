@@ -46,6 +46,18 @@ h1 {
   line-height: 1.1;
 }
 
+.pac-target-input#searchOrigin,
+.pac-target-input#searchDest {
+  width: 300px !important;
+}
+
+@media (max-width: 1248px) {
+  .pac-target-input#searchOrigin,
+  .pac-target-input#searchDest {
+    width: 100% !important; /* Adjust for smaller screens */
+  }
+}
+
 .pac-container {
   border-radius: 6px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
@@ -61,4 +73,12 @@ h1 {
 ::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.5); /* Thumb (scroll indicator) color */
   border-radius: 4px; /* Rounded corners */
+}
+
+.notification-panel {
+  height: 400px;
+}
+
+.notification-panel-mobile {
+  height: var(--dynamic-height);
 }

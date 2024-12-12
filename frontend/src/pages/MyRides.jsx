@@ -202,20 +202,8 @@ export default function MyRides() {
   };
 
   const deleteRide = async (rideId) => {
-    try {
-      const response = await fetch("/api/deleteride", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          rideid: rideId,
-        }),
-      });
+    setIsSaving(true);
 
-      const responseData = await response.json();
-
-      // Email all riders whose ride was cancelled
       // Extract and format ride date
       const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
         "en-US",
@@ -233,36 +221,25 @@ export default function MyRides() {
       const subj = "🚗 Your Rideshare Has been Canceled ";
       const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
         deleteRideMessage || "No reason provided."
-      }`;
+      }\n`;
 
-      for (const rider of selectedRide.current_riders) {
-        try {
-          const response_email = await fetch("/api/notify", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              full_name: rider[1],
-              netid: rider[0],
-              mail: rider[2],
-              subject: subj,
-              message: mess,
-            }),
-          });
-          if (!response_email.ok) {
-            console.error(
-              `Failed to send email notification to ${rider[0]}:`,
-              response_email.statusText
-            );
-          }
-        } catch (error) {
-          console.error(
-            `Error sending email notification to ${rider[0]}:`,
-            error
-          );
-        }
-      }
+
+    try {
+      const response = await fetch("/api/deleteride", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rideid: rideId,
+          subject: subj,
+          message: mess,
+          current_riders: selectedRide.current_riders
+        }),
+      });
+
+      const responseData = await response.json();
+
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -272,6 +249,8 @@ export default function MyRides() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+
+    setIsSaving(false);
   };
 
   const hasRideChanges = () => {
@@ -363,9 +342,26 @@ export default function MyRides() {
       console.log(new_arrival_time_iso);
 
       // Parse arrival time for sending email purposes
-      const formatted_arrival_time = dayjs(newArrivalDate)
-        .tz("America/New_York") // Convert to EST
-        .format("MMMM D, YYYY, h:mm A");
+      const new_arrival_time = dayjs
+      .tz(`${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format("HH:mm:ss")}`, "America/New_York");
+      
+      const formatted_arrival_time = new_arrival_time
+      .tz("America/New_York")
+      .format("MMMM D, YYYY, h:mm A");
+
+      var changedTime = false
+      const mess = `Your Rideshare from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
+      has changed arrrival time to ${formatted_arrival_time}.`;
+      const subj = "🚗 A Rideshare you're in has changed arrival time!";
+      if (
+          !dayjs(newArrivalDate).isSame(
+            dayjs(selectedRide.arrival_time),
+            "day"
+          ) ||
+          !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
+        ) {
+          changedTime = true
+        }
 
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
@@ -382,55 +378,12 @@ export default function MyRides() {
           formatted_arrival_time: formatted_arrival_time,
           origin_name: selectedRide.origin["name"],
           destination_name: selectedRide.destination["name"],
+          changedTime: changedTime,
+          time_subject: subj,
+          time_message: mess,
         }),
       });
       const responseData = await response.json();
-
-      if (
-        !dayjs(newArrivalDate).isSame(
-          dayjs(selectedRide.arrival_time),
-          "day"
-        ) ||
-        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
-      ) {
-        try {
-          const subj = "🚗 A rideshare you're in has changed arrival time!";
-          const mess = `Your ride from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
-          has changed arrrival time to ${formatted_arrival_time}.`;
-
-          for (const rider of accepting_riders) {
-            try {
-              const response_1 = await fetch("/api/notify", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  full_name: rider.full_name,
-                  netid: rider.requester_id,
-                  mail: rider.mail,
-                  subject: subj,
-                  message: mess,
-                }),
-              });
-
-              if (!response_1.ok) {
-                console.error(
-                  `Failed to send email notification to ${rider.requester_id}:`,
-                  response_1.statusText
-                );
-              }
-            } catch (error) {
-              console.error(
-                `Error sending email notification to ${rider.requester_id}:`,
-                error
-              );
-            }
-          }
-        } catch (error) {
-          console.error("Error during fetch notify:", error);
-        }
-      }
 
       closeModal();
       console.log(responseData);
@@ -545,7 +498,7 @@ export default function MyRides() {
                 ? "cursor-auto"
                 : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
             }`}
-            buttonDisabled={ride.id === cancelRequestRideId}
+            buttonLoading={ride.id === cancelRequestRideId}
             secondaryButtonText={
               viewType === "requested" &&
               "Status: " + capitalizeFirstLetter(ride.request_status)
@@ -774,6 +727,10 @@ export default function MyRides() {
                     ? () => deleteRide(selectedRide.id)
                     : handleCloseWarningModal
                 }
+                loading={isSaving}
+                disabled={
+                  selectedRide.current_riders.length != 0 && !deleteRideMessage
+                }
               >
                 {warningModalInfo.buttonText}
               </Button>
@@ -994,7 +951,7 @@ export default function MyRides() {
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
                 className="hover:bg-theme_light_1 bg-theme_medium_1 text-white hover:text-theme_dark_1"
-                disabled={isSaving}
+                loading={isSaving}
               >
                 Save
               </Button>
