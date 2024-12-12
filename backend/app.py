@@ -214,9 +214,9 @@ def addride():
 
     try:
         database.create_ride(user_info['netid'], user_info['displayname'], user_info['mail'], capacity, origin_json, dest_json, arrival_time, note)
-        return jsonify({'success': True, 'message': 'Ride successfully created!'})
+        return jsonify({'success': True, 'message': 'Rideshare successfully created!'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to create ride.'}), 400
+        return jsonify({'success': False, 'message': 'Failed to create rideshare.'}), 400
 
 @app.route("/api/deleteride", methods=["POST"])
 def deleteride():
@@ -229,7 +229,7 @@ def deleteride():
        database.delete_ride(str(user_info['netid']), rideid)     
        print("RIDE DELETED") 
     except:
-        return jsonify({'success': False, 'message': 'Failed to delete ride.'}), 400
+        return jsonify({'success': False, 'message': 'Failed to delete rideshare.'}), 400
 
     try:
         subject = "🚗 Your Rideshare has been canceled."
@@ -250,7 +250,7 @@ def deleteride():
             send_email_notification(netid, mail, subject, message)
 
         print("DELETE EMAIL SENT")
-        return jsonify({'success': True, 'message': 'Ride successfully deleted and email sent.'})
+        return jsonify({'success': True, 'message': 'Rideshare successfully deleted and any current rider notified.'})
 
     except:
         return jsonify({'success': False, 'message': 'Failed to email rider(s).'}), 400
@@ -263,7 +263,7 @@ def cancelriderequest():
     rideid = data.get('rideid')
     try:
         database.delete_ride_request(str(user_info['netid']), rideid)
-        return jsonify({'success': True, 'message': 'Ride request canceled.'})
+        return jsonify({'success': True, 'message': 'Rideshare request canceled.'})
     except:
         return jsonify({'success': False, 'message': 'Failed to cancel ride request.'}), 400
 
@@ -430,9 +430,9 @@ def batchupdateriderequest():
             print("CHANGED TIMEEEE!!!")
             database.update_arrival_time(rideid, new_arrival_time)
 
-        return jsonify({'success': True, 'message': 'Ride successfully updated!'})
+        return jsonify({'success': True, 'message': 'Rideshare successfully updated!'})
     except:
-        return jsonify({'success': False, 'message': 'Failed to update ride.'}), 400
+        return jsonify({'success': False, 'message': 'Failed to update rideshare.'}), 400
 
 @app.route("/api/notifications", methods=["GET"])
 def notifications():
