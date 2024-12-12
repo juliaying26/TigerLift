@@ -250,7 +250,7 @@ def deleteride():
             send_email_notification(netid, mail, subject, message)
 
         print("DELETE EMAIL SENT")
-        return jsonify({'success': True, 'message': 'Rideshare successfully deleted and any current rider notified.'})
+        return jsonify({'success': True, 'message': 'Rideshare successfully deleted.'})
 
     except:
         return jsonify({'success': False, 'message': 'Failed to email rider(s).'}), 400
