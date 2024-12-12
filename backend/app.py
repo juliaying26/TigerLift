@@ -435,78 +435,6 @@ def batchupdateriderequest():
         return jsonify({'success': True, 'message': 'Ride successfully updated!'})
     except:
         return jsonify({'success': False, 'message': 'Failed to update ride.'}), 400
-    
-@app.route("/api/notify", methods=["POST"])
-def notify():
-    """
-    Sends email notifications
-    """
-
-    user_info = _cas.authenticate()
-    if not app.EMAILS_ON:
-        return jsonify({'success': True, 'message': 'EMAIL_ON set to False!'})
-
-    print("EMAIL NOTIF!!")
-
-    try:
-        data = request.get_json()        
-        netid = data.get('netid')
-        mail = data.get('mail')
-        subject = data.get('subject')
-        message = data.get('message')
-        return send_email_notification(netid, mail, subject, message)
-    except Exception as e:
-         return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
-
-def send_email_notification(netid, mail, subject, message):
-    print("EMAIL NOTIF!!")
-    """
-    Sends email notifications
-    """
-
-    user_info = _cas.authenticate()
-
-    if not app.EMAILS_ON:
-        return jsonify({'success': True, 'message': 'EMAILS_ON set to False'})
-
-    try:
-        # if mail is empty for some reason, use netid @ princeton.edu
-        if not mail:
-            mail = netid + "@princeton.edu"
-
-        from_email = os.environ.get('EMAIL_ADDRESS')
-        from_password = os.environ.get('EMAIL_PASSWORD')
-
-        # Add this message to notifications table
-        try:
-            database.add_notification(netid, subject, message)
-        except Exception as e:
-            print(f"Error adding to notifications table: {e}")
-
-        # Set up the email
-        msg = MIMEMultipart()
-        msg['From'] = from_email
-        msg['To'] = mail
-        msg['Subject'] = subject
-        # Attach the message
-        message = message + " Please see details on tigerlift.onrender.com"
-        msg.attach(MIMEText(message, 'plain'))
-
-        try:
-            # Connect to the SMTP server and send the email
-            with smtplib.SMTP('smtp.gmail.com', 587) as server:
-                server.starttls()  # Secure the connection
-                server.login(from_email, from_password)
-                server.send_message(msg)
-            print(f"Email sent to {mail} successfully!")
-            return jsonify({'success': True, 'message': 'Ride request created'})
-        except Exception as e:
-            print(f"Error sending email to {mail}: {e}")
-            return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
-
-    except Exception as e:
-         return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
-
 
 @app.route("/api/notifications", methods=["GET"])
 def notifications():
@@ -587,6 +515,55 @@ def mark_all_as_read():
 #         return jsonify({'success': True, 'message': 'Ride request back to pending'})
 #     except:
 #         return jsonify({'success': False, 'message': 'Failed to remove ride request'}), 400
+
+def send_email_notification(netid, mail, subject, message):
+    print("EMAIL NOTIF!!")
+    """
+    Sends email notifications
+    """
+
+    user_info = _cas.authenticate()
+
+    if not app.EMAILS_ON:
+        return jsonify({'success': True, 'message': 'EMAILS_ON set to False'})
+
+    try:
+        # if mail is empty for some reason, use netid @ princeton.edu
+        if not mail:
+            mail = netid + "@princeton.edu"
+
+        from_email = os.environ.get('EMAIL_ADDRESS')
+        from_password = os.environ.get('EMAIL_PASSWORD')
+
+        # Add this message to notifications table
+        try:
+            database.add_notification(netid, subject, message)
+        except Exception as e:
+            print(f"Error adding to notifications table: {e}")
+
+        # Set up the email
+        msg = MIMEMultipart()
+        msg['From'] = from_email
+        msg['To'] = mail
+        msg['Subject'] = subject
+        # Attach the message
+        message = message + " Please see details on tigerlift.onrender.com"
+        msg.attach(MIMEText(message, 'plain'))
+
+        try:
+            # Connect to the SMTP server and send the email
+            with smtplib.SMTP('smtp.gmail.com', 587) as server:
+                server.starttls()  # Secure the connection
+                server.login(from_email, from_password)
+                server.send_message(msg)
+            print(f"Email sent to {mail} successfully!")
+            return jsonify({'success': True, 'message': 'Ride request created'})
+        except Exception as e:
+            print(f"Error sending email to {mail}: {e}")
+            return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
+
+    except Exception as e:
+         return jsonify({'success': False, 'message': 'Failed to send emails'}), 400
 
 if __name__ == "__main__":
     if not app._got_first_request:
