@@ -144,8 +144,14 @@ export default function NotificationsModal({
           ></IconButton>
         </div>
         <div
-          className="p-4 overflow-y-auto md:h-[400px] w-full"
-          style={{ height: `${notifsHeight}px` }}
+          className={`p-4 overflow-y-auto md:h-[400px] w-full ${
+            window.innerWidth < 768
+              ? "notification-panel-mobile"
+              : "notification-panel"
+          }`}
+          style={{
+            "--dynamic-height": `${notifsHeight}px`,
+          }}
         >
           {isLoading ? (
             <LoadingIcon carColor="bg-theme_medium_2" />

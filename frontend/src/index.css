@@ -74,3 +74,11 @@ h1 {
   background-color: rgba(0, 0, 0, 0.5); /* Thumb (scroll indicator) color */
   border-radius: 4px; /* Rounded corners */
 }
+
+.notification-panel {
+  height: 400px;
+}
+
+.notification-panel-mobile {
+  height: var(--dynamic-height);
+}
