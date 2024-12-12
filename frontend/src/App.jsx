@@ -7,6 +7,7 @@ import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import tailwindConfig from "../tailwind.config.js";
 import LoadingIcon from "./components/LoadingIcon";
+import { bigButtonStyling2 } from "./utils/utils.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
