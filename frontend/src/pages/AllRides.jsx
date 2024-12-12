@@ -44,6 +44,7 @@ export default function AllRides() {
   const [capacity, setCapacity] = useState("");
   const originRef = useRef(null);
   const destinationRef = useRef(null);
+  //const isInitialRender = useRef(true);
   const [origin, setOrigin] = useState(null);
   const [dest, setDest] = useState(null);
   const [date, setDate] = useState("");
@@ -54,7 +55,9 @@ export default function AllRides() {
   const searchOriginRef = useRef(null);
   const searchDestinationRef = useRef(null);
   const [searchOrigin, setSearchOrigin] = useState(null);
+  const [hasPreviousSearchOrigin, setHasPreviousSearchOrigin] = useState(false);
   const [searchDest, setSearchDest] = useState(null);
+  const [hasPreviousSearchDest, setHasPreviousSearchDest] = useState(false);
   const [startSearchDate, setStartSearchDate] = useState();
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
@@ -119,13 +122,16 @@ export default function AllRides() {
   const searchRide = async () => {
     console.log("in search ride. search origin: ", searchOrigin);
 
+    // TODO: is this even necessary?
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
-      // TODO: REMOVES (in allrides) and change alert message to be accurate
-      alert(
-        "You must provide at least one of origin, destination, start date, or end date."
-      );
+      //alert(
+        //"You must provide at least one of origin, destination, start date, or end date."
+      //);
+      await fetchDashboardData();
       return;
     }
+
+    
     setLoading(true);
     try {
       console.log("test, am in dashboard searchride");
@@ -188,6 +194,15 @@ export default function AllRides() {
         }),
         ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
+
+      // TODO: below needed?
+      if (searchOrigin == undefined) {
+        setSearchOrigin(null);
+      }
+
+      // here search origin is not null
+      if (searchOrigin) {console.log("Search Origin:", searchOrigin)}
+      if (searchDest) {console.log("Search Destination:", searchDest.name)}
 
       console.log("params: " + params.toString());
 
@@ -348,6 +363,7 @@ export default function AllRides() {
       console.error("Error during fetch:", error);
     }
     if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
+      console.log("searchRide call 1");
       searchRide();
     }
     setPendingRideId((prev) => prev.filter((id) => id !== rideid));
@@ -376,8 +392,25 @@ export default function AllRides() {
     fetchDashboardData();
   }, []);
 
+  // STEP: want to useeffect no matter what state of locations
+  useEffect(() => {
+    searchRide();
+  }, [startSearchDate]);
+
+  useEffect(() => {
+    searchRide();
+  }, [endSearchDate]);
+
+
   useEffect(() => {
     if (searchOrigin) {
+      console.log("searchRide call 2");
+      searchRide();
+    }
+
+    // if search origin was cleared
+    if (searchOrigin == null && hasPreviousSearchOrigin) {
+      console.log("searchRide call 3");
       searchRide();
     }
 
@@ -385,13 +418,20 @@ export default function AllRides() {
       searchRide();
     }
 
-    if (startSearchDate) {
+    // if search dest was cleared
+    if (searchDest == null && hasPreviousSearchDest) {
       searchRide();
     }
 
+    /*
+    if (startSearchDate != undefined) {
+      searchRide();
+    }
+    
     if (endSearchDate) {
       searchRide();
     }
+    */
 
     if (startSearchTime && startSearchDate) {
       searchRide();
@@ -450,6 +490,26 @@ export default function AllRides() {
                 placeholder="Enter origin"
                 onPlaceSelected={(place) => {
                   setSearchOrigin(place);
+                  setHasPreviousSearchOrigin(true);
+                }}
+                // to handle case where place in autocomplete field is deleted
+                onChange={(event) => {
+                  if (event.target.value === '' && hasPreviousSearchOrigin) {
+                    setSearchOrigin(null);
+                    // TODO: try new ref searchOriginWasCleared, and then inside search, do if was cleared fetch dashboard and return
+                  }
+                }}
+                onKeyDown={(event) => {
+                  // Specifically check for enter key
+
+                  if (event.key === 'Enter') {
+                    console.log("search orign lolz:", searchOrigin)
+
+                    fetchDashboardData();
+                    //return false;
+                    //event.preventDefault();
+                    //event.stopPropagation();
+                  }
                 }}
                 options={autocompleteOptions}
                 ref={searchOriginRef}
@@ -470,6 +530,13 @@ export default function AllRides() {
                 placeholder="Enter destination"
                 onPlaceSelected={(place) => {
                   setSearchDest(place);
+                  setHasPreviousSearchDest(true);
+                }}
+                // to handle case where autocomplete field is cleared
+                onChange={(event) => {
+                  if (event.target.value === '' && hasPreviousSearchDest) {
+                    setSearchDest(null);
+                  }
                 }}
                 options={autocompleteOptions}
                 ref={searchDestinationRef}
@@ -481,7 +548,16 @@ export default function AllRides() {
               <p className="font-medium mb-1">Arrive After</p>
               <DateTimePicker
                 date={startSearchDate}
-                setDate={setStartSearchDate}
+                //setDate={setStartSearchDate}
+                setDate={(value) => {
+                  setStartSearchDate(value);
+                  if (value === null) {
+                    console.log("start date cleared");
+                    //searchRide();
+                    setStartSearchDate(null);
+                    console.log("start date state:", startSearchDate.format("YYYY-MM-DD"));
+                  }
+                }}
                 time={startSearchTime}
                 setTime={setStartSearchTime}
               />
@@ -492,7 +568,16 @@ export default function AllRides() {
               <p className="font-medium mb-1">Arrive Before</p>
               <DateTimePicker
                 date={endSearchDate}
-                setDate={setEndSearchDate}
+                //setDate={setEndSearchDate}
+                setDate={(value) => {
+                  setEndSearchDate(value);
+                  if (value === null) {
+                    console.log("end date cleared");
+                    //searchRide();
+                    setEndSearchDate(null);
+                    console.log("end date state:", endSearchDate.format("YYYY-MM-DD"));
+                  }
+                }}
                 time={endSearchTime}
                 setTime={setEndSearchTime}
               />
