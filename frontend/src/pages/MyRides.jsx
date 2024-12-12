@@ -184,17 +184,9 @@ export default function MyRides() {
     setIsSaving(true);
 
     // Extract and format ride date
-      const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
-        "en-US",
-        {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          hour12: true,
-        }
-      );
+    const formattedArrivalTime = dayjs(selectedRide.arrival_time)
+      .tz("America/New_York")
+      .format("MMMM D, YYYY, h:mm A");
 
     try {
       const response = await fetch("/api/deleteride", {
@@ -204,9 +196,11 @@ export default function MyRides() {
         },
         body: JSON.stringify({
           rideid: rideId,
-          rideDate: rideDate,
+          formatted_arrival_time: formattedArrivalTime,
           deleteRideMessage: deleteRideMessage,
-          current_riders: selectedRide.current_riders
+          current_riders: selectedRide.current_riders,
+          origin_name: selectedRide.origin["name"],
+          destination_name: selectedRide.destination["name"],
         }),
       });
 
@@ -324,19 +318,12 @@ export default function MyRides() {
         .tz("America/New_York")
         .format("MMMM D, YYYY, h:mm A");
 
-      var changedTime = false;
-      const mess = `Your Rideshare from ${selectedRide.origin["name"]} to ${selectedRide.destination["name"]} 
-      has changed arrrival time to ${formatted_arrival_time}.`;
-      const subj = "🚗 A Rideshare you're in has changed arrival time!";
-      if (
+      const changedTime =
         !dayjs(newArrivalDate).isSame(
           dayjs(selectedRide.arrival_time),
           "day"
         ) ||
-        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time")
-      ) {
-        changedTime = true;
-      }
+        !dayjs(newArrivalTime).isSame(dayjs(selectedRide.arrival_time), "time");
 
       const response = await fetch("/api/batchupdateriderequest", {
         method: "POST",
@@ -354,8 +341,6 @@ export default function MyRides() {
           origin_name: selectedRide.origin["name"],
           destination_name: selectedRide.destination["name"],
           changedTime: changedTime,
-          time_subject: subj,
-          time_message: mess,
         }),
       });
       const responseData = await response.json();
@@ -624,7 +609,7 @@ export default function MyRides() {
             <p>{warningModalInfo.message}</p>
             {warningModalInfo.title === "Delete this Rideshare?" &&
               selectedRide.current_riders.length != 0 && (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 pb-5">
                   <p>
                     Please give a reason for deleting this rideshare. The riders
                     you have currently accepted will be notified that this
@@ -634,6 +619,7 @@ export default function MyRides() {
                     placeholder={"List reason here."}
                     inputValue={deleteRideMessage}
                     setInputValue={setDeleteRideMessage}
+                    maxLength={200}
                   />
                 </div>
               )}
