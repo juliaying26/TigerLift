@@ -40,6 +40,9 @@ export default function AllRides() {
     message: "",
   });
   const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationModalMessage, setValidationModalMessage] = useState("");
+  const [validationModalTitle, setValidationModalTitle] = useState("");
+
 
   const [capacity, setCapacity] = useState("");
   const originRef = useRef(null);
@@ -91,6 +94,11 @@ export default function AllRides() {
 
     setOrigin(dest);
     setDest(tempOrigin);
+    
+    console.log("origin state = ", origin)
+    console.log("destd state = ", dest)
+    console.log("origin ref = ", originRef.current.value)
+    console.log("destd ref= ", destinationRef.current.value)
 
     if (originRef.current && destinationRef.current) {
       const tempOriginValue = originRef.current.value;
@@ -216,6 +224,9 @@ export default function AllRides() {
     if (!parsedDate.isValid() || !parsedTime.isValid()) {
       console.error("Invalid date or time provided:", date, time);
       setShowValidationModal(true); // Show validation error
+      setValidationModalTitle("Missing fields");
+      setValidationModalMessage("You must provide all fields to create a ride.")
+
       return;
     }
 
@@ -225,6 +236,12 @@ export default function AllRides() {
 
     const arrival_time_iso = new Date(arrival_time_string);
 
+    if (time === "" || now.getTime() >= arrival_time_iso.getTime()) {
+      setShowValidationModal(true); // Show the validation modal
+      setValidationModalTitle("Invalid input");
+      setValidationModalMessage("Cannot enter a date in the past.")
+      return;
+    }
     if (
       !capacity ||
       !origin ||
@@ -234,12 +251,17 @@ export default function AllRides() {
       capacity === "" ||
       origin === "" ||
       dest === "" ||
+      date === ""
+
       date === "" ||
       time === "" ||
       now.getTime() >= arrival_time_iso.getTime()
+
     ) {
       console.log("SHOWING");
       setShowValidationModal(true); // Show the validation modal
+      setValidationModalTitle("Missing fields");
+      setValidationModalMessage("You must provide all fields to create a ride.")
       return;
     } else {
       createRide();
@@ -283,6 +305,8 @@ export default function AllRides() {
   };
 
   const handleOpenRideModal = async () => {
+    console.log("origin state = ", origin)
+    console.log("destd state = ", dest)
     setCreateRideModal(true);
   };
 
@@ -295,7 +319,7 @@ export default function AllRides() {
     setTime("");
     setRideNote("");
     originRef.current = null;
-    destinationRef.current = null;
+    destinationRef.current = null
   };
 
   const fetchDashboardData = async () => {
@@ -652,6 +676,7 @@ export default function AllRides() {
                     }}
                     options={autocompleteOptions}
                     ref={originRef}
+                    // value={origin ? origin['formatted_address'] : ""}
                   />
                   <IconButton
                     className="flex-none w-9 h-9 hover:bg-theme_light_1"
@@ -668,6 +693,7 @@ export default function AllRides() {
                     }}
                     options={autocompleteOptions}
                     ref={destinationRef}
+                    // value={dest ? dest['formatted_address'] : ""}
                   />
                 </div>
               </div>
@@ -706,10 +732,10 @@ export default function AllRides() {
         <WarningModal
           isOpen={showValidationModal}
           onClose={() => setShowValidationModal(false)}
-          title={"Missing Fields"}
+          title={validationModalTitle}
         >
           <div className="flex flex-col gap-3">
-            <p>You must provide all fields to create a ride.</p>
+            <p>{validationModalMessage}</p>
             <div className="flex self-end">
               <Button
                 onClick={() => setShowValidationModal(false)}

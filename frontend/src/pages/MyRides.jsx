@@ -51,6 +51,10 @@ export default function MyRides() {
     message: "",
   });
 
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationModalMessage, setValidationModalMessage] = useState("");
+  const [validationModalTitle, setValidationModalTitle] = useState("");
+
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
@@ -124,25 +128,25 @@ export default function MyRides() {
     }
   }, [selectedRide]);
 
-  const checkAndSetEditArrivalTime = () => {
+  // const checkAndSetEditArrivalTime = () => {
 
-    const now = new Date();
+  //   const now = new Date();
 
 
-    const arrival_time_string = `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
-      "HH:mm:ss"
-    )}`;
+  //   const arrival_time_string = `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
+  //     "HH:mm:ss"
+  //   )}`;
 
-    const arrival_time_iso = new Date(arrival_time_string);
+  //   const arrival_time_iso = new Date(arrival_time_string);
 
-    if (now.getTime() >= arrival_time_iso.getTime()) {
-      handleShowPopupMessage("error", "Date cannot be in the past.");
-    }
-    else {
-      setIsEditingArrivalTime(false)
-    }
+  //   if (now.getTime() >= arrival_time_iso.getTime()) {
+  //     handleShowPopupMessage("error", "Date cannot be in the past.");
+  //   }
+  //   else {
+  //     setIsEditingArrivalTime(false)
+  //   }
 
-  }
+  // }
 
   // states for modal
   const handleManageRideClick = (ride) => {
@@ -264,11 +268,33 @@ export default function MyRides() {
 
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
+  
+    // Check time is not in the past
+    const now = new Date();
+    const arrival_time_string = `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
+      "HH:mm:ss"
+    )}`;
+    const arrival_time_iso = new Date(arrival_time_string);
+
+    if (now.getTime() >= arrival_time_iso.getTime()) {
+      setShowValidationModal(true)
+      setValidationModalTitle("Invalid input");
+      setValidationModalMessage("Cannot enter a date in the past.")
+
+      console.log("IN SAVE RIDE, TIME IN PAST")
+
+      return
+    }
+    else {
+      setIsEditingArrivalTime(false)
+    }
+
     setIsSaving(true);
     // POST for any states that were changed
     let accepting_riders = [];
     let rejecting_riders = [];
     let pending_riders = [];
+
 
     modalCurrentRiders.forEach(([requester_id, fullName, mail]) => {
       const rider = {
@@ -933,6 +959,26 @@ export default function MyRides() {
           </div>
         </Modal>
       )}
+
+      {showValidationModal && (
+              <WarningModal
+                isOpen={showValidationModal}
+                onClose={() => setShowValidationModal(false)}
+                title={validationModalTitle}
+              >
+                <div className="flex flex-col gap-3">
+                  <p>{validationModalMessage}</p>
+                  <div className="flex self-end">
+                    <Button
+                      onClick={() => setShowValidationModal(false)}
+                      className="bg-theme_medium_1 text-white hover:bg-theme_dark_1"
+                    >
+                      Okay
+                    </Button>
+                  </div>
+                </div>
+              </WarningModal>
+            )}
     </div>
   );
 }
