@@ -23,7 +23,7 @@ import {
 export default function AllRides() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
 
-  const [pendingRideId, setPendingRideId] = useState(null);
+  const [pendingRideId, setPendingRideId] = useState([]);
 
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
@@ -96,6 +96,8 @@ export default function AllRides() {
       const tempOriginValue = originRef.current.value;
       originRef.current.value = destinationRef.current.value;
       destinationRef.current.value = tempOriginValue;
+      console.log(originRef.current.value);
+      console.log(destinationRef.current.value);
     }
 
     console.log("Locations flipped!");
@@ -223,10 +225,6 @@ export default function AllRides() {
 
     const arrival_time_iso = new Date(arrival_time_string);
 
-    if (now.getTime() >= arrival_time_iso.getTime()) {
-      handleShowPopupMessage("error", "Date cannot be in the past.");
-    }
-
     if (
       !capacity ||
       !origin ||
@@ -237,7 +235,8 @@ export default function AllRides() {
       origin === "" ||
       dest === "" ||
       date === "" ||
-      time === ""
+      time === "" ||
+      now.getTime() >= arrival_time_iso.getTime()
     ) {
       console.log("SHOWING");
       setShowValidationModal(true); // Show the validation modal
@@ -321,7 +320,7 @@ export default function AllRides() {
   ) => {
     console.log("IN HANDLE RIDE REQUEST");
 
-    setPendingRideId(rideid);
+    setPendingRideId((prev) => [...prev, rideid]);
     try {
       console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
 
@@ -351,7 +350,7 @@ export default function AllRides() {
     if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
       searchRide();
     }
-    setPendingRideId(null);
+    setPendingRideId((prev) => prev.filter((id) => id !== rideid));
   };
 
   const resetSearch = async () => {
@@ -434,17 +433,18 @@ export default function AllRides() {
           </Button>
         </div>
         <div
-          className={`grid grid-cols-1 sm:grid-cols-2 ${
+          className={`grid grid-cols-1 md:grid-cols-2 ${
             inSearch
-              ? "md:grid-cols-[7fr,5fr,5fr,2.5fr]"
-              : "md:grid-cols-[7fr,5fr,5fr]"
+              ? "lg:grid-cols-[9fr,5fr,5fr,2.5fr]"
+              : "lg:grid-cols-[9fr,5fr,5fr]"
           } items-center justify-between pb-4 sm:space-x-3`}
         >
-          <div className="grid grid-cols-[5fr,1fr] gap-2 sm:flex justify-center mb-3 sm:mb-0">
+          <div className="grid grid-cols-[5fr,1fr] gap-2 md:flex justify-center mb-3 md:mb-0">
             <div>
               <p className="font-medium mb-1">Origin</p>
               <Autocomplete
                 key={"searchOrigin"}
+                id={"searchOrigin"}
                 className={autocompleteStyling}
                 apiKey={google_api_key}
                 placeholder="Enter origin"
@@ -456,15 +456,15 @@ export default function AllRides() {
               />
             </div>
             <IconButton
-              className="flex-none mt-[27px]"
+              className="flex-none mt-[27px] w-9 h-9 hover:bg-theme_medium_2"
               type="flip"
               onClick={flipSearchFields}
-              disabled={false}
             ></IconButton>
             <div className="flex flex-col">
               <p className="font-medium mb-1">Destination</p>
               <Autocomplete
                 key={"searchDestination"}
+                id={"searchDest"}
                 className={autocompleteStyling}
                 apiKey={google_api_key}
                 placeholder="Enter destination"
@@ -553,7 +553,7 @@ export default function AllRides() {
                       : "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
                   }`}
                   buttonStatus={dashboardData.ridereqs[ride.id]}
-                  buttonDisabled={pendingRideId === ride.id}
+                  buttonLoading={pendingRideId.includes(ride.id)}
                 >
                   <div className="flex flex-col gap-2">
                     <p className="text-xl flex items-center justify-center gap-2">
@@ -639,7 +639,7 @@ export default function AllRides() {
               </div>
               <div className="flex flex-col">
                 <p className="font-medium mb-1">Origin & Destination</p>
-                <div className="flex items-center space-x-2 w-full">
+                <div className="flex items-center space-x-2 w-full justify-between">
                   <Autocomplete
                     key={"createOrigin"}
                     className={autocompleteStyling}
@@ -652,10 +652,9 @@ export default function AllRides() {
                     ref={originRef}
                   />
                   <IconButton
-                    className="flex-none"
+                    className="flex-none w-9 h-9 hover:bg-theme_light_1"
                     type="flip"
                     onClick={flipCreateRideFields}
-                    disabled={false}
                   ></IconButton>
                   <Autocomplete
                     key={"createDestination"}
@@ -694,7 +693,7 @@ export default function AllRides() {
             <Button
               className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1"
               onClick={checkCreateRideParams}
-              disabled={isCreatingRide}
+              loading={isCreatingRide}
             >
               Submit
             </Button>

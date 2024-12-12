@@ -198,6 +198,7 @@ export default function MyRides() {
   };
 
   const deleteRide = async (rideId) => {
+    setIsSaving(true);
     try {
       const response = await fetch("/api/deleteride", {
         method: "POST",
@@ -268,6 +269,7 @@ export default function MyRides() {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
+    setIsSaving(false);
   };
 
   const hasRideChanges = () => {
@@ -519,7 +521,7 @@ export default function MyRides() {
                 ? "cursor-auto"
                 : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
             }`}
-            buttonDisabled={ride.id === cancelRequestRideId}
+            buttonLoading={ride.id === cancelRequestRideId}
             secondaryButtonText={
               viewType === "requested" &&
               "Status: " + capitalizeFirstLetter(ride.request_status)
@@ -748,6 +750,10 @@ export default function MyRides() {
                     ? () => deleteRide(selectedRide.id)
                     : handleCloseWarningModal
                 }
+                loading={isSaving}
+                disabled={
+                  selectedRide.current_riders.length != 0 && !deleteRideMessage
+                }
               >
                 {warningModalInfo.buttonText}
               </Button>
@@ -809,45 +815,24 @@ export default function MyRides() {
                     setTime={setNewArrivalTime}
                     allowClear={false}
                   />
-                ) : newArrivalDate || newArrivalTime ? (
-                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    {getFormattedDate(
-                      new Date(
-                        `${newArrivalDate.format(
-                          "YYYY-MM-DD"
-                        )}T${newArrivalTime.format("HH:mm:ss")}`
-                      )
-                    )}
-                  </span>
                 ) : (
                   <span className="px-3 py-1 bg-zinc-200 rounded-full">
                     {getFormattedDate(new Date(selectedRide.arrival_time))}
                   </span>
                 )}
-                {isEditingArrivalTime ? (
-                  <Button
-                    className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
-                    onClick={() => checkAndSetEditArrivalTime()}
-                  >
-                    {!dayjs(newArrivalDate).isSame(
-                      dayjs(selectedRide.arrival_time),
-                      "day"
-                    ) ||
-                    !dayjs(newArrivalTime).isSame(
-                      dayjs(selectedRide.arrival_time),
-                      "time"
-                    )
-                      ? "Save"
-                      : "Cancel"}
-                  </Button>
-                ) : (
-                  <Button
-                    className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
-                    onClick={() => setIsEditingArrivalTime(true)}
-                  >
-                    Edit
-                  </Button>
-                )}
+                <Button
+                  className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
+                  onClick={() => {
+                    console.log(newArrivalDate, newArrivalTime);
+                    if (isEditingArrivalTime) {
+                      setNewArrivalDate(dayjs(selectedRide.arrival_time));
+                      setNewArrivalTime(dayjs(selectedRide.arrival_time));
+                    }
+                    setIsEditingArrivalTime(!isEditingArrivalTime);
+                  }}
+                >
+                  {isEditingArrivalTime ? "Cancel" : "Edit"}
+                </Button>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -871,25 +856,23 @@ export default function MyRides() {
                   }).slice(0, 6 - (modalCurrentRiders?.length || 0))}
                 ></Dropdown>
               ) : (
-                newCapacity?.label || selectedRide.max_capacity
+                selectedRide.max_capacity
               )}
-              {isEditingCapacity ? (
-                <Button
-                  className="text-theme_medium_2 hover:text-theme_dark_2"
-                  onClick={() => setIsEditingCapacity(false)}
-                >
-                  {newCapacity?.label !== selectedRide.max_capacity
-                    ? "Save"
-                    : "Cancel"}
-                </Button>
-              ) : (
-                <Button
-                  className="text-theme_medium_2 hover:text-theme_dark_2"
-                  onClick={() => setIsEditingCapacity(true)}
-                >
-                  Edit capacity
-                </Button>
-              )}
+              <Button
+                className="text-theme_medium_2 hover:text-theme_dark_2"
+                onClick={() => {
+                  console.log(newCapacity);
+                  if (isEditingCapacity) {
+                    setNewCapacity({
+                      value: selectedRide.max_capacity,
+                      label: selectedRide.max_capacity,
+                    });
+                  }
+                  setIsEditingCapacity(!isEditingCapacity);
+                }}
+              >
+                {isEditingCapacity ? "Cancel" : "Edit capacity"}
+              </Button>
             </div>
             {selectedRide.note && (
               <div className="mb-0.5">
@@ -991,7 +974,7 @@ export default function MyRides() {
               <Button
                 onClick={() => handleSaveRide(selectedRide.id)}
                 className="hover:bg-theme_light_1 bg-theme_medium_1 text-white hover:text-theme_dark_1"
-                disabled={isSaving}
+                loading={isSaving}
               >
                 Save
               </Button>

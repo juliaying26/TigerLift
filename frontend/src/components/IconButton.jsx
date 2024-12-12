@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function IconButton({ type, onClick, disabled, className }) {
+export default function IconButton({
+  type,
+  onClick,
+  disabled = false,
+  className,
+}) {
   const renderIcon = () => {
     switch (type) {
       case "back":
@@ -114,7 +119,7 @@ export default function IconButton({ type, onClick, disabled, className }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-full p-1.5 items-center justify-center ${className}`}
+      className={`rounded-full p-1.5 flex items-center justify-center ${className}`}
     >
       {renderIcon()}
     </button>
