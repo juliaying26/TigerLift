@@ -237,7 +237,7 @@ def deleteride():
         deleteRideMessage = data.get('deleteRideMessage')
         message = "The rideshare scheduled for " + rideDate + " has been canceled."
         if deleteRideMessage:
-            message += "Reason:" + deleteRideMessage + "\n" + "Please see details at tigerlift.onrender.com."
+            message += "Reason:" + deleteRideMessage + "\n"
         else:
             message += "No reason provided"
 
