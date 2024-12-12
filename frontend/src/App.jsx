@@ -78,7 +78,7 @@ function App() {
               </p>
               <a
                 href="/api/login"
-                className="text-lg bg-theme_medium_2 text-white px-4 py-2 rounded hover:bg-theme_dark_2 hover:text-white self-center"
+                className={`text-lg ${bigButtonStyling2} self-center`}
               >
                 Login with CAS
               </a>
