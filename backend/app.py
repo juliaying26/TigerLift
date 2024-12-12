@@ -232,8 +232,15 @@ def deleteride():
         return jsonify({'success': False, 'message': 'Failed to delete ride.'}), 400
 
     try:
-        subject = data.get('subject')
-        message = data.get('message')
+        subject = "🚗 Your Rideshare Has been Canceled "
+        rideDate = data.get('rideDate')
+        deleteRideMessage = data.get('deleteRideMessage')
+        message = "The rideshare scheduled for " + rideDate + " has been canceled."
+        if deleteRideMessage:
+            message += "Reason:" + deleteRideMessage + "\n" + "Please see details at tigerlift.onrender.com."
+        else:
+            message += "No reason provided"
+
         current_riders = data.get('current_riders')
         for rider in current_riders:
             netid = rider[0]
@@ -390,8 +397,9 @@ def batchupdateriderequest():
         capacity = data.get('new_capacity')
         new_arrival_time = data.get('new_arrival_time')
 
-        time_subject = data.get('time_subject')
-        time_message = data.get('time_message')
+        # for time only
+        time_message = "Your Rideshare from " + origin_name + " to " + destination_name + "has changed arrival time to " + formatted_arrival_time + "."  
+        time_subject =  "🚗 A Rideshare you're in has changed arrival time!"
 
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
@@ -408,7 +416,7 @@ def batchupdateriderequest():
                 # PRINT
                 print("SENT EMAIL NOTIF BATCH UPDATE")
             
-            if changedTime:
+            if changedTime:    
                 send_email_notification(requester_id, mail, time_subject, time_message)
                 print("SEnt email notif on changed time")
 

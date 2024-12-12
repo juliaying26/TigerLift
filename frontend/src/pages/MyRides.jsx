@@ -184,23 +184,17 @@ export default function MyRides() {
     setIsSaving(true);
 
     // Extract and format ride date
-    const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
-      "en-US",
-      {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      }
-    );
-
-    // Email notification details
-    const subj = "🚗 Your Rideshare Has been Canceled ";
-    const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
-      deleteRideMessage || "No reason provided."
-    }\n`;
+      const rideDate = new Date(selectedRide.arrival_time).toLocaleString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        }
+      );
 
     try {
       const response = await fetch("/api/deleteride", {
@@ -210,9 +204,9 @@ export default function MyRides() {
         },
         body: JSON.stringify({
           rideid: rideId,
-          subject: subj,
-          message: mess,
-          current_riders: selectedRide.current_riders,
+          rideDate: rideDate,
+          deleteRideMessage: deleteRideMessage,
+          current_riders: selectedRide.current_riders
         }),
       });
 
