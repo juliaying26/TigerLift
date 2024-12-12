@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import IconButton from "./IconButton";
-import { Link } from "react-router-dom";
 import NotificationsModal from "./NotificationsModal";
 import CarIcon from "./CarIcon";
+import { bigButtonStyling2 } from "../utils/utils";
 
 export default function Navbar({ user_info }) {
   const location = useLocation();
@@ -234,10 +234,7 @@ export default function Navbar({ user_info }) {
             <p className="font-medium text-lg text-center">
               {user_info.displayname}
             </p>
-            <a
-              href="/api/logout"
-              className="bg-theme_dark_2 text-white px-4 py-2 rounded-md text-center hover:bg-theme_light_2 hover:text-theme_dark_2"
-            >
+            <a href="/api/logout" className={`${bigButtonStyling2}`}>
               Log out
             </a>
           </div>

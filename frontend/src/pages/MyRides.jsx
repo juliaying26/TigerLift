@@ -18,6 +18,10 @@ import {
   MAX_CAPACITY,
   capitalizeFirstLetter,
   handleShowPopupMessage,
+  renderRideCardInfo,
+  renderToAndFrom,
+  renderRideNote,
+  bigButtonStyling1,
 } from "../utils/utils";
 
 // For parsing date
@@ -494,53 +498,7 @@ export default function MyRides() {
             secondaryButtonStatus={ride.request_status}
           >
             <div>
-              <div className="flex flex-col gap-2">
-                <p className="text-xl flex items-center justify-center gap-2">
-                  <span className="flex text-center flex-col">
-                    <strong>{ride.origin["name"]}</strong>
-                    <span className="text-sm">
-                      {ride.origin["address"].split(" ").slice(0, -2).join(" ")}
-                    </span>
-                  </span>
-                  →
-                  <span className="flex text-center flex-col">
-                    <strong>{ride.destination["name"]}</strong>
-                    <span className="text-sm">
-                      {ride.destination["address"]
-                        .split(" ")
-                        .slice(0, -2)
-                        .join(" ")}
-                    </span>
-                  </span>
-                </p>
-                <p className="text-center">
-                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
-                    Arrives by {getFormattedDate(new Date(ride.arrival_time))}
-                  </span>
-                </p>
-              </div>
-              <hr className="border-1 my-3 border-theme_medium_1" />
-              <p>
-                <span className="font-semibold">Posted by:</span>{" "}
-                <span>{ride.admin_name}</span>{" "}
-                <CopyEmailButton
-                  copy={[ride.admin_email]}
-                  text="Copy Email"
-                  className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle"
-                />
-              </p>
-              <p>
-                <span className="font-semibold">Seats Taken:</span>{" "}
-                {ride.current_riders.length}/{ride.max_capacity}
-              </p>
-              {ride.note && (
-                <div className="mb-0.5">
-                  <span className="font-semibold">Note:</span>
-                  <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                    <p className="break-words">{ride.note}</p>
-                  </div>
-                </div>
-              )}
+              {renderRideCardInfo(ride)}
               {viewType === "posted" && (
                 <div>
                   <p>
@@ -625,9 +583,9 @@ export default function MyRides() {
         <Button
           className={`${
             viewType == "posted"
-              ? "bg-theme_dark_1 font-medium"
-              : "bg-theme_medium_1"
-          } text-white px-4 py-2 hover:bg-theme_dark_1`}
+              ? `!bg-theme_dark_1 !font-medium ${bigButtonStyling1}`
+              : bigButtonStyling1
+          }`}
           onClick={() => setViewType("posted")}
         >
           My Posted Rideshares
@@ -635,9 +593,9 @@ export default function MyRides() {
         <Button
           className={`${
             viewType == "requested"
-              ? "bg-theme_dark_1 font-medium"
-              : "bg-theme_medium_1"
-          } text-white px-4 py-2 hover:bg-theme_dark_1`}
+              ? `!bg-theme_dark_1 !font-medium ${bigButtonStyling1}`
+              : bigButtonStyling1
+          }`}
           onClick={() => setViewType("requested")}
         >
           My Requested Rideshares
@@ -740,27 +698,7 @@ export default function MyRides() {
                 coordinating logistics to meet up.
               </span>
             </p>
-            <p className="text-xl flex items-center justify-center gap-2 my-1">
-              <span className="flex text-center flex-col">
-                <strong>{selectedRide.origin["name"]}</strong>
-                <span className="text-sm">
-                  {selectedRide.origin["address"]
-                    .split(" ")
-                    .slice(0, -2)
-                    .join(" ")}
-                </span>
-              </span>
-              →
-              <span className="flex text-center flex-col">
-                <strong>{selectedRide.destination["name"]}</strong>
-                <span className="text-sm">
-                  {selectedRide.destination["address"]
-                    .split(" ")
-                    .slice(0, -2)
-                    .join(" ")}
-                </span>
-              </span>
-            </p>
+            <div className="my-1">{renderToAndFrom(selectedRide)}</div>
             <div className="flex items-center gap-1">
               <div className="grid grid-cols-1 md:flex items-center gap-1">
                 <p>
@@ -775,7 +713,7 @@ export default function MyRides() {
                     allowClear={false}
                   />
                 ) : (
-                  <span className="px-3 py-1 bg-zinc-200 rounded-full">
+                  <span className="px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
                     {getFormattedDate(new Date(selectedRide.arrival_time))}
                   </span>
                 )}
@@ -833,14 +771,7 @@ export default function MyRides() {
                 {isEditingCapacity ? "Cancel" : "Edit capacity"}
               </Button>
             </div>
-            {selectedRide.note && (
-              <div className="mb-0.5">
-                <span className="font-semibold">Note:</span>
-                <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                  <p className="break-words">{selectedRide.note}</p>
-                </div>
-              </div>
-            )}
+            {renderRideNote(selectedRide)}
             <p>
               <span className="font-semibold">Current Riders:</span>
             </p>
