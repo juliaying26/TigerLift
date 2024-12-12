@@ -217,7 +217,7 @@ export default function MyRides() {
       const subj = "🚗 Your Rideshare Has been Canceled ";
       const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
         deleteRideMessage || "No reason provided."
-      }`;
+      }\n`;
 
 
     try {
