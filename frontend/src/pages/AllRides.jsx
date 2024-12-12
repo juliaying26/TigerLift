@@ -252,11 +252,6 @@ export default function AllRides() {
       origin === "" ||
       dest === "" ||
       date === ""
-
-      date === "" ||
-      time === "" ||
-      now.getTime() >= arrival_time_iso.getTime()
-
     ) {
       console.log("SHOWING");
       setShowValidationModal(true); // Show the validation modal
