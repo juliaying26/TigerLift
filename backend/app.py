@@ -10,14 +10,8 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
 from psycopg2.extras import Json
 
-from flask_wtf import CSRFProtect
-import secrets
-import base64
-
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/dist')
 app.secret_key = os.environ.get('APP_SECRET_KEY')
-csrf = CSRFProtect(app)
-
 _cas = CASClient()
 
 FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
@@ -25,24 +19,6 @@ FRONTEND_URL = '' if FLASK_ENV == 'production' else 'http://localhost:5173'
 
 # FOR TESTING -- change to False if you don't want emails sent
 app.EMAILS_ON = os.environ.get('EMAILS_ON', "False").lower() == "true"
-
-def generate_csrf():
-    # Generate a secure random 32-byte token
-    token = secrets.token_bytes(32)
-    # Encode the token in base64 to make it URL-safe
-    csrf_token = base64.urlsafe_b64encode(token).decode('utf-8').rstrip('=')
-    return csrf_token
-
-@app.after_request
-def set_csrf_cookie(response):
-    response.set_cookie(
-        'csrf_token',
-        generate_csrf(),
-        samesite='Lax',
-        secure=False,  # Set to False for local development
-        httponly=False  # Must be False to access via JavaScript
-    )
-    return response
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -351,10 +327,6 @@ def searchrides():
 
 @app.route("/api/requestride", methods=["POST"])
 def requestride():
-
-    csrf_from_front = data.get("X-CSRFToken")
-    if csrf
-
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')

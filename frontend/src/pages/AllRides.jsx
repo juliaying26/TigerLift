@@ -40,6 +40,9 @@ export default function AllRides() {
     message: "",
   });
   const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationModalMessage, setValidationModalMessage] = useState("");
+  const [validationModalTitle, setValidationModalTitle] = useState("");
+
 
   const [capacity, setCapacity] = useState("");
   const originRef = useRef(null);
@@ -59,19 +62,6 @@ export default function AllRides() {
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
-
-  function getCookie(name="csrf_token") {
-
-    console.log("IN GET COOKIE")
-
-    const cookies = document.cookie.split(";").map(cookie => cookie.trim());
-    const prefix = `${name}=`;
-    const cookie = cookies.find(cookie => cookie.startsWith(prefix));
-
-    console.log("COOKIE = ", cookie)
-
-    return cookie ? cookie.substring(prefix.length) : null;
-}
 
   const autocompleteOptions = {
     // componentRestrictions: { country: "us" },
@@ -104,6 +94,11 @@ export default function AllRides() {
 
     setOrigin(dest);
     setDest(tempOrigin);
+    
+    console.log("origin state = ", origin)
+    console.log("destd state = ", dest)
+    console.log("origin ref = ", originRef.current.value)
+    console.log("destd ref= ", destinationRef.current.value)
 
     if (originRef.current && destinationRef.current) {
       const tempOriginValue = originRef.current.value;
@@ -227,6 +222,9 @@ export default function AllRides() {
     if (!parsedDate.isValid() || !parsedTime.isValid()) {
       console.error("Invalid date or time provided:", date, time);
       setShowValidationModal(true); // Show validation error
+      setValidationModalTitle("Missing fields");
+      setValidationModalMessage("You must provide all fields to create a ride.")
+
       return;
     }
 
@@ -236,8 +234,11 @@ export default function AllRides() {
 
     const arrival_time_iso = new Date(arrival_time_string);
 
-    if (now.getTime() >= arrival_time_iso.getTime()) {
-      handleShowPopupMessage("error", "Date cannot be in the past.");
+    if (time === "" || now.getTime() >= arrival_time_iso.getTime()) {
+      setShowValidationModal(true); // Show the validation modal
+      setValidationModalTitle("Invalid input");
+      setValidationModalMessage("Cannot enter a date in the past.")
+      return;
     }
 
     if (
@@ -249,11 +250,12 @@ export default function AllRides() {
       capacity === "" ||
       origin === "" ||
       dest === "" ||
-      date === "" ||
-      time === ""
+      date === ""
     ) {
       console.log("SHOWING");
       setShowValidationModal(true); // Show the validation modal
+      setValidationModalTitle("Missing fields");
+      setValidationModalMessage("You must provide all fields to create a ride.")
       return;
     } else {
       createRide();
@@ -266,17 +268,11 @@ export default function AllRides() {
       "HH:mm:ss"
     )}`;
     const arrival_time_iso = new Date(arrival_time_string).toISOString();
-
-    const csrfToken = getCookie("csrf_token");
-
-    // console.log("token from before post request = ", csrfToken);
-
     try {
       const response = await fetch("/api/addride", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
         },
         body: JSON.stringify({
           capacity: capacity["label"],
@@ -303,6 +299,8 @@ export default function AllRides() {
   };
 
   const handleOpenRideModal = async () => {
+    console.log("origin state = ", origin)
+    console.log("destd state = ", dest)
     setCreateRideModal(true);
   };
 
@@ -314,6 +312,8 @@ export default function AllRides() {
     setDate("");
     setTime("");
     setRideNote("");
+    originRef.current = null;
+    destinationRef.current = null
   };
 
   const fetchDashboardData = async () => {
@@ -347,15 +347,11 @@ export default function AllRides() {
       const formattedArrivalTime = dayjs(arrival_time)
         .tz("America/New_York")
         .format("MMMM D, YYYY, h:mm A");
-      
-      const csrfToken = getCookie()
-      console.log("token from before post request = ", csrfToken);
 
       const response = await fetch("/api/requestride", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
         },
         body: JSON.stringify({
           rideid: rideid,
@@ -367,8 +363,6 @@ export default function AllRides() {
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
-        console.error("Status Text:", response.statusText);
-        console.error("Response body:", response.text);
       }
     } catch (error) {
       console.error("Error during fetch:", error);
@@ -397,18 +391,6 @@ export default function AllRides() {
     await fetchDashboardData();
     setLoading(false);
   };
-
-  useEffect(() => {
-    fetch("/api/dashboard", {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP Error: ${response.status}`);
-        }
-      });
-  }, []);
 
   useEffect(() => {
     fetchDashboardData();
@@ -687,6 +669,7 @@ export default function AllRides() {
                     }}
                     options={autocompleteOptions}
                     ref={originRef}
+                    // value={origin ? origin['formatted_address'] : ""}
                   />
                   <IconButton
                     className="flex-none"
@@ -704,6 +687,7 @@ export default function AllRides() {
                     }}
                     options={autocompleteOptions}
                     ref={destinationRef}
+                    // value={dest ? dest['formatted_address'] : ""}
                   />
                 </div>
               </div>
@@ -742,10 +726,10 @@ export default function AllRides() {
         <WarningModal
           isOpen={showValidationModal}
           onClose={() => setShowValidationModal(false)}
-          title={"Missing Fields"}
+          title={validationModalTitle}
         >
           <div className="flex flex-col gap-3">
-            <p>You must provide all fields to create a ride.</p>
+            <p>{validationModalMessage}</p>
             <div className="flex self-end">
               <Button
                 onClick={() => setShowValidationModal(false)}
