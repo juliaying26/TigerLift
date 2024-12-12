@@ -223,12 +223,30 @@ def deleteride():
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
+
+    # assuming email is on
     try:
-       database.delete_ride(str(user_info['netid']), rideid)
-       return jsonify({'success': True, 'message': 'Ride successfully deleted.'})
+       database.delete_ride(str(user_info['netid']), rideid)     
+       print("RIDE DELETED") 
     except:
         return jsonify({'success': False, 'message': 'Failed to delete ride.'}), 400
 
+    try:
+        subject = data.get('subject')
+        message = data.get('message')
+        current_riders = data.get('current_riders')
+        for rider in current_riders:
+            netid = rider[0]
+            mail = rider[2]
+            send_email_notification(netid, mail, subject, message)
+
+        print("DELETE EMAIL SENT")
+        return jsonify({'success': True, 'message': 'Ride successfully deleted and email sent.'})
+
+    except:
+        return jsonify({'success': False, 'message': 'Failed to email rider(s).'}), 400
+  
+ 
 @app.route("/api/cancelriderequest", methods=["POST"])
 def cancelriderequest():
     user_info = _cas.authenticate()
@@ -365,11 +383,15 @@ def batchupdateriderequest():
         rideid = data.get('rideid')
         print(data)
 
-        new_arrival_time = data.get('new_arrival_time')
+        changedTime = data.get('changedTime')
         formatted_arrival_time = data.get('formatted_arrival_time')
         origin_name = data.get('origin_name')
         destination_name = data.get('destination_name')
         capacity = data.get('new_capacity')
+        new_arrival_time = data.get('new_arrival_time')
+
+        time_subject = data.get('time_subject')
+        time_message = data.get('time_message')
 
         for rider in data.get('accepting_riders', []):
             requester_id = rider.get('requester_id')
@@ -385,6 +407,10 @@ def batchupdateriderequest():
                 send_email_notification(requester_id, mail, subject, message)
                 # PRINT
                 print("SENT EMAIL NOTIF BATCH UPDATE")
+            
+            if changedTime:
+                send_email_notification(requester_id, mail, time_subject, time_message)
+                print("SEnt email notif on changed time")
 
         for rider in data.get('rejecting_riders', []):
             requester_id = rider.get('requester_id')
@@ -402,7 +428,8 @@ def batchupdateriderequest():
         if capacity:
             database.update_capacity(rideid, capacity)
 
-        if new_arrival_time:
+        if changedTime:
+            print("CHANGED TIMEEEE!!!")
             database.update_arrival_time(rideid, new_arrival_time)
 
         return jsonify({'success': True, 'message': 'Ride successfully updated!'})
