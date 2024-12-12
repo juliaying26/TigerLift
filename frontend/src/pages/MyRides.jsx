@@ -213,13 +213,6 @@ export default function MyRides() {
         }
       );
 
-      // Email notification details
-      const subj = "🚗 Your Rideshare Has been Canceled ";
-      const mess = `The rideshare scheduled for ${rideDate} has been canceled. Reason: ${
-        deleteRideMessage || "No reason provided."
-      }\n`;
-
-
     try {
       const response = await fetch("/api/deleteride", {
         method: "POST",
@@ -228,8 +221,8 @@ export default function MyRides() {
         },
         body: JSON.stringify({
           rideid: rideId,
-          subject: subj,
-          message: mess,
+          rideDate: rideDate,
+          deleteRideMessage: deleteRideMessage,
           current_riders: selectedRide.current_riders
         }),
       });
