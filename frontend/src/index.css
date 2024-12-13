@@ -32,11 +32,13 @@ a:hover {
   @apply text-zinc-700;
 }
 
+/* Google autocomplete search and dest fields */
 .pac-target-input#searchOrigin,
 .pac-target-input#searchDest {
   width: 300px !important;
 }
 
+/* Google autocomplete search and dest fields */
 @media (max-width: 1248px) {
   .pac-target-input#searchOrigin,
   .pac-target-input#searchDest {
@@ -44,6 +46,7 @@ a:hover {
   }
 }
 
+/* Google autocomplete dropdown container */
 .pac-container {
   border-radius: 6px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
@@ -52,14 +55,17 @@ a:hover {
   margin-bottom: 10px;
 }
 
+/* Google autocomplete dropdown container items */
 .pac-item {
   padding: 2px 6px;
 }
 
+/* notification panel */
 .notification-panel {
   height: 400px;
 }
 
+/* notification panel mobile */
 .notification-panel-mobile {
   height: var(--dynamic-height);
 }
