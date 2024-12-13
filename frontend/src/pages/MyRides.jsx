@@ -447,7 +447,7 @@ export default function MyRides() {
               new Date(ride.arrival_time) > new Date() &&
               (viewType === "posted"
                 ? "Manage Rideshare"
-                : ride.request_status !== "accepted" && "Cancel Request")
+                : ride.request_status !== "accepted" && ride.request_status !== "rejected"  && "Cancel Request")
             }
             buttonOnClick={
               viewType === "posted"
@@ -457,7 +457,7 @@ export default function MyRides() {
                 : () => handleCancelRideRequest(ride.id)
             }
             buttonClassName={`${
-              ride.request_status === "accepted" ||
+              (ride.request_status === "accepted" || ride.request_status === "rejected") ||
               new Date(ride.arrival_time) <= new Date()
                 ? "cursor-auto"
                 : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
