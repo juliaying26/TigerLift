@@ -213,7 +213,7 @@ export default function AllRides() {
       setValidationModalMessage(
         "You must provide all fields to create a ride."
       );
-      setShowValidationModal(true); // Show the validation modal if nothing missing
+      setShowValidationModal(true); // Show the validation modal if something missing
       return;
     }
 
