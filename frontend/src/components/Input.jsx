@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import TextField from "@mui/material/TextField";
 
 export default function Input({ label, inputValue, setInputValue }) {

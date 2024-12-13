@@ -13,12 +13,15 @@ import Autocomplete from "react-google-autocomplete";
 import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import CustomTextArea from "../components/TextArea.jsx";
 import WarningModal from "../components/WarningModal.jsx";
-
 import {
   getFormattedDate,
   MAX_CAPACITY,
   autocompleteStyling,
-} from "../utils/utils.js";
+  capitalizeFirstLetter,
+  handleShowPopupMessage,
+  renderRideCardInfo,
+  bigButtonStyling1,
+} from "../utils/utils";
 
 export default function AllRides() {
   const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -40,14 +43,16 @@ export default function AllRides() {
     message: "",
   });
   const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationModalMessage, setValidationModalMessage] = useState("");
+  const [validationModalTitle, setValidationModalTitle] = useState("");
 
-  const [capacity, setCapacity] = useState("");
   const originRef = useRef(null);
   const destinationRef = useRef(null);
 
   const isInitialRender = useRef(true);
 
   const [origin, setOrigin] = useState(null);
+  const [capacity, setCapacity] = useState("");
   const [dest, setDest] = useState(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -62,6 +67,7 @@ export default function AllRides() {
   const [startSearchTime, setStartSearchTime] = useState();
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
+  const [inSearch, setInSearch] = useState(false);
 
   const autocompleteOptions = {
     // componentRestrictions: { country: "us" },
@@ -69,31 +75,23 @@ export default function AllRides() {
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
 
-  const [inSearch, setInSearch] = useState(false);
-
-  const [locations, setLocations] = useState([]); // delete this later
-
   const capacity_options = [];
-
-  const capitalizeFirstLetter = (val) => {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-  };
 
   for (let i = 1; i < MAX_CAPACITY + 1; i++) {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
 
-  const handleShowPopupMessage = (status, message) => {
-    setPopupMessageInfo({ status: status, message: message });
-    setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
-  };
-
   const flipCreateRideFields = () => {
     const tempOrigin = origin;
 
     setOrigin(dest);
     setDest(tempOrigin);
+
+    console.log("origin state = ", origin);
+    console.log("destd state = ", dest);
+    console.log("origin ref = ", originRef.current.value);
+    console.log("destd ref= ", destinationRef.current.value);
 
     if (originRef.current && destinationRef.current) {
       const tempOriginValue = originRef.current.value;
@@ -228,17 +226,18 @@ export default function AllRides() {
     const parsedDate = dayjs(date);
     const parsedTime = dayjs(time);
 
-    if (!parsedDate.isValid() || !parsedTime.isValid()) {
-      console.error("Invalid date or time provided:", date, time);
-      setShowValidationModal(true); // Show validation error
-      return;
-    }
-
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
 
     const arrival_time_iso = new Date(arrival_time_string);
+
+    if (time === "" || now.getTime() >= arrival_time_iso.getTime()) {
+      setValidationModalTitle("Invalid Input");
+      setValidationModalMessage("Cannot enter a date in the past.");
+      setShowValidationModal(true); // Show the validation modal
+      return;
+    }
 
     if (
       !capacity ||
@@ -250,10 +249,13 @@ export default function AllRides() {
       origin === "" ||
       dest === "" ||
       date === "" ||
-      time === "" ||
-      now.getTime() >= arrival_time_iso.getTime()
+      !parsedDate.isValid() ||
+      !parsedTime.isValid()
     ) {
-      console.log("SHOWING");
+      setValidationModalTitle("Missing fields");
+      setValidationModalMessage(
+        "You must provide all fields to create a ride."
+      );
       setShowValidationModal(true); // Show the validation modal
       return;
     } else {
@@ -285,7 +287,12 @@ export default function AllRides() {
       handleCloseRideModal();
       resetSearch();
       setInSearch(false);
-      handleShowPopupMessage(responseData.success, responseData.message);
+
+      handleShowPopupMessage(
+        setPopupMessageInfo,
+        responseData.success,
+        responseData.message
+      );
       console.log("dash data fetch 2");
       await fetchDashboardData();
       if (!response.ok) {
@@ -299,6 +306,8 @@ export default function AllRides() {
   };
 
   const handleOpenRideModal = async () => {
+    console.log("origin state = ", origin);
+    console.log("destd state = ", dest);
     setCreateRideModal(true);
   };
 
@@ -310,6 +319,8 @@ export default function AllRides() {
     setDate("");
     setTime("");
     setRideNote("");
+    originRef.current = null;
+    destinationRef.current = null;
   };
 
   const fetchDashboardData = async () => {
@@ -367,6 +378,7 @@ export default function AllRides() {
     if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
       searchRide();
     }
+    await fetchDashboardData();
     setPendingRideId((prev) => prev.filter((id) => id !== rideid));
   };
 
@@ -430,12 +442,12 @@ export default function AllRides() {
         <div className="flex justify-between items-center">
           <Link
             to="/myrides"
-            className="hidden md:inline-block bg-theme_medium_1 text-white px-4 py-2 rounded-md hover:bg-theme_dark_1 hover:text-white"
+            className={`hidden md:inline-block ${bigButtonStyling1}`}
           >
             My Rideshares
           </Link>
           <Button
-            className="bg-theme_medium_1 text-white px-4 py-2 hover:bg-theme_dark_1 rounded-md"
+            className={`${bigButtonStyling1}`}
             onClick={() => handleOpenRideModal()}
           >
             Create a Rideshare
@@ -627,57 +639,7 @@ export default function AllRides() {
                   buttonStatus={dashboardData.ridereqs[ride.id]}
                   buttonLoading={pendingRideId.includes(ride.id)}
                 >
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xl flex items-center justify-center gap-2">
-                      <span className="flex text-center flex-col">
-                        <strong>{ride.origin["name"]}</strong>
-                        <span className="text-sm">
-                          {ride.origin["address"]
-                            .split(" ")
-                            .slice(0, -2)
-                            .join(" ")}
-                        </span>
-                      </span>
-                      →
-                      <span className="flex text-center flex-col">
-                        <strong>{ride.destination["name"]}</strong>
-                        <span className="text-sm">
-                          {ride.destination["address"]
-                            .split(" ")
-                            .slice(0, -2)
-                            .join(" ")}
-                        </span>
-                      </span>
-                    </p>
-                    <p className="mt-2 mb-1 text-center">
-                      <span className="px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
-                        Arrives by{" "}
-                        {getFormattedDate(new Date(ride.arrival_time))}
-                      </span>
-                    </p>
-                  </div>
-                  <hr className="border-1 my-3 border-theme_medium_1" />
-                  <p>
-                    <span className="font-semibold">Posted by:</span>{" "}
-                    <span>{ride.admin_name}</span>{" "}
-                    <CopyEmailButton
-                      copy={[ride.admin_email]}
-                      text="Copy Email"
-                      className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle"
-                    />
-                  </p>
-                  <p>
-                    <span className="font-semibold">Seats Taken:</span>{" "}
-                    {ride.current_riders.length}/{ride.max_capacity}
-                  </p>
-                  {ride.note && (
-                    <div className="mb-0.5">
-                      <span className="font-semibold">Note:</span>
-                      <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-                        <p className="break-words">{ride.note}</p>
-                      </div>
-                    </div>
-                  )}
+                  {renderRideCardInfo(ride)}
                 </RideCard>
               ))}
             </div>
@@ -686,7 +648,6 @@ export default function AllRides() {
           )}
         </div>
       )}
-
       {createRideModal && (
         <Modal
           isOpen={createRideModal}
@@ -722,6 +683,7 @@ export default function AllRides() {
                     }}
                     options={autocompleteOptions}
                     ref={originRef}
+                    // value={origin ? origin['formatted_address'] : ""}
                   />
                   <IconButton
                     className="flex-none w-9 h-9 hover:bg-theme_light_1"
@@ -738,6 +700,7 @@ export default function AllRides() {
                     }}
                     options={autocompleteOptions}
                     ref={destinationRef}
+                    // value={dest ? dest['formatted_address'] : ""}
                   />
                 </div>
               </div>
@@ -776,10 +739,10 @@ export default function AllRides() {
         <WarningModal
           isOpen={showValidationModal}
           onClose={() => setShowValidationModal(false)}
-          title={"Missing Fields"}
+          title={validationModalTitle}
         >
           <div className="flex flex-col gap-3">
-            <p>You must provide all fields to create a ride.</p>
+            <p>{validationModalMessage}</p>
             <div className="flex self-end">
               <Button
                 onClick={() => setShowValidationModal(false)}

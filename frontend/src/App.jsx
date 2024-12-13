@@ -7,6 +7,7 @@ import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import tailwindConfig from "../tailwind.config.js";
 import LoadingIcon from "./components/LoadingIcon";
+import { bigButtonStyling2 } from "./utils/utils";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -78,7 +79,7 @@ function App() {
               </p>
               <a
                 href="/api/login"
-                className="text-lg bg-theme_medium_2 text-white px-4 py-2 rounded hover:bg-theme_dark_2 hover:text-white self-center"
+                className={`text-lg ${bigButtonStyling2} self-center`}
               >
                 Login with CAS
               </a>
