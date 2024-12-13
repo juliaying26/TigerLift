@@ -111,7 +111,8 @@ export default function MyRides() {
     loadData();
   }, [viewType]);
 
-  // update view type based on location state
+  // update view type based on location state. This is used to
+  // get either Posted or Requested rides from notifications/mobile nav menu
   useEffect(() => {
     if (location.state?.viewType) {
       setViewType(location.state.viewType);
@@ -138,7 +139,7 @@ export default function MyRides() {
     setIsModalOpen(true);
   };
 
-  // close the modal and reset states
+  // checks if modal needs to be closed
   const handleCloseModal = () => {
     if (!isSaving && hasRideChanges()) {
       setIsWarningModalOpen(true);
