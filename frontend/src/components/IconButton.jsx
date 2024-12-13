@@ -1,4 +1,4 @@
-export default function IconButton({ 
+export default function IconButton({
   type,
   onClick,
   disabled = false,
