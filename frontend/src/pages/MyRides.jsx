@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react"; // Added React for consistency
+// importing necessary libraries and components
+import React, { useState, useEffect } from "react";
 import RideCard from "../components/RideCard";
 import DateTimePicker from "../components/DateTimePicker";
 import Modal from "../components/Modal";
@@ -30,10 +31,12 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+// Displaying and managing all Rides that user requested or created
 export default function MyRides() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // state variables that manage RidesData
   const [myUpcomingPostedRidesData, setMyUpcomingPostedRidesData] = useState(
     []
   );
@@ -41,11 +44,11 @@ export default function MyRides() {
   const [myUpcomingRequestedRidesData, setMyUpcomingRequestedRidesData] =
     useState([]);
   const [myPastRequestedRidesData, setMyPastRequestedRidesData] = useState([]);
-  const [viewType, setViewType] = useState("posted");
-  const [loading, setLoading] = useState(true);
+  const [viewType, setViewType] = useState("posted"); // view type is either "posted" or "requested"
+  const [loading, setLoading] = useState(true); // loading indicator
 
+  // state variables for modals and popup messages
   const [selectedRide, setSelectedRide] = useState(null);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
   const [warningModalInfo, setWarningModalInfo] = useState({
@@ -60,6 +63,7 @@ export default function MyRides() {
     message: "",
   });
 
+  // state variables for editing ride details
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
@@ -74,6 +78,7 @@ export default function MyRides() {
   const [cancelRequestRideId, setCancelRequestRideId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // fetch user's rides data from the server
   const fetchMyRidesData = async () => {
     const endpoint = "/api/myrides";
     try {
@@ -92,6 +97,7 @@ export default function MyRides() {
     }
   };
 
+  // load rides data
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -105,12 +111,14 @@ export default function MyRides() {
     loadData();
   }, [viewType]);
 
+  // update view type based on location state
   useEffect(() => {
     if (location.state?.viewType) {
       setViewType(location.state.viewType);
     }
   }, [location.state]);
 
+  // update ride details when a ride is selected
   useEffect(() => {
     if (selectedRide) {
       setNewCapacity({
@@ -122,7 +130,7 @@ export default function MyRides() {
     }
   }, [selectedRide]);
 
-  // states for modal
+  // states for modal -- opening a modal to manage the ride
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);
     setModalCurrentRiders(ride.current_riders || []);
@@ -130,6 +138,7 @@ export default function MyRides() {
     setIsModalOpen(true);
   };
 
+  // close the modal and reset states
   const handleCloseModal = () => {
     if (!isSaving && hasRideChanges()) {
       setIsWarningModalOpen(true);
@@ -143,6 +152,7 @@ export default function MyRides() {
     }
   };
 
+  // close modal and reset relevant states
   const closeModal = () => {
     if (isWarningModalOpen) {
       handleCloseWarningModal();
@@ -159,6 +169,7 @@ export default function MyRides() {
     setIsEditingArrivalTime(false);
   };
 
+  // handles closing the warning modal
   const handleCloseWarningModal = () => {
     setIsWarningModalOpen(false);
     setWarningModalInfo({
@@ -169,6 +180,7 @@ export default function MyRides() {
     setDeleteRideMessage("");
   };
 
+  // a warning modal before deletion
   const handleDeleteRide = () => {
     setIsWarningModalOpen(true);
     setWarningModalInfo({
@@ -178,6 +190,7 @@ export default function MyRides() {
     });
   };
 
+  // handles deleting the ride
   const deleteRide = async (rideId) => {
     setIsSaving(true);
 
@@ -221,6 +234,7 @@ export default function MyRides() {
     setIsSaving(false);
   };
 
+// determine if any changes have been made to the ride details
   const hasRideChanges = () => {
     if (
       (newCapacity && newCapacity.label !== selectedRide.max_capacity) ||
@@ -289,10 +303,6 @@ export default function MyRides() {
       };
       pending_riders.push(rider);
     });
-
-    console.log("Accepting riders:", accepting_riders);
-    console.log("Rejecting riders:", rejecting_riders);
-    console.log("Pending riders:", pending_riders);
 
     try {
       const new_arrival_time_string = `${newArrivalDate.format(
@@ -409,6 +419,7 @@ export default function MyRides() {
     ]);
   };
 
+  // cancel user's ride request of rideid
   const handleCancelRideRequest = async (rideid) => {
     setCancelRequestRideId(rideid);
     try {
