@@ -133,7 +133,7 @@ export default function MyRides() {
   };
 
   const handleCloseModal = () => {
-    if (hasRideChanges()) {
+    if (!isSaving && hasRideChanges()) {
       setIsWarningModalOpen(true);
       setWarningModalInfo({
         title: "Unsaved Changes",
@@ -236,14 +236,14 @@ export default function MyRides() {
     } else return false;
   };
 
-  useEffect(() => {
-    console.log("current " + modalCurrentRiders);
-    console.log("requested " + modalRequestedRiders);
-    console.log("rejected " + modalRejectedRiders);
-  }, [modalCurrentRiders, modalRequestedRiders, modalRejectedRiders]);
-
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
+    if (!hasRideChanges()) {
+      handleCloseModal();
+      setIsSaving(false);
+      return;
+    }
+
     // Check time is not in the past
     const now = new Date();
     const arrival_time_string = `${newArrivalDate.format(
@@ -295,12 +295,6 @@ export default function MyRides() {
     console.log("Accepting riders:", accepting_riders);
     console.log("Rejecting riders:", rejecting_riders);
     console.log("Pending riders:", pending_riders);
-
-    if (!hasRideChanges()) {
-      handleCloseModal();
-      setIsSaving(false);
-      return;
-    }
 
     try {
       const new_arrival_time_string = `${newArrivalDate.format(
@@ -370,7 +364,7 @@ export default function MyRides() {
   };
 
   // Accepts rider in modal
-  const handleAcceptRider = async (netid, fullName, email, rideId) => {
+  const handleAcceptRider = async (netid, fullName, email) => {
     if (
       (newCapacity && modalCurrentRiders.length >= newCapacity.label) ||
       (!newCapacity && modalCurrentRiders.length >= selectedRide.max_capacity)
@@ -395,7 +389,7 @@ export default function MyRides() {
   };
 
   // Rejects rider in modal
-  const handleRejectRider = async (netid, fullName, email, rideId) => {
+  const handleRejectRider = async (netid, fullName, email) => {
     setModalRejectedRiders((prevRejectedRiders) => [
       // add to rejected riders
       ...prevRejectedRiders,
@@ -409,7 +403,7 @@ export default function MyRides() {
   };
 
   // removes rider from accepted back to pending
-  const handleRemoveRider = async (netid, fullName, email, rideId) => {
+  const handleRemoveRider = async (netid, fullName, email) => {
     setModalCurrentRiders((prevCurrentRiders) => {
       return prevCurrentRiders.filter(([n, name, mail]) => n !== netid);
     });
@@ -614,7 +608,7 @@ export default function MyRides() {
           <div className="flex flex-col gap-3">
             <p>{warningModalInfo.message}</p>
             {warningModalInfo.title === "Delete this Rideshare?" &&
-              selectedRide.current_riders.length != 0 && (
+              selectedRide?.current_riders?.length != 0 && (
                 <div className="flex flex-col gap-4 pb-5">
                   <p>
                     Please give a reason for deleting this rideshare. The riders
@@ -655,7 +649,7 @@ export default function MyRides() {
                 loading={isSaving}
                 disabled={
                   warningModalInfo.title === "Delete this Rideshare?" &&
-                  selectedRide.current_riders.length != 0 &&
+                  selectedRide?.current_riders?.length != 0 &&
                   !deleteRideMessage
                 }
               >
@@ -775,12 +769,7 @@ export default function MyRides() {
                           <IconButton
                             type="xmark"
                             onClick={() =>
-                              handleRemoveRider(
-                                netid,
-                                fullName,
-                                email,
-                                selectedRide.id
-                              )
+                              handleRemoveRider(netid, fullName, email)
                             }
                             className="text-zinc-700 hover:text-zinc-500"
                           />
@@ -810,24 +799,14 @@ export default function MyRides() {
                             <IconButton
                               type="checkmark"
                               onClick={() =>
-                                handleAcceptRider(
-                                  netid,
-                                  fullName,
-                                  email,
-                                  selectedRide.id
-                                )
+                                handleAcceptRider(netid, fullName, email)
                               }
                               className="bg-theme_green text-theme_dark_green hover:bg-theme_light_green"
                             />
                             <IconButton
                               type="xmark"
                               onClick={() =>
-                                handleRejectRider(
-                                  netid,
-                                  fullName,
-                                  email,
-                                  selectedRide.id
-                                )
+                                handleRejectRider(netid, fullName, email)
                               }
                               className="bg-theme_red text-theme_dark_red hover:bg-theme_light_red"
                             />
@@ -845,6 +824,7 @@ export default function MyRides() {
               <Button
                 onClick={() => handleDeleteRide(selectedRide.id)}
                 className="hover:bg-theme_red border border-zinc-300 text-zinc-700 hover:text-white"
+                disabled={isSaving}
               >
                 Delete this Rideshare
               </Button>
