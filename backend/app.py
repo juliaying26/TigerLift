@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, request, jsonify, send_from_directory, url_for, abort
+from flask import Flask, redirect, request, jsonify, send_from_directory, abort
 import database
 from casclient import CASClient
 from dotenv import load_dotenv
