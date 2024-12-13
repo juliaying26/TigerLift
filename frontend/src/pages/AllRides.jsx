@@ -87,22 +87,14 @@ export default function AllRides() {
       return;
     }
 
-    console.log("in search ride. search origin: ", searchOrigin);
-
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
       setLoading(true);
-      console.log("dash data fetch 1");
       await fetchDashboardData();
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      console.log("test, am in dashboard searchride");
-
-      console.log("startSearchDate: " + startSearchDate);
-      console.log("endSearchDate: " + endSearchDate);
-
       let start_search_time_string = null;
       let arrival_time_string = null;
       let start_search_time_iso = null;
@@ -115,8 +107,6 @@ export default function AllRides() {
           )}T${startSearchTime.format("HH:mm:ss")}`;
         } else {
           const today = dayjs().format("YYYY-MM-DD");
-          console.log("today:", today);
-          console.log("startsearchdate:", startSearchDate.format("YYYY-MM-DD"));
           if (startSearchDate.format("YYYY-MM-DD") === today) {
             start_search_time_string = `${startSearchDate.format(
               "YYYY-MM-DD"
@@ -147,8 +137,6 @@ export default function AllRides() {
         arrival_time_iso = new Date(arrival_time_string).toISOString();
       }
 
-      console.log("arrive after iso: " + start_search_time_iso);
-      console.log("arrive before iso: " + arrival_time_iso);
 
       const params = new URLSearchParams({
         ...(searchOrigin && { origin: searchOrigin.place_id }),
@@ -158,8 +146,6 @@ export default function AllRides() {
         }),
         ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
-
-      console.log("params: " + params.toString());
 
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
         method: "GET",
@@ -257,7 +243,6 @@ export default function AllRides() {
         responseData.success,
         responseData.message
       );
-      console.log("dash data fetch 2");
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -290,7 +275,6 @@ export default function AllRides() {
       const response = await fetch("/api/dashboard");
       const data = await response.json();
       setDashboardData(data);
-      console.log(data.rides);
       setRidesData(data.rides);
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -307,10 +291,9 @@ export default function AllRides() {
     destination,
     arrival_time
   ) => {
-    console.log("IN HANDLE RIDE REQUEST");
+
     setPendingRideId((prev) => [...prev, rideid]);
     try {
-      console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
 
       const formattedArrivalTime = dayjs(arrival_time)
         .tz("America/New_York")
@@ -328,7 +311,6 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
-      console.log("dash data fetch 3");
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -357,7 +339,6 @@ export default function AllRides() {
     setEndSearchTime(null);
     setLoading(true);
     setInSearch(false);
-    console.log("dash data fetch 4");
     await fetchDashboardData();
     setLoading(false);
   };
@@ -367,7 +348,6 @@ export default function AllRides() {
       isInitialRender.current = false;
       return;
     }
-    console.log("dash data fetch 5");
     fetchDashboardData();
   }, []);
 
@@ -382,7 +362,6 @@ export default function AllRides() {
     ) {
       searchRide();
     } else {
-      console.log("is this what happening?");
       resetSearch();
     }
   }, [

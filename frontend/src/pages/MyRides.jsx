@@ -88,7 +88,6 @@ export default function MyRides() {
       setMyUpcomingRequestedRidesData(data.upcoming_requested_rides);
       setMyPastRequestedRidesData(data.past_requested_rides);
 
-      console.log(data);
     } catch (error) {
       console.error("Error fetching rides:", error);
     }
@@ -304,8 +303,6 @@ export default function MyRides() {
         new_arrival_time_string
       ).toISOString();
 
-      console.log(new_arrival_time_iso);
-
       // Parse arrival time for sending email purposes
       const new_arrival_time = dayjs.tz(
         `${newArrivalDate.format("YYYY-MM-DD")}T${newArrivalTime.format(
@@ -346,7 +343,6 @@ export default function MyRides() {
       const responseData = await response.json();
 
       closeModal();
-      console.log(responseData);
       handleShowPopupMessage(
         setPopupMessageInfo,
         responseData.success,
@@ -452,7 +448,7 @@ export default function MyRides() {
               new Date(ride.arrival_time) > new Date() &&
               (viewType === "posted"
                 ? "Manage Rideshare"
-                : ride.request_status !== "accepted" && "Cancel Request")
+                : ride.request_status !== "accepted" && ride.request_status !== "rejected"  && "Cancel Request")
             }
             buttonOnClick={
               viewType === "posted"
@@ -462,7 +458,7 @@ export default function MyRides() {
                 : () => handleCancelRideRequest(ride.id)
             }
             buttonClassName={`${
-              ride.request_status === "accepted" ||
+              (ride.request_status === "accepted" || ride.request_status === "rejected") ||
               new Date(ride.arrival_time) <= new Date()
                 ? "cursor-auto"
                 : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
@@ -701,7 +697,6 @@ export default function MyRides() {
                 <Button
                   className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
                   onClick={() => {
-                    console.log(newArrivalDate, newArrivalTime);
                     if (isEditingArrivalTime) {
                       setNewArrivalDate(dayjs(selectedRide.arrival_time));
                       setNewArrivalTime(dayjs(selectedRide.arrival_time));
@@ -739,7 +734,6 @@ export default function MyRides() {
               <Button
                 className="text-theme_medium_2 hover:text-theme_dark_2"
                 onClick={() => {
-                  console.log(newCapacity);
                   if (isEditingCapacity) {
                     setNewCapacity({
                       value: selectedRide.max_capacity,
