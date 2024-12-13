@@ -101,3 +101,23 @@ export const renderRideCardInfo = (ride) => {
     </>
   );
 };
+
+export const flipFields = (
+  origin,
+  dest,
+  originRef,
+  destinationRef,
+  setOrigin,
+  setDest
+) => {
+  const tempOrigin = origin;
+
+  setOrigin(dest);
+  setDest(tempOrigin);
+
+  if (originRef.current && destinationRef.current) {
+    const tempOriginValue = originRef.current.value;
+    originRef.current.value = destinationRef.current.value;
+    destinationRef.current.value = tempOriginValue;
+  }
+};
