@@ -232,7 +232,7 @@ def create_ride_request(netid, full_name, mail, ride_id):
     else:
         print("Connection not established.")
 
-
+# can u check if this is used. i don't think it is. if so delete
 def update_ride_request(request_id, status):
     """"
     Updates an existing ride request in the RidesRequest database
@@ -341,6 +341,8 @@ def update_arrival_time(rideid, new_arrival_time):
 #     else:
 #         print("Connection not established.")
 
+
+# don't think this is used either
 def delete_all_rides():
     sql_command = "DELETE FROM Rides"
     
@@ -712,6 +714,7 @@ def get_all_my_ride_requests(netid):
 
     return requests
 
+# helper function
 def remove_from_current_riders(ride_id, requester_id):
     conn = connect()
 
