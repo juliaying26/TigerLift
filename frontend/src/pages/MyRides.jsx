@@ -87,7 +87,6 @@ export default function MyRides() {
       setMyPastPostedRidesData(data.past_posted_rides);
       setMyUpcomingRequestedRidesData(data.upcoming_requested_rides);
       setMyPastRequestedRidesData(data.past_requested_rides);
-
     } catch (error) {
       console.error("Error fetching rides:", error);
     }
@@ -448,17 +447,17 @@ export default function MyRides() {
               new Date(ride.arrival_time) > new Date() &&
               (viewType === "posted"
                 ? "Manage Rideshare"
-                : ride.request_status !== "accepted" && ride.request_status !== "rejected"  && "Cancel Request")
+                : ride.request_status === "pending" && "Cancel Request")
             }
             buttonOnClick={
               viewType === "posted"
                 ? () => handleManageRideClick(ride)
-                : ride.request_status === "accepted"
-                ? () => {}
-                : () => handleCancelRideRequest(ride.id)
+                : ride.request_status === "pending"
+                ? () => handleCancelRideRequest(ride.id)
+                : () => {}
             }
             buttonClassName={`${
-              (ride.request_status === "accepted" || ride.request_status === "rejected") ||
+              ride.request_status !== "pending" ||
               new Date(ride.arrival_time) <= new Date()
                 ? "cursor-auto"
                 : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
