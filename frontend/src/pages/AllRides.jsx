@@ -123,21 +123,14 @@ export default function AllRides() {
       return;
     }
 
-
     console.log("in search ride. search origin: ", searchOrigin);
 
-    
-    
-
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
-      /*
-      alert(
-        "You must provide at least one of origin, destination, start date, or end date."
-      );
-      */
-     console.log("dash data fetch 1");
-      fetchDashboardData();
-     return;
+      setLoading(true);
+      console.log("dash data fetch 1");
+      await fetchDashboardData();
+      setLoading(false);
+      return;
     }
     setLoading(true);
     try {
@@ -402,7 +395,6 @@ export default function AllRides() {
     setLoading(false);
   };
 
-  
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -412,23 +404,35 @@ export default function AllRides() {
     fetchDashboardData();
   }, []);
 
-  useEffect(() => {
-    searchRide();
-  }, [searchOrigin, searchDest, startSearchDate, endSearchDate, startSearchTime, endSearchTime]);
-
-/*
-  useEffect(() => {
-
-    if ((startSearchTime && startSearchDate) || (endSearchTime && endSearchDate)) {
-      searchRide();
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevent the default behavior of the Enter key
+      console.log("Enter key is disabled!");
     }
+  };
 
+  useEffect(() => {
+    if (
+      searchOrigin ||
+      searchDest ||
+      startSearchDate ||
+      endSearchDate ||
+      (startSearchDate && startSearchTime) ||
+      (endSearchDate && endSearchTime)
+    ) {
+      searchRide();
+    } else {
+      console.log("is this what happening?");
+      resetSearch();
+    }
   }, [
+    searchOrigin,
+    searchDest,
     startSearchDate,
     endSearchDate,
     startSearchTime,
     endSearchTime,
-  ]);*/
+  ]);
 
   return (
     <div className="p-8 pb-14">
@@ -470,15 +474,25 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter origin"
                 onPlaceSelected={(place) => {
-                  console.log("setting origin to: ", place);
-                  // if enter is hit
-                  if (place.name == "") {
-                    console.log("setting origin name to null");
-                    setSearchOrigin(null);
+                  const inputElement = document.querySelector(
+                    "#searchOrigin.pac-target-input"
+                  );
+                  const inputValue = inputElement
+                    ? inputElement.value.trim()
+                    : "";
+
+                  console.log("Input value: ", inputValue);
+                  console.log("Place object: ", place);
+
+                  // If the input is empty or the place.name is invalid, do nothing
+                  if (!inputValue || !place.name) {
+                    console.log("Ignoring invalid or empty selection");
+                    return;
                   }
-                  else {
-                    setSearchOrigin(place);
-                  }
+
+                  // Otherwise, update the origin with the selected place
+                  console.log("Valid selection: ", place);
+                  setSearchOrigin(place);
                 }}
                 // if user deletes input from field
                 onChange={(e) => {
@@ -486,6 +500,7 @@ export default function AllRides() {
                     setSearchOrigin(null);
                   }
                 }}
+                onKeyDown={handleKeyDown}
                 options={autocompleteOptions}
                 ref={searchOriginRef}
               />
@@ -504,15 +519,27 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter destination"
                 onPlaceSelected={(place) => {
-                  console.log("setting dest to: ", place);
-                  if (place.name == "") {
-                    console.log("setting dest name to null");
-                    setSearchDest(null);
+                  const inputElement = document.querySelector(
+                    "#searchDest.pac-target-input"
+                  );
+                  const inputValue = inputElement
+                    ? inputElement.value.trim()
+                    : "";
+
+                  console.log("Input value: ", inputValue);
+                  console.log("Place object: ", place);
+
+                  // If the input is empty or the place.name is invalid, do nothing
+                  if (!inputValue || !place.name) {
+                    console.log("Ignoring invalid or empty selection");
+                    return;
                   }
-                  else {
-                    setSearchDest(place);
-                  }
+
+                  // Otherwise, update the origin with the selected place
+                  console.log("Valid selection: ", place);
+                  setSearchDest(place);
                 }}
+                onKeyDown={handleKeyDown}
                 // if user deletes input from field
                 onChange={(e) => {
                   if (!e.target.value) {
@@ -536,7 +563,10 @@ export default function AllRides() {
                     console.log("start date cleared");
                     //searchRide();
                     setStartSearchDate(null);
-                    console.log("start date state:", startSearchDate.format("YYYY-MM-DD"));
+                    console.log(
+                      "start date state:",
+                      startSearchDate.format("YYYY-MM-DD")
+                    );
                   }
                 }}
                 time={startSearchTime}
@@ -547,7 +577,10 @@ export default function AllRides() {
                     console.log("start time cleared");
                     //searchRide();
                     setStartSearchTime(null);
-                    console.log("start time state:", startSearchTime.format("HH:mm:ss"));
+                    console.log(
+                      "start time state:",
+                      startSearchTime.format("HH:mm:ss")
+                    );
                   }
                 }}
               />
@@ -565,7 +598,10 @@ export default function AllRides() {
                     console.log("end date cleared");
                     //searchRide();
                     setEndSearchDate(null);
-                    console.log("end date state:", endSearchDate.format("YYYY-MM-DD"));
+                    console.log(
+                      "end date state:",
+                      endSearchDate.format("YYYY-MM-DD")
+                    );
                   }
                 }}
                 time={endSearchTime}
@@ -576,7 +612,10 @@ export default function AllRides() {
                     console.log("end time cleared");
                     //searchRide();
                     setEndSearchTime(null);
-                    console.log("end time state:", endSearchTime.format("HH:mm:ss"));
+                    console.log(
+                      "end time state:",
+                      endSearchTime.format("HH:mm:ss")
+                    );
                   }
                 }}
               />
@@ -683,7 +722,15 @@ export default function AllRides() {
                     }}
                     onChange={(e) => {
                       if (!e.target.value) {
+                        console.log("are we even here???");
                         setOrigin(null);
+                        console.log(searchDest);
+                        console.log(startSearchDate);
+                        console.log(endSearchDate);
+                        if (!searchDest && !startSearchDate && !endSearchDate) {
+                          console.log("are we here");
+                          resetSearch();
+                        }
                       }
                     }}
                     options={autocompleteOptions}
