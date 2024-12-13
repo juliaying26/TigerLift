@@ -88,7 +88,6 @@ export default function MyRides() {
       setMyUpcomingRequestedRidesData(data.upcoming_requested_rides);
       setMyPastRequestedRidesData(data.past_requested_rides);
 
-      console.log(data);
     } catch (error) {
       console.error("Error fetching rides:", error);
     }
@@ -237,9 +236,6 @@ export default function MyRides() {
   };
 
   useEffect(() => {
-    console.log("current " + modalCurrentRiders);
-    console.log("requested " + modalRequestedRiders);
-    console.log("rejected " + modalRejectedRiders);
   }, [modalCurrentRiders, modalRequestedRiders, modalRejectedRiders]);
 
   // if Save clicked on Modal popup
@@ -292,10 +288,6 @@ export default function MyRides() {
       pending_riders.push(rider);
     });
 
-    console.log("Accepting riders:", accepting_riders);
-    console.log("Rejecting riders:", rejecting_riders);
-    console.log("Pending riders:", pending_riders);
-
     if (!hasRideChanges()) {
       handleCloseModal();
       setIsSaving(false);
@@ -309,8 +301,6 @@ export default function MyRides() {
       const new_arrival_time_iso = new Date(
         new_arrival_time_string
       ).toISOString();
-
-      console.log(new_arrival_time_iso);
 
       // Parse arrival time for sending email purposes
       const new_arrival_time = dayjs.tz(
@@ -352,7 +342,6 @@ export default function MyRides() {
       const responseData = await response.json();
 
       closeModal();
-      console.log(responseData);
       handleShowPopupMessage(
         setPopupMessageInfo,
         responseData.success,
@@ -707,7 +696,6 @@ export default function MyRides() {
                 <Button
                   className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
                   onClick={() => {
-                    console.log(newArrivalDate, newArrivalTime);
                     if (isEditingArrivalTime) {
                       setNewArrivalDate(dayjs(selectedRide.arrival_time));
                       setNewArrivalTime(dayjs(selectedRide.arrival_time));
@@ -745,7 +733,6 @@ export default function MyRides() {
               <Button
                 className="text-theme_medium_2 hover:text-theme_dark_2"
                 onClick={() => {
-                  console.log(newCapacity);
                   if (isEditingCapacity) {
                     setNewCapacity({
                       value: selectedRide.max_capacity,
