@@ -12,7 +12,6 @@ import { bigButtonStyling2 } from "./utils/utils";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`/api/isloggedin`)

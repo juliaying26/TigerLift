@@ -10,7 +10,6 @@ import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
-import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import CustomTextArea from "../components/TextArea.jsx";
 import WarningModal from "../components/WarningModal.jsx";
 import {
@@ -21,6 +20,7 @@ import {
   handleShowPopupMessage,
   renderRideCardInfo,
   bigButtonStyling1,
+  flipFields,
 } from "../utils/utils";
 
 export default function AllRides() {
@@ -42,6 +42,7 @@ export default function AllRides() {
     status: "",
     message: "",
   });
+
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [validationModalMessage, setValidationModalMessage] = useState("");
   const [validationModalTitle, setValidationModalTitle] = useState("");
@@ -70,44 +71,15 @@ export default function AllRides() {
   const [inSearch, setInSearch] = useState(false);
 
   const autocompleteOptions = {
-    // componentRestrictions: { country: "us" },
     fields: ["formatted_address", "geometry", "name", "place_id"],
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
 
   const capacity_options = [];
-
   for (let i = 1; i < MAX_CAPACITY + 1; i++) {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
-
-  const flipCreateRideFields = () => {
-    const tempOrigin = origin;
-
-    setOrigin(dest);
-    setDest(tempOrigin);
-
-    if (originRef.current && destinationRef.current) {
-      const tempOriginValue = originRef.current.value;
-      originRef.current.value = destinationRef.current.value;
-      destinationRef.current.value = tempOriginValue;
-    }
-
-  };
-
-  const flipSearchFields = () => {
-    const tempSearchOrigin = searchOrigin;
-
-    setSearchOrigin(searchDest);
-    setSearchDest(tempSearchOrigin);
-
-    if (searchOriginRef.current && searchDestinationRef.current) {
-      const tempSearchOriginValue = searchOriginRef.current.value;
-      searchOriginRef.current.value = searchDestinationRef.current.value;
-      searchDestinationRef.current.value = tempSearchOriginValue;
-    }
-  };
 
   const searchRide = async () => {
     if (isInitialRender.current) {
@@ -133,7 +105,7 @@ export default function AllRides() {
           start_search_time_string = `${startSearchDate.format(
             "YYYY-MM-DD"
           )}T${startSearchTime.format("HH:mm:ss")}`;
-        } else if (startSearchTime == null) {
+        } else {
           const today = dayjs().format("YYYY-MM-DD");
           if (startSearchDate.format("YYYY-MM-DD") === today) {
             start_search_time_string = `${startSearchDate.format(
@@ -156,7 +128,7 @@ export default function AllRides() {
           arrival_time_string = `${endSearchDate.format(
             "YYYY-MM-DD"
           )}T${endSearchTime.format("HH:mm:ss")}`;
-        } else if (endSearchTime == null) {
+        } else {
           arrival_time_string = `${endSearchDate.format(
             "YYYY-MM-DD"
           )}T23:59:00`; // defaults to 11:59pm to include all rides on that day
@@ -191,19 +163,25 @@ export default function AllRides() {
     }
   };
 
-  const checkCreateRideParams = async () => {
+  const checkCreateRideParams = () => {
     const now = new Date();
 
     const parsedDate = dayjs(date);
     const parsedTime = dayjs(time);
 
-    const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
-      "HH:mm:ss"
-    )}`;
+    console.log(date);
+    console.log(time);
 
-    const arrival_time_iso = new Date(arrival_time_string);
+    let arrival_time_iso = null;
 
-    if (time === "" || now.getTime() >= arrival_time_iso.getTime()) {
+    if (date && time) {
+      const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
+        "HH:mm:ss"
+      )}`;
+      arrival_time_iso = new Date(arrival_time_string);
+    }
+
+    if (arrival_time_iso && now.getTime() >= arrival_time_iso.getTime()) {
       setValidationModalTitle("Invalid Input");
       setValidationModalMessage("Cannot enter a date in the past.");
       setShowValidationModal(true); // Show the validation modal
@@ -229,9 +207,9 @@ export default function AllRides() {
       );
       setShowValidationModal(true); // Show the validation modal
       return;
-    } else {
-      createRide();
     }
+
+    createRide();
   };
 
   const createRide = async () => {
@@ -248,13 +226,14 @@ export default function AllRides() {
         },
         body: JSON.stringify({
           capacity: capacity["label"],
-          origin: origin, // .name,
-          destination: dest, // .name,
+          origin: origin,
+          destination: dest,
           arrival_time: arrival_time_iso,
           note: rideNote,
         }),
       });
       const responseData = await response.json();
+
       handleCloseRideModal();
       resetSearch();
       setInSearch(false);
@@ -275,11 +254,11 @@ export default function AllRides() {
     setIsCreatingRide(false);
   };
 
-  const handleOpenRideModal = async () => {
+  const handleOpenRideModal = () => {
     setCreateRideModal(true);
   };
 
-  const handleCloseRideModal = async () => {
+  const handleCloseRideModal = () => {
     setCreateRideModal(false);
     setCapacity("");
     setOrigin("");
@@ -342,7 +321,6 @@ export default function AllRides() {
     if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
       searchRide();
     }
-    await fetchDashboardData();
     setPendingRideId((prev) => prev.filter((id) => id !== rideid));
   };
 
@@ -373,13 +351,6 @@ export default function AllRides() {
     fetchDashboardData();
   }, []);
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault(); // Prevent the default behavior of the Enter key
-      console.log("Enter key is disabled!");
-    }
-  };
-
   useEffect(() => {
     if (
       searchOrigin ||
@@ -401,6 +372,51 @@ export default function AllRides() {
     startSearchTime,
     endSearchTime,
   ]);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevent the default behavior of the Enter key
+      console.log("Enter key is disabled!");
+    }
+  };
+
+  const onPlaceSelected = (searchField, place) => {
+    const inputElement = document.querySelector(
+      `#${searchField}.pac-target-input`
+    );
+    const inputValue = inputElement ? inputElement.value.trim() : "";
+
+    console.log("Input value: ", inputValue);
+    console.log("Place object: ", place);
+
+    // If the input is empty or the place.name is invalid, do nothing
+    if (!inputValue || !place.name) {
+      console.log("Ignoring invalid or empty selection");
+      return;
+    }
+
+    // Otherwise, update the origin with the selected place
+    console.log("Valid selection: ", place);
+    if (searchField === "searchDest") {
+      setSearchDest(place);
+    } else {
+      setSearchOrigin(place);
+    }
+  };
+
+  const onChange = (e, setFunction) => {
+    if (!e.target.value) {
+      setFunction(null);
+    }
+  };
+
+  const onDateTimePick = (value, setFunction) => {
+    if (value === null) {
+      setFunction(null);
+    } else {
+      setFunction(value);
+    }
+  };
 
   return (
     <div className="p-8 pb-14">
@@ -442,29 +458,10 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter origin"
                 onPlaceSelected={(place) => {
-                  const inputElement = document.querySelector(
-                    "#searchOrigin.pac-target-input"
-                  );
-                  const inputValue = inputElement
-                    ? inputElement.value.trim()
-                    : "";
-
-                  // If the input is empty or the place.name is invalid, do nothing
-                  if (!inputValue || !place.name) {
-                    console.log("Ignoring invalid or empty selection");
-                    return;
-                  }
-
-                  // Otherwise, update the origin with the selected place
-                  console.log("Valid selection: ", place);
-                  setSearchOrigin(place);
+                  onPlaceSelected("searchOrigin", place);
                 }}
                 // if user deletes input from field
-                onChange={(e) => {
-                  if (!e.target.value) {
-                    setSearchOrigin(null);
-                  }
-                }}
+                onChange={(e) => onChange(e, setSearchOrigin)}
                 onKeyDown={handleKeyDown}
                 options={autocompleteOptions}
                 ref={searchOriginRef}
@@ -473,7 +470,16 @@ export default function AllRides() {
             <IconButton
               className="flex-none mt-[27px] w-9 h-9 hover:bg-theme_medium_2"
               type="flip"
-              onClick={flipSearchFields}
+              onClick={() =>
+                flipFields(
+                  searchOrigin,
+                  searchDest,
+                  searchOriginRef,
+                  searchDestinationRef,
+                  setSearchOrigin,
+                  setSearchDest
+                )
+              }
             ></IconButton>
             <div className="flex flex-col">
               <p className="font-medium mb-1">Destination</p>
@@ -484,30 +490,11 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter destination"
                 onPlaceSelected={(place) => {
-                  const inputElement = document.querySelector(
-                    "#searchDest.pac-target-input"
-                  );
-                  const inputValue = inputElement
-                    ? inputElement.value.trim()
-                    : "";
-
-                  // If the input is empty or the place.name is invalid, do nothing
-                  if (!inputValue || !place.name) {
-                    console.log("Ignoring invalid or empty selection");
-                    return;
-                  }
-
-                  // Otherwise, update the origin with the selected place
-                  console.log("Valid selection: ", place);
-                  setSearchDest(place);
+                  onPlaceSelected("searchDest", place);
                 }}
                 onKeyDown={handleKeyDown}
                 // if user deletes input from field
-                onChange={(e) => {
-                  if (!e.target.value) {
-                    setSearchDest(null);
-                  }
-                }}
+                onChange={(e) => onChange(e, setSearchDest)}
                 options={autocompleteOptions}
                 ref={searchDestinationRef}
               />
@@ -518,22 +505,12 @@ export default function AllRides() {
               <p className="font-medium mb-1">Arrive After</p>
               <DateTimePicker
                 date={startSearchDate}
-                //setDate={setStartSearchDate}
                 setDate={(value) => {
-                  setStartSearchDate(value);
-                  if (value === null) {
-                    //searchRide();
-                    setStartSearchDate(null);
-                  }
+                  onDateTimePick(value, setStartSearchDate);
                 }}
                 time={startSearchTime}
-                //setTime={setStartSearchTime}
                 setTime={(value) => {
-                  setStartSearchTime(value);
-                  if (value === null) {
-                    //searchRide();
-                    setStartSearchTime(null);
-                  }
+                  onDateTimePick(value, setStartSearchTime);
                 }}
               />
             </div>
@@ -543,20 +520,12 @@ export default function AllRides() {
               <p className="font-medium mb-1">Arrive Before</p>
               <DateTimePicker
                 date={endSearchDate}
-                //setDate={setEndSearchDate}
                 setDate={(value) => {
-                  setEndSearchDate(value);
-                  if (value === null) {
-                    //searchRide();
-                  }
+                  onDateTimePick(value, setEndSearchDate);
                 }}
                 time={endSearchTime}
-                //setTime={setEndSearchTime}
                 setTime={(value) => {
-                  setEndSearchTime(value);
-                  if (value === null) {
-                    //searchRide();
-                  }
+                  onDateTimePick(value, setEndSearchTime);
                 }}
               />
             </div>
@@ -660,22 +629,23 @@ export default function AllRides() {
                     onPlaceSelected={(place) => {
                       setOrigin(place); // Store selected place details in state
                     }}
-                    onChange={(e) => {
-                      if (!e.target.value) {
-                        setOrigin(null);
-                        if (!searchDest && !startSearchDate && !endSearchDate) {
-                          resetSearch();
-                        }
-                      }
-                    }}
+                    onChange={(e) => onChange(e, setOrigin)}
                     options={autocompleteOptions}
                     ref={originRef}
-                    // value={origin ? origin['formatted_address'] : ""}
                   />
                   <IconButton
                     className="flex-none w-9 h-9 hover:bg-theme_light_1"
                     type="flip"
-                    onClick={flipCreateRideFields}
+                    onClick={() =>
+                      flipFields(
+                        origin,
+                        dest,
+                        originRef,
+                        destinationRef,
+                        setOrigin,
+                        setDest
+                      )
+                    }
                   ></IconButton>
                   <Autocomplete
                     key={"createDestination"}
@@ -685,14 +655,9 @@ export default function AllRides() {
                     onPlaceSelected={(place) => {
                       setDest(place); // Store selected place details in state
                     }}
-                    onChange={(e) => {
-                      if (!e.target.value) {
-                        setDest(null);
-                      }
-                    }}
+                    onChange={(e) => onChange(e, setDest)}
                     options={autocompleteOptions}
                     ref={destinationRef}
-                    // value={dest ? dest['formatted_address'] : ""}
                   />
                 </div>
               </div>
