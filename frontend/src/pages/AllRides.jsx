@@ -48,6 +48,9 @@ export default function AllRides() {
 
   const originRef = useRef(null);
   const destinationRef = useRef(null);
+
+  const isInitialRender = useRef(true);
+
   const [origin, setOrigin] = useState(null);
   const [capacity, setCapacity] = useState("");
   const [dest, setDest] = useState(null);
@@ -115,14 +118,26 @@ export default function AllRides() {
   };
 
   const searchRide = async () => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+
     console.log("in search ride. search origin: ", searchOrigin);
 
+    
+    
+
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
-      // TODO: REMOVES (in allrides) and change alert message to be accurate
+      /*
       alert(
         "You must provide at least one of origin, destination, start date, or end date."
       );
-      return;
+      */
+     console.log("dash data fetch 1");
+      fetchDashboardData();
+     return;
     }
     setLoading(true);
     try {
@@ -272,11 +287,13 @@ export default function AllRides() {
       handleCloseRideModal();
       resetSearch();
       setInSearch(false);
+
       handleShowPopupMessage(
         setPopupMessageInfo,
         responseData.success,
         responseData.message
       );
+      console.log("dash data fetch 2");
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -350,6 +367,8 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
+      console.log("dash data fetch 3");
+      await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -378,46 +397,38 @@ export default function AllRides() {
     setEndSearchTime(null);
     setLoading(true);
     setInSearch(false);
+    console.log("dash data fetch 4");
     await fetchDashboardData();
     setLoading(false);
   };
 
+  
   useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    console.log("dash data fetch 5");
     fetchDashboardData();
   }, []);
 
   useEffect(() => {
-    if (searchOrigin) {
+    searchRide();
+  }, [searchOrigin, searchDest, startSearchDate, endSearchDate, startSearchTime, endSearchTime]);
+
+/*
+  useEffect(() => {
+
+    if ((startSearchTime && startSearchDate) || (endSearchTime && endSearchDate)) {
       searchRide();
     }
 
-    if (searchDest) {
-      searchRide();
-    }
-
-    if (startSearchDate) {
-      searchRide();
-    }
-
-    if (endSearchDate) {
-      searchRide();
-    }
-
-    if (startSearchTime && startSearchDate) {
-      searchRide();
-    }
-
-    if (endSearchTime && endSearchDate) {
-      searchRide();
-    }
   }, [
-    searchOrigin,
-    searchDest,
     startSearchDate,
     endSearchDate,
     startSearchTime,
     endSearchTime,
-  ]);
+  ]);*/
 
   return (
     <div className="p-8 pb-14">
@@ -459,7 +470,21 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter origin"
                 onPlaceSelected={(place) => {
-                  setSearchOrigin(place);
+                  console.log("setting origin to: ", place);
+                  // if enter is hit
+                  if (place.name == "") {
+                    console.log("setting origin name to null");
+                    setSearchOrigin(null);
+                  }
+                  else {
+                    setSearchOrigin(place);
+                  }
+                }}
+                // if user deletes input from field
+                onChange={(e) => {
+                  if (!e.target.value) {
+                    setSearchOrigin(null);
+                  }
                 }}
                 options={autocompleteOptions}
                 ref={searchOriginRef}
@@ -479,7 +504,20 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter destination"
                 onPlaceSelected={(place) => {
-                  setSearchDest(place);
+                  console.log("setting dest to: ", place);
+                  if (place.name == "") {
+                    console.log("setting dest name to null");
+                    setSearchDest(null);
+                  }
+                  else {
+                    setSearchDest(place);
+                  }
+                }}
+                // if user deletes input from field
+                onChange={(e) => {
+                  if (!e.target.value) {
+                    setSearchDest(null);
+                  }
                 }}
                 options={autocompleteOptions}
                 ref={searchDestinationRef}
@@ -491,9 +529,27 @@ export default function AllRides() {
               <p className="font-medium mb-1">Arrive After</p>
               <DateTimePicker
                 date={startSearchDate}
-                setDate={setStartSearchDate}
+                //setDate={setStartSearchDate}
+                setDate={(value) => {
+                  setStartSearchDate(value);
+                  if (value === null) {
+                    console.log("start date cleared");
+                    //searchRide();
+                    setStartSearchDate(null);
+                    console.log("start date state:", startSearchDate.format("YYYY-MM-DD"));
+                  }
+                }}
                 time={startSearchTime}
-                setTime={setStartSearchTime}
+                //setTime={setStartSearchTime}
+                setTime={(value) => {
+                  setStartSearchTime(value);
+                  if (value === null) {
+                    console.log("start time cleared");
+                    //searchRide();
+                    setStartSearchTime(null);
+                    console.log("start time state:", startSearchTime.format("HH:mm:ss"));
+                  }
+                }}
               />
             </div>
           </div>
@@ -502,9 +558,27 @@ export default function AllRides() {
               <p className="font-medium mb-1">Arrive Before</p>
               <DateTimePicker
                 date={endSearchDate}
-                setDate={setEndSearchDate}
+                //setDate={setEndSearchDate}
+                setDate={(value) => {
+                  setEndSearchDate(value);
+                  if (value === null) {
+                    console.log("end date cleared");
+                    //searchRide();
+                    setEndSearchDate(null);
+                    console.log("end date state:", endSearchDate.format("YYYY-MM-DD"));
+                  }
+                }}
                 time={endSearchTime}
-                setTime={setEndSearchTime}
+                //setTime={setEndSearchTime}
+                setTime={(value) => {
+                  setEndSearchTime(value);
+                  if (value === null) {
+                    console.log("end time cleared");
+                    //searchRide();
+                    setEndSearchTime(null);
+                    console.log("end time state:", endSearchTime.format("HH:mm:ss"));
+                  }
+                }}
               />
             </div>
           </div>
