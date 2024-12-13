@@ -681,6 +681,11 @@ export default function AllRides() {
                     onPlaceSelected={(place) => {
                       setOrigin(place); // Store selected place details in state
                     }}
+                    onChange={(e) => {
+                      if (!e.target.value) {
+                        setOrigin(null);
+                      }
+                    }}
                     options={autocompleteOptions}
                     ref={originRef}
                     // value={origin ? origin['formatted_address'] : ""}
@@ -697,6 +702,11 @@ export default function AllRides() {
                     placeholder="Enter destination"
                     onPlaceSelected={(place) => {
                       setDest(place); // Store selected place details in state
+                    }}
+                    onChange={(e) => {
+                      if (!e.target.value) {
+                        setDest(null);
+                      }
                     }}
                     options={autocompleteOptions}
                     ref={destinationRef}
