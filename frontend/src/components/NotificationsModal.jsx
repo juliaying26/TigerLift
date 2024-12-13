@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import IconButton from "./IconButton";
 import LoadingIcon from "./LoadingIcon";
 import { useNavigate } from "react-router-dom";
-import Button from "./Button";
+import Button from "./Button"; 
 
 export default function NotificationsModal({
   isOpen,
