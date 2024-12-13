@@ -1,3 +1,4 @@
+// importing necessary libraries and components
 import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import DateTimePicker from "../components/DateTimePicker.jsx";
@@ -23,35 +24,36 @@ import {
   flipFields,
 } from "../utils/utils";
 
+// Displaying and managing all upcoming Rideshares in the database
 export default function AllRides() {
-  const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
-
-  const [pendingRideId, setPendingRideId] = useState([]);
-
+  const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;  // Google API key from environment variables
+  const [pendingRideId, setPendingRideId] = useState([]); // tracking requests in progress
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
     rides: [],
     ridereqs: {},
   });
 
-  const [loading, setLoading] = useState(true);
-  const [ridesData, setRidesData] = useState([]);
-  const [createRideModal, setCreateRideModal] = useState(false);
+  const [loading, setLoading] = useState(true); 
+  const [ridesData, setRidesData] = useState([]); // storing fetched Rides Data
+  const [createRideModal, setCreateRideModal] = useState(false); // state for create new ride modal
 
   const [popupMessageInfo, setPopupMessageInfo] = useState({
     status: "",
     message: "",
   });
 
+  // whether we are showing validation modal (e.g. warning for creating new ride without all necessary fields in it filled)
   const [showValidationModal, setShowValidationModal] = useState(false);
-  const [validationModalMessage, setValidationModalMessage] = useState("");
-  const [validationModalTitle, setValidationModalTitle] = useState("");
+  const [validationModalMessage, setValidationModalMessage] = useState(""); // message inside validation modal
+  const [validationModalTitle, setValidationModalTitle] = useState("");  // title of validation modal
 
-  const originRef = useRef(null);
-  const destinationRef = useRef(null);
-
+    // Refs for handling input elements
+  const originRef = useRef(null); // stores origin
+  const destinationRef = useRef(null); // stores destination
   const isInitialRender = useRef(true);
 
+  // for ride creation from inputs
   const [origin, setOrigin] = useState(null);
   const [capacity, setCapacity] = useState("");
   const [dest, setDest] = useState(null);
@@ -60,6 +62,7 @@ export default function AllRides() {
   const [rideNote, setRideNote] = useState("");
   const [isCreatingRide, setIsCreatingRide] = useState(false);
 
+  // for searching functionality
   const searchOriginRef = useRef(null);
   const searchDestinationRef = useRef(null);
   const [searchOrigin, setSearchOrigin] = useState(null);
@@ -70,23 +73,27 @@ export default function AllRides() {
   const [endSearchTime, setEndSearchTime] = useState();
   const [inSearch, setInSearch] = useState(false);
 
+  // autocomplete options for location input
   const autocompleteOptions = {
     fields: ["formatted_address", "geometry", "name", "place_id"],
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
 
+  // make capacity dropdown options
   const capacity_options = [];
   for (let i = 1; i < MAX_CAPACITY + 1; i++) {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
 
+  // searching for ride functionality
   const searchRide = async () => {
     if (isInitialRender.current) {
-      isInitialRender.current = false;
+      isInitialRender.current = false; // for initial render, do not search
       return;
     }
 
+    // if no filters are set, fetch all rides
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
       setLoading(true);
       await fetchDashboardData();
@@ -95,6 +102,7 @@ export default function AllRides() {
     }
     setLoading(true);
     try {
+      // format start and end search times
       let start_search_time_string = null;
       let arrival_time_string = null;
       let start_search_time_iso = null;
@@ -147,6 +155,7 @@ export default function AllRides() {
         ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
 
+      // make api call to searchrides
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -163,14 +172,12 @@ export default function AllRides() {
     }
   };
 
+  // Checks if all necessary fields are inputted in Create Ride modal
   const checkCreateRideParams = () => {
     const now = new Date();
 
     const parsedDate = dayjs(date);
     const parsedTime = dayjs(time);
-
-    console.log(date);
-    console.log(time);
 
     let arrival_time_iso = null;
 
