@@ -1,6 +1,5 @@
 import os
 import psycopg2
-import json
 from dotenv import load_dotenv
 load_dotenv()
 from datetime import datetime
@@ -190,36 +189,6 @@ def create_ride_request(netid, full_name, mail, ride_id):
             conn.close()
     else:
         print("Connection not established.")
-
-def update_ride_request(request_id, status):
-    """"
-    Updates an existing ride request in the RidesRequest database
-    """
-
-    sql_command = f"""
-        UPDATE RideRequests
-        SET status = %s, response_time = CURRENT_TIMESTAMP
-        WHERE id = %s;
-    """
-
-    values = (status, request_id)
-
-    conn = connect()
-    
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
-                conn.commit()
-                print("Ride request updated successfully!")
-        except Exception as e:
-            print(f"Error updating ride request: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
-
 
 def update_capacity(rideid, new_capacity):
     """
