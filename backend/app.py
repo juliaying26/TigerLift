@@ -3,8 +3,8 @@ from flask import Flask, redirect, request, jsonify, send_from_directory, url_fo
 import database
 from casclient import CASClient
 from dotenv import load_dotenv
-load_dotenv() # load vars in .env file
-import smtplib # library for emails
+load_dotenv() 
+import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
@@ -33,37 +33,39 @@ def serve_react_app(path):
 
 @app.route('/api/isloggedin', methods=['GET'])
 def isloggedin():
-    print("IS LOGGED IN!!!!")
     return jsonify({'is_logged_in': _cas.is_logged_in(), 'user_info': _cas.getUserInfo()})
 
 @app.route('/api/login', methods=['GET'])
 def login():
     user_info = _cas.authenticate() # This will redirect to CAS login page if not logged in
-    print("user info")
-    print(user_info)
-    print("RIGHT BEFORE REDIRECT")
     return redirect(f"{FRONTEND_URL}/allrides")
 
 @app.route("/api/logout", methods=["GET"])
 def logout():
-    print("called log out")
     _cas.logout()
     return redirect("/")
 
 @app.route('/api/dashboard', methods=['GET'])
 def api_dashboard():
+    """
+    Retrieve all rideshares.
+
+    Parameters:
+        None
+
+    Returns:
+        JSON: user information provided by CAS, all the rides, and
+              a mapping of available and upcoming rideshares, sorted by
+              upcoming date
+    """
+
     user_info = _cas.authenticate()
     rides = database.get_all_rides()
-    # locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
-
-    # mapping for location
-    # location_map = {location[0]: location[1] for location in locations}
-
     current_time = datetime.now(timezone.utc)
     current_time = current_time.replace(tzinfo=None)
     
-    # mapping for rides array 
+    # Create the mapping for rides array 
     updated_rides = []
     for ride in rides:
         updated_ride = {
@@ -98,22 +100,27 @@ def api_dashboard():
 
 @app.route('/api/myrides', methods=['GET'])
 def get_my_rides():
+    """
+    Retrieve all rideshares associated with a specific user.
+
+    Parameters:
+        None
+
+    Returns:
+        JSON: user information provided by CAS, mappings of a user's 
+              upcoming and past posted rides, and mappings of a user's 
+              upcoming and past rideshares.
+    """
     user_info = _cas.authenticate()
     myrides = database.get_users_rides(user_info['netid'])
     myreqrides = database.get_users_requested_rides(user_info['netid'])
-    
-    # locations = database.get_all_locations()
-
-    # mapping for location
-    # location_map = {location[0]: location[1] for location in locations}
-    
     current_time = datetime.now(timezone.utc)
     current_time = current_time.replace(tzinfo=None)
 
-    # mapping for rides array 
     my_rides = []
     past_my_rides = []
 
+    # Create the mapping for rides array 
     for ride in myrides:
         updated_ride = {
             'id': ride[0],
@@ -135,8 +142,6 @@ def get_my_rides():
             my_rides.append(updated_ride)
         else:
             past_my_rides.append(updated_ride)
-
-        # my_rides.append(updated_ride)
 
     my_req_rides = []
     past_my_req_rides = []
@@ -163,8 +168,6 @@ def get_my_rides():
         else:
             past_my_req_rides.append(updated_ride)
 
-        # my_req_rides.append(updated_ride)
-
     my_rides.sort(key=lambda ride: ride['arrival_time'])
     past_my_rides.sort(key=lambda ride: ride['arrival_time'], reverse=True)
     my_req_rides.sort(key=lambda ride: ride['arrival_time'])
@@ -182,6 +185,20 @@ def get_my_rides():
 
 @app.route("/api/addride", methods=["POST"])
 def addride():
+    """
+    Adds a rideshare to the database.
+
+    Parameters:
+        capacity: the capacity of the rideshare
+        origin: a dictionary containing the origin location
+        dest: a dictionary containing the destination location
+        arrival_time: a datetime object with the arrival date & time
+        note (optional): note with the rideshare
+    
+    Returns:
+        JSON: a success message
+        400: if unable to create rideshare
+    """
     user_info = _cas.authenticate()
     data = request.get_json()
     capacity = data.get('capacity')
@@ -220,14 +237,23 @@ def addride():
 
 @app.route("/api/deleteride", methods=["POST"])
 def deleteride():
+    """
+    Deletes a rideshare from the database and notifies riders of the deletion.
+
+    Parameters:
+        rideid: a unique identifier for each rideshare.
+    
+    Returns:
+        JSON: a success message
+        400: if unable to delete rideshare
+    """
+
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
 
-    # assuming email is on
     try:
        database.delete_ride(str(user_info['netid']), rideid)     
-       print("RIDE DELETED") 
     except:
         return jsonify({'success': False, 'message': 'Failed to delete rideshare.'}), 400
 
@@ -249,7 +275,6 @@ def deleteride():
             mail = rider[2]
             send_email_notification(netid, mail, subject, message)
 
-        print("DELETE EMAIL SENT")
         return jsonify({'success': True, 'message': 'Rideshare successfully deleted.'})
 
     except:
@@ -258,6 +283,16 @@ def deleteride():
  
 @app.route("/api/cancelriderequest", methods=["POST"])
 def cancelriderequest():
+    """
+    Deletes the rideshare request from the database.
+
+    Parameters:
+        rideid: a unique identifier for each rideshare.
+    
+    Returns:
+        JSON: a success message
+        400: if unable to cancel rideshare request
+    """
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
@@ -269,44 +304,56 @@ def cancelriderequest():
 
 @app.route("/deleteallrides", methods=["GET"])
 def deleteallrides():
+    """
+    Deletes all rides from the database.
+
+    Parameters:
+        None
+    
+    Returns:
+        A redirect to the homepage.
+    """
     database.delete_all_rides()
     return redirect("/allrides")
 
 @app.route("/api/searchrides", methods=["GET"])
 def searchrides():
+    """
+    Filters out rides that match the given parameters. One of origin or
+    destination must be given.
 
-    print("in search rides")
+    Parameters:
+        arrival_time (optional): a datetime object
+        start_search_time (optional): a datetime object
+        origin (optional): the id corresponding to the origin, given by 
+                           Maps API
+        destination (optional): the id corresponding to the destination,
+                                given by Maps API
+    
+    Returns:
+       JSON: user information given by CAS, all rides returned from the 
+             database that match search criteria, a mapping of available 
+             and upcoming rideshares that match the search criteria, sorted 
+             by ascending arrival time
+       400: If both origin and destination not provided
+    """
+
     user_info = _cas.authenticate()
     arrival_time = request.args.get('arrival_time')
     start_search_time = request.args.get('start_search_time')
-
-    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
-    print("(JUST ADDED) ARRIVE AFTER:", start_search_time)
-
     origin = request.args.get('origin')
     destination = request.args.get('destination')
+    
     if not origin and not destination and not arrival_time and not start_search_time:
         return jsonify({"error": "You must provide at least one of origin, destination, start time, or end time."}), 400
 
-    print("(JUST ADDED) ARRIVE BEFORE:", arrival_time)
-    
-
-    print("origin:", origin)
-    print("destination:", destination)
-
     rides = database.search_rides(origin, destination, arrival_time, start_search_time)
-    # locations = database.get_all_locations()
     ridereqs = database.get_all_my_ride_requests(user_info['netid'])
-
-    #print(rides)
-
-    # mapping for location
-    # location_map = {location[0]: location[1] for location in locations}
 
     current_time = datetime.now(timezone.utc)
     current_time = current_time.replace(tzinfo=None)
     
-    # mapping for rides array 
+    # Create the mapping for rides array 
     updated_rides = []
     for ride in rides:
         updated_ride = {
@@ -333,8 +380,6 @@ def searchrides():
     for ridereq in ridereqs:
         ridereqs_map[ridereq[1]] = ridereq[2]
 
-    #print("UPDATED RIDES = ", updated_rides)
-
     return jsonify({
         'user_info': user_info,
         'rides': updated_rides,
@@ -343,23 +388,31 @@ def searchrides():
 
 @app.route("/api/requestride", methods=["POST"])
 def requestride():
+    """
+    Adds a ride request to the database and notifies the rideshare admin.
+
+    Parameters:
+        rideid: a unique identifier for each rideshare.
+    
+    Returns:
+        JSON: a success message
+        400: if unable to create or email the rideshare request
+
+    """
     user_info = _cas.authenticate()
     data = request.get_json()
     rideid = data.get('rideid')
     origin_name = data.get('origin_name')
     destination_name = data.get('destination_name')
     formatted_arrival_time = data.get('formatted_arrival_time')
-    print("REQUESTING RIDE")
     if not rideid:
         return jsonify({'success': False, 'message': 'Ride ID is required'}), 400
 
     try:
         database.create_ride_request(str(user_info['netid']), str(user_info['displayname']), str(user_info['mail']), rideid)
 
-        # send
         try: 
             admin_info = database.rideid_to_admin_id_email(rideid)
-            print("Admin info is", admin_info)
             subject = '🚗 ' + user_info['displayname'] + ' requested to join your Rideshare!'
             message = user_info['displayname'] + ' requested to join your Rideshare from ' + origin_name + ' to ' + destination_name + ' on ' + formatted_arrival_time + '!\n'
             send_email_notification(str(admin_info[0]), str(admin_info[1]), subject, message)
@@ -372,13 +425,28 @@ def requestride():
     
 @app.route("/api/batchupdateriderequest", methods=["POST"])
 def batchupdateriderequest():
+    """
+    Handles managing rideshare operations -- acceping/rejecting
+    rideshare requests, removing rideshares, changing arrival time and/or,
+    capacity of a rideshare. Notifies riders of changes.
+
+    Parameters:
+        rideid: a unique identifier for each rideshare
+        changed_time (optional): the new rideshare arrival time
+        new_capacity (optional): the new rideshare capacity
+        accepted_riders (optional): a list of accepted riders
+    
+    Returns:
+        JSON: a success message
+        400: if unable to perform the updates or send out email notifications
+
+    """
+    
     user_info = _cas.authenticate()
 
-    print("IN BATCH UPDATE RIDE REQUEST")
     try:
         data = request.get_json()
         rideid = data.get('rideid')
-        print(data)
 
         changedTime = data.get('changedTime')
         formatted_arrival_time = data.get('formatted_arrival_time')
@@ -387,39 +455,29 @@ def batchupdateriderequest():
         capacity = data.get('new_capacity')
         new_arrival_time = data.get('new_arrival_time')
 
-        # for time only
+        # For time only
         time_subject =  "🚗 The Arrival Time of your Rideshare has been changed!"
         time_message = "Your Rideshare from " + origin_name + " to " + destination_name + " has changed arrival time to " + formatted_arrival_time + ".\n"  
-
-        print(data.get('rejecting_riders'))
-        print(data.get('pending_riders'))
-        print(data.get('accepting_riders'))
 
         for rider in data.get('accepting_riders'):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
             status = database.accept_ride_request(requester_id, full_name, mail, rideid)
-            print("status is: " , status)
+
             # if status is True (meaning new ride request was created)
             if status:
                 # send email to accepted rider
                 subject = "🚗 Your request to join a Rideshare was accepted!"
                 message = "Your request to join the Rideshare from " + origin_name + " to " + destination_name + " on " + formatted_arrival_time + " was recently accepted!\n"
                 send_email_notification(requester_id, mail, subject, message)
-                # PRINT
-                print("SENT EMAIL NOTIF BATCH UPDATE")
             
             if changedTime:    
                 send_email_notification(requester_id, mail, time_subject, time_message)
-                print("SEnt email notif on changed time")
 
         for rider in data.get('rejecting_riders'):
             requester_id = rider.get('requester_id')
             database.reject_ride_request(requester_id, rideid)
-
-        # send_email_notification(requester_id, mail, "Your ride request was rejected", 
-        #     "Your ride request was recently rejected. Please see details at tigerlift.onrender.com")
 
         for rider in data.get('pending_riders'):
             requester_id = rider.get('requester_id')
@@ -431,7 +489,6 @@ def batchupdateriderequest():
             database.update_capacity(rideid, capacity)
 
         if changedTime:
-            print("CHANGED TIMEEEE!!!")
             database.update_arrival_time(rideid, new_arrival_time)
 
         return jsonify({'success': True, 'message': 'Rideshare successfully updated!'})
@@ -440,16 +497,25 @@ def batchupdateriderequest():
 
 @app.route("/api/notifications", methods=["GET"])
 def notifications():
+    """"
+    Retrievers a user's notifications.
+
+    Parameters:
+        None
+
+    Returns:
+        JSON: a mapping of a user's new notifications and old notifications 
+        400: if CAS authentication exception occurs/cannot authenticate
+        500: if database exception occurs
+    """
     user_info = _cas.authenticate() 
     netid = user_info['netid']
-    print("notifications sees that netid is ", netid)
 
     if not netid:
         return jsonify({"error": "Missing netid parameter"}), 400
     
     try: 
         response = database.get_user_notifs(netid)
-        print(response)
         new_notifs = [notif for notif in response if not notif[4]]
         past_notifs = [notif for notif in response if notif[4] == 'read']
         return jsonify({"new_notifs": new_notifs,
@@ -461,10 +527,20 @@ def notifications():
 
 @app.route("/api/readnotification", methods=["POST"])
 def mark_as_read():
+    """
+    Marks a notification as read, i.e. it becomes a past notification
+
+    Parameters:
+        notifid: a unique identifier for each notification.
+    
+    Returns:
+        JSON: a success message
+        400: if database exception
+
+    """
     user_info = _cas.authenticate()
     data = request.get_json()
     notif_id = data.get('notif_id')
-    print("notif_id is ", notif_id)
     try:
         database.read_notification(user_info['netid'], notif_id)
         return jsonify({'success': True, 'message': 'Notification marked as read'})
@@ -473,8 +549,18 @@ def mark_as_read():
     
 @app.route("/api/markallread", methods=["POST"])
 def mark_all_as_read():
+    """
+    Marks all of a user's notifications as read, i.e. they become past notifications
+
+    Parameters:
+        None
+    
+    Returns:
+        JSON: a success message
+        400: if database exception
+
+    """
     user_info = _cas.authenticate()
-    print("hello am i here")
     try:
         database.read_all_users_notifications(user_info['netid'])
         return jsonify({'success': True, 'message': 'All notifications marked as read'})
@@ -482,11 +568,18 @@ def mark_all_as_read():
         return jsonify({'success': False, 'message': 'Failed to mark all notifications as read'}), 400
 
 def send_email_notification(netid, mail, subject, message):
-    print("EMAIL NOTIF!!")
-    print(subject)
-    
     """
     Sends email notifications
+
+    Parameters:
+        netid: netid of sender
+        mail: email address of sender
+        subject: subject of the email
+        message: content of the email
+
+    Returns:
+        JSON: success 
+        400: unable to send emails
     """
 
     user_info = _cas.authenticate()
@@ -515,7 +608,6 @@ def send_email_notification(netid, mail, subject, message):
         msg['Subject'] = subject
         # Attach the message
         message = message + "Please see details on tigerlift.onrender.com\n"
-        print(message)
         msg.attach(MIMEText(message, 'plain'))
 
         try:
@@ -524,7 +616,6 @@ def send_email_notification(netid, mail, subject, message):
                 server.starttls()  # Secure the connection
                 server.login(from_email, from_password)
                 server.send_message(msg)
-            print(f"Email sent to {mail} successfully!")
             return jsonify({'success': True, 'message': 'Ride request created'})
         except Exception as e:
             print(f"Error sending email to {mail}: {e}")
