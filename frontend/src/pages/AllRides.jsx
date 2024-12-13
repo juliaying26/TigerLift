@@ -88,20 +88,12 @@ export default function AllRides() {
     setOrigin(dest);
     setDest(tempOrigin);
 
-    console.log("origin state = ", origin);
-    console.log("destd state = ", dest);
-    console.log("origin ref = ", originRef.current.value);
-    console.log("destd ref= ", destinationRef.current.value);
-
     if (originRef.current && destinationRef.current) {
       const tempOriginValue = originRef.current.value;
       originRef.current.value = destinationRef.current.value;
       destinationRef.current.value = tempOriginValue;
-      console.log(originRef.current.value);
-      console.log(destinationRef.current.value);
     }
 
-    console.log("Locations flipped!");
   };
 
   const flipSearchFields = () => {
@@ -123,22 +115,14 @@ export default function AllRides() {
       return;
     }
 
-    console.log("in search ride. search origin: ", searchOrigin);
-
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
       setLoading(true);
-      console.log("dash data fetch 1");
       await fetchDashboardData();
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      console.log("test, am in dashboard searchride");
-
-      console.log("startSearchDate: " + startSearchDate);
-      console.log("endSearchDate: " + endSearchDate);
-
       let start_search_time_string = null;
       let arrival_time_string = null;
       let start_search_time_iso = null;
@@ -151,8 +135,6 @@ export default function AllRides() {
           )}T${startSearchTime.format("HH:mm:ss")}`;
         } else if (startSearchTime == null) {
           const today = dayjs().format("YYYY-MM-DD");
-          console.log("today:", today);
-          console.log("startsearchdate:", startSearchDate.format("YYYY-MM-DD"));
           if (startSearchDate.format("YYYY-MM-DD") === today) {
             start_search_time_string = `${startSearchDate.format(
               "YYYY-MM-DD"
@@ -183,8 +165,6 @@ export default function AllRides() {
         arrival_time_iso = new Date(arrival_time_string).toISOString();
       }
 
-      console.log("arrive after iso: " + start_search_time_iso);
-      console.log("arrive before iso: " + arrival_time_iso);
 
       const params = new URLSearchParams({
         ...(searchOrigin && { origin: searchOrigin.place_id }),
@@ -194,8 +174,6 @@ export default function AllRides() {
         }),
         ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
-
-      console.log("params: " + params.toString());
 
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
         method: "GET",
@@ -286,7 +264,6 @@ export default function AllRides() {
         responseData.success,
         responseData.message
       );
-      console.log("dash data fetch 2");
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -299,8 +276,6 @@ export default function AllRides() {
   };
 
   const handleOpenRideModal = async () => {
-    console.log("origin state = ", origin);
-    console.log("destd state = ", dest);
     setCreateRideModal(true);
   };
 
@@ -321,7 +296,6 @@ export default function AllRides() {
       const response = await fetch("/api/dashboard");
       const data = await response.json();
       setDashboardData(data);
-      console.log(data.rides);
       setRidesData(data.rides);
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -338,11 +312,9 @@ export default function AllRides() {
     destination,
     arrival_time
   ) => {
-    console.log("IN HANDLE RIDE REQUEST");
 
     setPendingRideId((prev) => [...prev, rideid]);
     try {
-      console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
 
       const formattedArrivalTime = dayjs(arrival_time)
         .tz("America/New_York")
@@ -360,7 +332,6 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
-      console.log("dash data fetch 3");
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -390,7 +361,6 @@ export default function AllRides() {
     setEndSearchTime(null);
     setLoading(true);
     setInSearch(false);
-    console.log("dash data fetch 4");
     await fetchDashboardData();
     setLoading(false);
   };
@@ -400,7 +370,6 @@ export default function AllRides() {
       isInitialRender.current = false;
       return;
     }
-    console.log("dash data fetch 5");
     fetchDashboardData();
   }, []);
 
@@ -422,7 +391,6 @@ export default function AllRides() {
     ) {
       searchRide();
     } else {
-      console.log("is this what happening?");
       resetSearch();
     }
   }, [
@@ -481,9 +449,6 @@ export default function AllRides() {
                     ? inputElement.value.trim()
                     : "";
 
-                  console.log("Input value: ", inputValue);
-                  console.log("Place object: ", place);
-
                   // If the input is empty or the place.name is invalid, do nothing
                   if (!inputValue || !place.name) {
                     console.log("Ignoring invalid or empty selection");
@@ -526,9 +491,6 @@ export default function AllRides() {
                     ? inputElement.value.trim()
                     : "";
 
-                  console.log("Input value: ", inputValue);
-                  console.log("Place object: ", place);
-
                   // If the input is empty or the place.name is invalid, do nothing
                   if (!inputValue || !place.name) {
                     console.log("Ignoring invalid or empty selection");
@@ -560,13 +522,8 @@ export default function AllRides() {
                 setDate={(value) => {
                   setStartSearchDate(value);
                   if (value === null) {
-                    console.log("start date cleared");
                     //searchRide();
                     setStartSearchDate(null);
-                    console.log(
-                      "start date state:",
-                      startSearchDate.format("YYYY-MM-DD")
-                    );
                   }
                 }}
                 time={startSearchTime}
@@ -574,13 +531,8 @@ export default function AllRides() {
                 setTime={(value) => {
                   setStartSearchTime(value);
                   if (value === null) {
-                    console.log("start time cleared");
                     //searchRide();
                     setStartSearchTime(null);
-                    console.log(
-                      "start time state:",
-                      startSearchTime.format("HH:mm:ss")
-                    );
                   }
                 }}
               />
@@ -595,13 +547,7 @@ export default function AllRides() {
                 setDate={(value) => {
                   setEndSearchDate(value);
                   if (value === null) {
-                    console.log("end date cleared");
                     //searchRide();
-                    setEndSearchDate(null);
-                    console.log(
-                      "end date state:",
-                      endSearchDate.format("YYYY-MM-DD")
-                    );
                   }
                 }}
                 time={endSearchTime}
@@ -609,13 +555,7 @@ export default function AllRides() {
                 setTime={(value) => {
                   setEndSearchTime(value);
                   if (value === null) {
-                    console.log("end time cleared");
                     //searchRide();
-                    setEndSearchTime(null);
-                    console.log(
-                      "end time state:",
-                      endSearchTime.format("HH:mm:ss")
-                    );
                   }
                 }}
               />
@@ -722,13 +662,8 @@ export default function AllRides() {
                     }}
                     onChange={(e) => {
                       if (!e.target.value) {
-                        console.log("are we even here???");
                         setOrigin(null);
-                        console.log(searchDest);
-                        console.log(startSearchDate);
-                        console.log(endSearchDate);
                         if (!searchDest && !startSearchDate && !endSearchDate) {
-                          console.log("are we here");
                           resetSearch();
                         }
                       }
