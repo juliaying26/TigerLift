@@ -236,6 +236,12 @@ export default function MyRides() {
     } else return false;
   };
 
+  useEffect(() => {
+    console.log("current " + modalCurrentRiders);
+    console.log("requested " + modalRequestedRiders);
+    console.log("rejected " + modalRejectedRiders);
+  }, [modalCurrentRiders, modalRequestedRiders, modalRejectedRiders]);
+
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
     // Check time is not in the past
@@ -648,7 +654,9 @@ export default function MyRides() {
                 }
                 loading={isSaving}
                 disabled={
-                  selectedRide.current_riders.length != 0 && !deleteRideMessage
+                  warningModalInfo.title === "Delete this Rideshare?" &&
+                  selectedRide.current_riders.length != 0 &&
+                  !deleteRideMessage
                 }
               >
                 {warningModalInfo.buttonText}

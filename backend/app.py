@@ -391,7 +391,11 @@ def batchupdateriderequest():
         time_subject =  "🚗 The Arrival Time of your Rideshare has been changed!"
         time_message = "Your Rideshare from " + origin_name + " to " + destination_name + " has changed arrival time to " + formatted_arrival_time + ".\n"  
 
-        for rider in data.get('accepting_riders', []):
+        print(data.get('rejecting_riders'))
+        print(data.get('pending_riders'))
+        print(data.get('accepting_riders'))
+
+        for rider in data.get('accepting_riders'):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
@@ -410,14 +414,14 @@ def batchupdateriderequest():
                 send_email_notification(requester_id, mail, time_subject, time_message)
                 print("SEnt email notif on changed time")
 
-        for rider in data.get('rejecting_riders', []):
+        for rider in data.get('rejecting_riders'):
             requester_id = rider.get('requester_id')
             database.reject_ride_request(requester_id, rideid)
 
         # send_email_notification(requester_id, mail, "Your ride request was rejected", 
         #     "Your ride request was recently rejected. Please see details at tigerlift.onrender.com")
 
-        for rider in data.get('pending_riders', []):
+        for rider in data.get('pending_riders'):
             requester_id = rider.get('requester_id')
             full_name = rider.get('full_name')
             mail = rider.get('mail')
