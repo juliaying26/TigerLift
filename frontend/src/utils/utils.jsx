@@ -2,6 +2,7 @@ import CopyEmailButton from "../components/CopyEmailButton";
 
 export const MAX_CAPACITY = 5;
 
+// used in arrival time in ride cards
 export const getFormattedDate = (date) => {
   return date.toLocaleString("en-US", {
     timeZone: "America/New_York",
@@ -39,6 +40,7 @@ export const handleShowPopupMessage = (
   setTimeout(() => setPopupMessageInfo({ status: "", message: "" }), 1500);
 };
 
+// the origin and destination formatting in ride cards
 export const renderToAndFrom = (ride) => {
   return (
     <p className="text-xl flex items-center justify-center gap-2">
@@ -72,6 +74,7 @@ export const renderRideNote = (ride) => {
   );
 };
 
+// used in AllRides and MyRides to render ride card info
 export const renderRideCardInfo = (ride) => {
   return (
     <>
@@ -100,4 +103,25 @@ export const renderRideCardInfo = (ride) => {
       {renderRideNote(ride)}
     </>
   );
+};
+
+// used in AllRides for flipping origin/dest fields
+export const flipFields = (
+  origin,
+  dest,
+  originRef,
+  destinationRef,
+  setOrigin,
+  setDest
+) => {
+  const tempOrigin = origin;
+
+  setOrigin(dest);
+  setDest(tempOrigin);
+
+  if (originRef.current && destinationRef.current) {
+    const tempOriginValue = originRef.current.value;
+    originRef.current.value = destinationRef.current.value;
+    destinationRef.current.value = tempOriginValue;
+  }
 };

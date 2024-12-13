@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Navigate, Routes, Route, useNavigate } from "react-router-dom";
-import { ConfigProvider, theme } from "antd";
+import { Navigate, Routes, Route } from "react-router-dom";
+import { ConfigProvider } from "antd";
 import AllRides from "./pages/AllRides";
 import MyRides from "./pages/MyRides";
 import NotFound from "./pages/NotFound";
@@ -12,8 +12,8 @@ import { bigButtonStyling2 } from "./utils/utils";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
+  // checks if user is logged in
   useEffect(() => {
     fetch(`/api/isloggedin`)
       .then((res) => res.json())

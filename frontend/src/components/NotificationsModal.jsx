@@ -39,8 +39,6 @@ export default function NotificationsModal({
     }
   };
 
-  console.log(new_notifs);
-
   const getNotifType = (notif) => {
     if (notif.subject.includes("accepted")) {
       return "ride_accept";

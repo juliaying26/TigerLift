@@ -28,22 +28,15 @@ class CASClient:
         '?service=' + quote(self.stripTicket()) + \
         '&ticket=' + quote(ticket) + \
         '&format=json'
-
-        # print(val_url)
     
         try:
             with urlopen(val_url) as response:
-                # print(response)
                 res_obj = json.loads(response.read().decode('utf-8'))
 
-                # print(res_obj)
-                
                 if not res_obj or 'serviceResponse' not in res_obj:
                     return None
-                    
-                service_response = res_obj['serviceResponse']
 
-                # print(service_response)
+                service_response = res_obj['serviceResponse']
                 
                 if 'authenticationSuccess' in service_response:
                     user_info = service_response['authenticationSuccess']
@@ -85,13 +78,10 @@ class CASClient:
             return self.getUserInfo()
         ticket = request.args.get('ticket')
         if ticket is not None:
-            # print("before validate")
             user_info = self.validate(ticket)
-            # print("after validate")
-            # print(user_info)
             if user_info is not None:
                 # The user is authenticated, so store the user's
-                # username in the session.
+                # info in the session.
                 session['netid'] = user_info['netid'].lower().strip()
                 session['displayname'] = user_info['displayname'].strip()
                 session['mail'] = user_info['mail'].lower().strip()
@@ -100,12 +90,11 @@ class CASClient:
         
         login_url = self.cas_url + 'login' \
             + '?service=' + quote(self.stripTicket())
-        # print(login_url)
         abort(redirect(login_url))
     
     def logout(self):
         if 'netid' in session:
-            # Delete the user's username from the session.
+            # Delete the user's info from the session.
             session.pop('netid')
             session.pop('displayname')
             session.pop('mail')

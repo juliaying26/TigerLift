@@ -1,3 +1,4 @@
+// importing necessary libraries and components
 import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import DateTimePicker from "../components/DateTimePicker.jsx";
@@ -10,7 +11,6 @@ import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
-import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import CustomTextArea from "../components/TextArea.jsx";
 import WarningModal from "../components/WarningModal.jsx";
 import {
@@ -21,33 +21,39 @@ import {
   handleShowPopupMessage,
   renderRideCardInfo,
   bigButtonStyling1,
+  flipFields,
 } from "../utils/utils";
 
+// Displaying and managing all upcoming Rideshares in the database
 export default function AllRides() {
-  const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;
-
-  const [pendingRideId, setPendingRideId] = useState([]);
-
+  const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;  // Google API key from environment variables
+  const [pendingRideId, setPendingRideId] = useState([]); // tracking requests in progress
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
     rides: [],
     ridereqs: {},
   });
 
-  const [loading, setLoading] = useState(true);
-  const [ridesData, setRidesData] = useState([]);
-  const [createRideModal, setCreateRideModal] = useState(false);
+  const [loading, setLoading] = useState(true); 
+  const [ridesData, setRidesData] = useState([]); // storing fetched Rides Data
+  const [createRideModal, setCreateRideModal] = useState(false); // state for create new ride modal
 
   const [popupMessageInfo, setPopupMessageInfo] = useState({
     status: "",
     message: "",
   });
-  const [showValidationModal, setShowValidationModal] = useState(false);
-  const [validationModalMessage, setValidationModalMessage] = useState("");
-  const [validationModalTitle, setValidationModalTitle] = useState("");
 
-  const originRef = useRef(null);
-  const destinationRef = useRef(null);
+  // whether we are showing validation modal (e.g. warning for creating new ride without all necessary fields in it filled)
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationModalMessage, setValidationModalMessage] = useState(""); // message inside validation modal
+  const [validationModalTitle, setValidationModalTitle] = useState("");  // title of validation modal
+
+    // Refs for handling input elements
+  const originRef = useRef(null); // stores origin
+  const destinationRef = useRef(null); // stores destination
+  const isInitialRender = useRef(true);
+
+  // for ride creation from inputs
   const [origin, setOrigin] = useState(null);
   const [capacity, setCapacity] = useState("");
   const [dest, setDest] = useState(null);
@@ -56,6 +62,7 @@ export default function AllRides() {
   const [rideNote, setRideNote] = useState("");
   const [isCreatingRide, setIsCreatingRide] = useState(false);
 
+  // for searching functionality
   const searchOriginRef = useRef(null);
   const searchDestinationRef = useRef(null);
   const [searchOrigin, setSearchOrigin] = useState(null);
@@ -66,71 +73,36 @@ export default function AllRides() {
   const [endSearchTime, setEndSearchTime] = useState();
   const [inSearch, setInSearch] = useState(false);
 
+  // autocomplete options for location input
   const autocompleteOptions = {
-    // componentRestrictions: { country: "us" },
     fields: ["formatted_address", "geometry", "name", "place_id"],
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
 
+  // make capacity dropdown options
   const capacity_options = [];
-
   for (let i = 1; i < MAX_CAPACITY + 1; i++) {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
   }
 
-  const flipCreateRideFields = () => {
-    const tempOrigin = origin;
-
-    setOrigin(dest);
-    setDest(tempOrigin);
-
-    console.log("origin state = ", origin);
-    console.log("destd state = ", dest);
-    console.log("origin ref = ", originRef.current.value);
-    console.log("destd ref= ", destinationRef.current.value);
-
-    if (originRef.current && destinationRef.current) {
-      const tempOriginValue = originRef.current.value;
-      originRef.current.value = destinationRef.current.value;
-      destinationRef.current.value = tempOriginValue;
-      console.log(originRef.current.value);
-      console.log(destinationRef.current.value);
-    }
-
-    console.log("Locations flipped!");
-  };
-
-  const flipSearchFields = () => {
-    const tempSearchOrigin = searchOrigin;
-
-    setSearchOrigin(searchDest);
-    setSearchDest(tempSearchOrigin);
-
-    if (searchOriginRef.current && searchDestinationRef.current) {
-      const tempSearchOriginValue = searchOriginRef.current.value;
-      searchOriginRef.current.value = searchDestinationRef.current.value;
-      searchDestinationRef.current.value = tempSearchOriginValue;
-    }
-  };
-
+  // searching for ride functionality
   const searchRide = async () => {
-    console.log("in search ride. search origin: ", searchOrigin);
+    if (isInitialRender.current) {
+      isInitialRender.current = false; // for initial render, do not search
+      return;
+    }
 
+    // if no filters are set, fetch all rides
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
-      // TODO: REMOVES (in allrides) and change alert message to be accurate
-      alert(
-        "You must provide at least one of origin, destination, start date, or end date."
-      );
+      setLoading(true);
+      await fetchDashboardData();
+      setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      console.log("test, am in dashboard searchride");
-
-      console.log("startSearchDate: " + startSearchDate);
-      console.log("endSearchDate: " + endSearchDate);
-
+      // format start and end search times
       let start_search_time_string = null;
       let arrival_time_string = null;
       let start_search_time_iso = null;
@@ -141,10 +113,8 @@ export default function AllRides() {
           start_search_time_string = `${startSearchDate.format(
             "YYYY-MM-DD"
           )}T${startSearchTime.format("HH:mm:ss")}`;
-        } else if (startSearchTime == null) {
+        } else {
           const today = dayjs().format("YYYY-MM-DD");
-          console.log("today:", today);
-          console.log("startsearchdate:", startSearchDate.format("YYYY-MM-DD"));
           if (startSearchDate.format("YYYY-MM-DD") === today) {
             start_search_time_string = `${startSearchDate.format(
               "YYYY-MM-DD"
@@ -166,7 +136,7 @@ export default function AllRides() {
           arrival_time_string = `${endSearchDate.format(
             "YYYY-MM-DD"
           )}T${endSearchTime.format("HH:mm:ss")}`;
-        } else if (endSearchTime == null) {
+        } else {
           arrival_time_string = `${endSearchDate.format(
             "YYYY-MM-DD"
           )}T23:59:00`; // defaults to 11:59pm to include all rides on that day
@@ -175,8 +145,6 @@ export default function AllRides() {
         arrival_time_iso = new Date(arrival_time_string).toISOString();
       }
 
-      console.log("arrive after iso: " + start_search_time_iso);
-      console.log("arrive before iso: " + arrival_time_iso);
 
       const params = new URLSearchParams({
         ...(searchOrigin && { origin: searchOrigin.place_id }),
@@ -187,8 +155,7 @@ export default function AllRides() {
         ...(arrival_time_string && { arrival_time: arrival_time_iso }),
       });
 
-      console.log("params: " + params.toString());
-
+      // make api call to searchrides
       const response = await fetch(`/api/searchrides?${params.toString()}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -205,25 +172,30 @@ export default function AllRides() {
     }
   };
 
-  const checkCreateRideParams = async () => {
+  // Checks if all necessary fields are inputted in Create Ride modal
+  const checkCreateRideParams = () => {
     const now = new Date();
 
     const parsedDate = dayjs(date);
     const parsedTime = dayjs(time);
 
-    const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
-      "HH:mm:ss"
-    )}`;
+    let arrival_time_iso = null;
 
-    const arrival_time_iso = new Date(arrival_time_string);
+    if (date && time) {
+      const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
+        "HH:mm:ss"
+      )}`;
+      arrival_time_iso = new Date(arrival_time_string);
+    }
 
-    if (time === "" || now.getTime() >= arrival_time_iso.getTime()) {
+    if (arrival_time_iso && now.getTime() >= arrival_time_iso.getTime()) {
       setValidationModalTitle("Invalid Input");
       setValidationModalMessage("Cannot enter a date in the past.");
       setShowValidationModal(true); // Show the validation modal
       return;
     }
 
+    // Check if any required fields are missing
     if (
       !capacity ||
       !origin ||
@@ -241,15 +213,16 @@ export default function AllRides() {
       setValidationModalMessage(
         "You must provide all fields to create a ride."
       );
-      setShowValidationModal(true); // Show the validation modal
+      setShowValidationModal(true); // Show the validation modal if something missing
       return;
-    } else {
-      createRide();
     }
+
+    createRide();
   };
 
+  // Creates ride by making API call to /addride
   const createRide = async () => {
-    setIsCreatingRide(true);
+    setIsCreatingRide(true); // indicate adding ride is in progress
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -262,22 +235,24 @@ export default function AllRides() {
         },
         body: JSON.stringify({
           capacity: capacity["label"],
-          origin: origin, // .name,
-          destination: dest, // .name,
+          origin: origin,
+          destination: dest,
           arrival_time: arrival_time_iso,
           note: rideNote,
         }),
       });
       const responseData = await response.json();
-      handleCloseRideModal();
-      resetSearch();
+
+      handleCloseRideModal(); // Close the modal after successfully created
+      resetSearch(); // Reset search filters
       setInSearch(false);
+
       handleShowPopupMessage(
         setPopupMessageInfo,
         responseData.success,
         responseData.message
       );
-      await fetchDashboardData();
+      await fetchDashboardData(); // Refresh the dashboard, since new ride created
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -285,16 +260,16 @@ export default function AllRides() {
       console.error("Error during fetch:", error);
     }
     setLoading(false);
-    setIsCreatingRide(false);
+    setIsCreatingRide(false); // reset 
   };
 
-  const handleOpenRideModal = async () => {
-    console.log("origin state = ", origin);
-    console.log("destd state = ", dest);
+  // Opens Create Ride modal
+  const handleOpenRideModal = () => {
     setCreateRideModal(true);
   };
 
-  const handleCloseRideModal = async () => {
+  // Closes Create Ride Modal, reset corresponding input fields
+  const handleCloseRideModal = () => {
     setCreateRideModal(false);
     setCapacity("");
     setOrigin("");
@@ -306,13 +281,13 @@ export default function AllRides() {
     destinationRef.current = null;
   };
 
+  // Fetch data for dashboard from server using API call to /dashboard
   const fetchDashboardData = async () => {
     try {
       const response = await fetch("/api/dashboard");
       const data = await response.json();
-      setDashboardData(data);
-      console.log(data.rides);
-      setRidesData(data.rides);
+      setDashboardData(data); // update DashboardData state
+      setRidesData(data.rides); // update RidesData
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -322,20 +297,19 @@ export default function AllRides() {
     setLoading(false);
   };
 
+  // Handles ride requests made by user 
   const handleRideRequest = async (
     rideid,
     origin,
     destination,
     arrival_time
   ) => {
-    console.log("IN HANDLE RIDE REQUEST");
 
-    setPendingRideId((prev) => [...prev, rideid]);
+    setPendingRideId((prev) => [...prev, rideid]); // track pending request by ID
     try {
-      console.log("ARRIVAL TIME DASHBOARD ", arrival_time);
 
       const formattedArrivalTime = dayjs(arrival_time)
-        .tz("America/New_York")
+        .tz("America/New_York") // ET timezone
         .format("MMMM D, YYYY, h:mm A");
 
       const response = await fetch("/api/requestride", {
@@ -350,6 +324,7 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
+      await fetchDashboardData(); // refresh dashboardData after requesting ride
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -359,7 +334,6 @@ export default function AllRides() {
     if (searchOrigin || searchDest || startSearchDate || endSearchDate) {
       searchRide();
     }
-    await fetchDashboardData();
     setPendingRideId((prev) => prev.filter((id) => id !== rideid));
   };
 
@@ -383,32 +357,25 @@ export default function AllRides() {
   };
 
   useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
     fetchDashboardData();
   }, []);
 
   useEffect(() => {
-    if (searchOrigin) {
+    if (
+      searchOrigin ||
+      searchDest ||
+      startSearchDate ||
+      endSearchDate ||
+      (startSearchDate && startSearchTime) ||
+      (endSearchDate && endSearchTime)
+    ) {
       searchRide();
-    }
-
-    if (searchDest) {
-      searchRide();
-    }
-
-    if (startSearchDate) {
-      searchRide();
-    }
-
-    if (endSearchDate) {
-      searchRide();
-    }
-
-    if (startSearchTime && startSearchDate) {
-      searchRide();
-    }
-
-    if (endSearchTime && endSearchDate) {
-      searchRide();
+    } else {
+      resetSearch();
     }
   }, [
     searchOrigin,
@@ -418,6 +385,51 @@ export default function AllRides() {
     startSearchTime,
     endSearchTime,
   ]);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevent the default behavior of the Enter key
+      console.log("Enter key is disabled!");
+    }
+  };
+
+  const onPlaceSelected = (searchField, place) => {
+    const inputElement = document.querySelector(
+      `#${searchField}.pac-target-input`
+    );
+    const inputValue = inputElement ? inputElement.value.trim() : "";
+
+    console.log("Input value: ", inputValue);
+    console.log("Place object: ", place);
+
+    // If the input is empty or the place.name is invalid, do nothing
+    if (!inputValue || !place.name) {
+      console.log("Ignoring invalid or empty selection");
+      return;
+    }
+
+    // Otherwise, update the origin with the selected place
+    console.log("Valid selection: ", place);
+    if (searchField === "searchDest") {
+      setSearchDest(place);
+    } else {
+      setSearchOrigin(place);
+    }
+  };
+
+  const onChange = (e, setFunction) => {
+    if (!e.target.value) {
+      setFunction(null);
+    }
+  };
+
+  const onDateTimePick = (value, setFunction) => {
+    if (value === null) {
+      setFunction(null);
+    } else {
+      setFunction(value);
+    }
+  };
 
   return (
     <div className="p-8 pb-14">
@@ -459,8 +471,11 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter origin"
                 onPlaceSelected={(place) => {
-                  setSearchOrigin(place);
+                  onPlaceSelected("searchOrigin", place);
                 }}
+                // if user deletes input from field
+                onChange={(e) => onChange(e, setSearchOrigin)}
+                onKeyDown={handleKeyDown}
                 options={autocompleteOptions}
                 ref={searchOriginRef}
               />
@@ -468,7 +483,16 @@ export default function AllRides() {
             <IconButton
               className="flex-none mt-[27px] w-9 h-9 hover:bg-theme_medium_2"
               type="flip"
-              onClick={flipSearchFields}
+              onClick={() =>
+                flipFields(
+                  searchOrigin,
+                  searchDest,
+                  searchOriginRef,
+                  searchDestinationRef,
+                  setSearchOrigin,
+                  setSearchDest
+                )
+              }
             ></IconButton>
             <div className="flex flex-col">
               <p className="font-medium mb-1">Destination</p>
@@ -479,8 +503,11 @@ export default function AllRides() {
                 apiKey={google_api_key}
                 placeholder="Enter destination"
                 onPlaceSelected={(place) => {
-                  setSearchDest(place);
+                  onPlaceSelected("searchDest", place);
                 }}
+                onKeyDown={handleKeyDown}
+                // if user deletes input from field
+                onChange={(e) => onChange(e, setSearchDest)}
                 options={autocompleteOptions}
                 ref={searchDestinationRef}
               />
@@ -491,9 +518,13 @@ export default function AllRides() {
               <p className="font-medium mb-1">Arrive After</p>
               <DateTimePicker
                 date={startSearchDate}
-                setDate={setStartSearchDate}
+                setDate={(value) => {
+                  onDateTimePick(value, setStartSearchDate);
+                }}
                 time={startSearchTime}
-                setTime={setStartSearchTime}
+                setTime={(value) => {
+                  onDateTimePick(value, setStartSearchTime);
+                }}
               />
             </div>
           </div>
@@ -502,9 +533,13 @@ export default function AllRides() {
               <p className="font-medium mb-1">Arrive Before</p>
               <DateTimePicker
                 date={endSearchDate}
-                setDate={setEndSearchDate}
+                setDate={(value) => {
+                  onDateTimePick(value, setEndSearchDate);
+                }}
                 time={endSearchTime}
-                setTime={setEndSearchTime}
+                setTime={(value) => {
+                  onDateTimePick(value, setEndSearchTime);
+                }}
               />
             </div>
           </div>
@@ -607,14 +642,23 @@ export default function AllRides() {
                     onPlaceSelected={(place) => {
                       setOrigin(place); // Store selected place details in state
                     }}
+                    onChange={(e) => onChange(e, setOrigin)}
                     options={autocompleteOptions}
                     ref={originRef}
-                    // value={origin ? origin['formatted_address'] : ""}
                   />
                   <IconButton
                     className="flex-none w-9 h-9 hover:bg-theme_light_1"
                     type="flip"
-                    onClick={flipCreateRideFields}
+                    onClick={() =>
+                      flipFields(
+                        origin,
+                        dest,
+                        originRef,
+                        destinationRef,
+                        setOrigin,
+                        setDest
+                      )
+                    }
                   ></IconButton>
                   <Autocomplete
                     key={"createDestination"}
@@ -624,9 +668,9 @@ export default function AllRides() {
                     onPlaceSelected={(place) => {
                       setDest(place); // Store selected place details in state
                     }}
+                    onChange={(e) => onChange(e, setDest)}
                     options={autocompleteOptions}
                     ref={destinationRef}
-                    // value={dest ? dest['formatted_address'] : ""}
                   />
                 </div>
               </div>

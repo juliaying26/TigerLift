@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react"; // Added React for consistency
+// importing necessary libraries and components
+import React, { useState, useEffect } from "react";
 import RideCard from "../components/RideCard";
 import DateTimePicker from "../components/DateTimePicker";
 import Modal from "../components/Modal";
@@ -30,10 +31,12 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+// Displaying and managing all Rides that user requested or created
 export default function MyRides() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // state variables that manage RidesData
   const [myUpcomingPostedRidesData, setMyUpcomingPostedRidesData] = useState(
     []
   );
@@ -41,11 +44,11 @@ export default function MyRides() {
   const [myUpcomingRequestedRidesData, setMyUpcomingRequestedRidesData] =
     useState([]);
   const [myPastRequestedRidesData, setMyPastRequestedRidesData] = useState([]);
-  const [viewType, setViewType] = useState("posted");
-  const [loading, setLoading] = useState(true);
+  const [viewType, setViewType] = useState("posted"); // view type is either "posted" or "requested"
+  const [loading, setLoading] = useState(true); // loading indicator
 
+  // state variables for modals and popup messages
   const [selectedRide, setSelectedRide] = useState(null);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
   const [warningModalInfo, setWarningModalInfo] = useState({
@@ -60,6 +63,7 @@ export default function MyRides() {
     message: "",
   });
 
+  // state variables for editing ride details
   const [modalRequestedRiders, setModalRequestedRiders] = useState([]);
   const [modalCurrentRiders, setModalCurrentRiders] = useState([]);
   const [modalRejectedRiders, setModalRejectedRiders] = useState([]);
@@ -74,6 +78,7 @@ export default function MyRides() {
   const [cancelRequestRideId, setCancelRequestRideId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // fetch user's rides data from the server
   const fetchMyRidesData = async () => {
     const endpoint = "/api/myrides";
     try {
@@ -87,13 +92,12 @@ export default function MyRides() {
       setMyPastPostedRidesData(data.past_posted_rides);
       setMyUpcomingRequestedRidesData(data.upcoming_requested_rides);
       setMyPastRequestedRidesData(data.past_requested_rides);
-
-      console.log(data);
     } catch (error) {
       console.error("Error fetching rides:", error);
     }
   };
 
+  // load rides data
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -107,12 +111,15 @@ export default function MyRides() {
     loadData();
   }, [viewType]);
 
+  // update view type based on location state. This is used to
+  // get either Posted or Requested rides from notifications/mobile nav menu
   useEffect(() => {
     if (location.state?.viewType) {
       setViewType(location.state.viewType);
     }
   }, [location.state]);
 
+  // update ride details when a ride is selected
   useEffect(() => {
     if (selectedRide) {
       setNewCapacity({
@@ -124,7 +131,7 @@ export default function MyRides() {
     }
   }, [selectedRide]);
 
-  // states for modal
+  // states for modal -- opening a modal to manage the ride
   const handleManageRideClick = (ride) => {
     setSelectedRide(ride);
     setModalCurrentRiders(ride.current_riders || []);
@@ -132,8 +139,9 @@ export default function MyRides() {
     setIsModalOpen(true);
   };
 
+  // checks if modal needs to be closed
   const handleCloseModal = () => {
-    if (hasRideChanges()) {
+    if (!isSaving && hasRideChanges()) {
       setIsWarningModalOpen(true);
       setWarningModalInfo({
         title: "Unsaved Changes",
@@ -145,6 +153,7 @@ export default function MyRides() {
     }
   };
 
+  // close modal and reset relevant states
   const closeModal = () => {
     if (isWarningModalOpen) {
       handleCloseWarningModal();
@@ -161,6 +170,7 @@ export default function MyRides() {
     setIsEditingArrivalTime(false);
   };
 
+  // handles closing the warning modal
   const handleCloseWarningModal = () => {
     setIsWarningModalOpen(false);
     setWarningModalInfo({
@@ -171,6 +181,7 @@ export default function MyRides() {
     setDeleteRideMessage("");
   };
 
+  // a warning modal before deletion
   const handleDeleteRide = () => {
     setIsWarningModalOpen(true);
     setWarningModalInfo({
@@ -180,6 +191,7 @@ export default function MyRides() {
     });
   };
 
+  // handles deleting the ride
   const deleteRide = async (rideId) => {
     setIsSaving(true);
 
@@ -223,6 +235,7 @@ export default function MyRides() {
     setIsSaving(false);
   };
 
+// determine if any changes have been made to the ride details
   const hasRideChanges = () => {
     if (
       (newCapacity && newCapacity.label !== selectedRide.max_capacity) ||
@@ -238,6 +251,12 @@ export default function MyRides() {
 
   // if Save clicked on Modal popup
   const handleSaveRide = async (rideId) => {
+    if (!hasRideChanges()) {
+      handleCloseModal();
+      setIsSaving(false);
+      return;
+    }
+
     // Check time is not in the past
     const now = new Date();
     const arrival_time_string = `${newArrivalDate.format(
@@ -286,16 +305,6 @@ export default function MyRides() {
       pending_riders.push(rider);
     });
 
-    console.log("Accepting riders:", accepting_riders);
-    console.log("Rejecting riders:", rejecting_riders);
-    console.log("Pending riders:", pending_riders);
-
-    if (!hasRideChanges()) {
-      handleCloseModal();
-      setIsSaving(false);
-      return;
-    }
-
     try {
       const new_arrival_time_string = `${newArrivalDate.format(
         "YYYY-MM-DD"
@@ -303,8 +312,6 @@ export default function MyRides() {
       const new_arrival_time_iso = new Date(
         new_arrival_time_string
       ).toISOString();
-
-      console.log(new_arrival_time_iso);
 
       // Parse arrival time for sending email purposes
       const new_arrival_time = dayjs.tz(
@@ -346,7 +353,6 @@ export default function MyRides() {
       const responseData = await response.json();
 
       closeModal();
-      console.log(responseData);
       handleShowPopupMessage(
         setPopupMessageInfo,
         responseData.success,
@@ -364,7 +370,7 @@ export default function MyRides() {
   };
 
   // Accepts rider in modal
-  const handleAcceptRider = async (netid, fullName, email, rideId) => {
+  const handleAcceptRider = async (netid, fullName, email) => {
     if (
       (newCapacity && modalCurrentRiders.length >= newCapacity.label) ||
       (!newCapacity && modalCurrentRiders.length >= selectedRide.max_capacity)
@@ -389,7 +395,7 @@ export default function MyRides() {
   };
 
   // Rejects rider in modal
-  const handleRejectRider = async (netid, fullName, email, rideId) => {
+  const handleRejectRider = async (netid, fullName, email) => {
     setModalRejectedRiders((prevRejectedRiders) => [
       // add to rejected riders
       ...prevRejectedRiders,
@@ -403,7 +409,7 @@ export default function MyRides() {
   };
 
   // removes rider from accepted back to pending
-  const handleRemoveRider = async (netid, fullName, email, rideId) => {
+  const handleRemoveRider = async (netid, fullName, email) => {
     setModalCurrentRiders((prevCurrentRiders) => {
       return prevCurrentRiders.filter(([n, name, mail]) => n !== netid);
     });
@@ -414,6 +420,7 @@ export default function MyRides() {
     ]);
   };
 
+  // cancel user's ride request of rideid
   const handleCancelRideRequest = async (rideid) => {
     setCancelRequestRideId(rideid);
     try {
@@ -452,17 +459,17 @@ export default function MyRides() {
               new Date(ride.arrival_time) > new Date() &&
               (viewType === "posted"
                 ? "Manage Rideshare"
-                : ride.request_status !== "accepted" && "Cancel Request")
+                : ride.request_status === "pending" && "Cancel Request")
             }
             buttonOnClick={
               viewType === "posted"
                 ? () => handleManageRideClick(ride)
-                : ride.request_status === "accepted"
-                ? () => {}
-                : () => handleCancelRideRequest(ride.id)
+                : ride.request_status === "pending"
+                ? () => handleCancelRideRequest(ride.id)
+                : () => {}
             }
             buttonClassName={`${
-              ride.request_status === "accepted" ||
+              ride.request_status !== "pending" ||
               new Date(ride.arrival_time) <= new Date()
                 ? "cursor-auto"
                 : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
@@ -608,7 +615,7 @@ export default function MyRides() {
           <div className="flex flex-col gap-3">
             <p>{warningModalInfo.message}</p>
             {warningModalInfo.title === "Delete this Rideshare?" &&
-              selectedRide.current_riders.length != 0 && (
+              selectedRide?.current_riders?.length != 0 && (
                 <div className="flex flex-col gap-4 pb-5">
                   <p>
                     Please give a reason for deleting this rideshare. The riders
@@ -648,7 +655,9 @@ export default function MyRides() {
                 }
                 loading={isSaving}
                 disabled={
-                  selectedRide.current_riders.length != 0 && !deleteRideMessage
+                  warningModalInfo.title === "Delete this Rideshare?" &&
+                  selectedRide?.current_riders?.length != 0 &&
+                  !deleteRideMessage
                 }
               >
                 {warningModalInfo.buttonText}
@@ -699,7 +708,6 @@ export default function MyRides() {
                 <Button
                   className="flex items-center gap-1 text-theme_medium_2 hover:text-theme_dark_2"
                   onClick={() => {
-                    console.log(newArrivalDate, newArrivalTime);
                     if (isEditingArrivalTime) {
                       setNewArrivalDate(dayjs(selectedRide.arrival_time));
                       setNewArrivalTime(dayjs(selectedRide.arrival_time));
@@ -737,7 +745,6 @@ export default function MyRides() {
               <Button
                 className="text-theme_medium_2 hover:text-theme_dark_2"
                 onClick={() => {
-                  console.log(newCapacity);
                   if (isEditingCapacity) {
                     setNewCapacity({
                       value: selectedRide.max_capacity,
@@ -767,12 +774,7 @@ export default function MyRides() {
                           <IconButton
                             type="xmark"
                             onClick={() =>
-                              handleRemoveRider(
-                                netid,
-                                fullName,
-                                email,
-                                selectedRide.id
-                              )
+                              handleRemoveRider(netid, fullName, email)
                             }
                             className="text-zinc-700 hover:text-zinc-500"
                           />
@@ -802,24 +804,14 @@ export default function MyRides() {
                             <IconButton
                               type="checkmark"
                               onClick={() =>
-                                handleAcceptRider(
-                                  netid,
-                                  fullName,
-                                  email,
-                                  selectedRide.id
-                                )
+                                handleAcceptRider(netid, fullName, email)
                               }
                               className="bg-theme_green text-theme_dark_green hover:bg-theme_light_green"
                             />
                             <IconButton
                               type="xmark"
                               onClick={() =>
-                                handleRejectRider(
-                                  netid,
-                                  fullName,
-                                  email,
-                                  selectedRide.id
-                                )
+                                handleRejectRider(netid, fullName, email)
                               }
                               className="bg-theme_red text-theme_dark_red hover:bg-theme_light_red"
                             />
@@ -837,6 +829,7 @@ export default function MyRides() {
               <Button
                 onClick={() => handleDeleteRide(selectedRide.id)}
                 className="hover:bg-theme_red border border-zinc-300 text-zinc-700 hover:text-white"
+                disabled={isSaving}
               >
                 Delete this Rideshare
               </Button>
