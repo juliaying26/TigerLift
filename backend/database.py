@@ -100,7 +100,6 @@ def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, dest
     if conn:
         try:
             with conn.cursor() as cursor:
-                print("here")
                 cursor.execute(sql_command, values)
                 conn.commit()
                 print("Ride addded successfully!")
@@ -111,45 +110,6 @@ def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, dest
     else:
         print("Connection not established.")
 
-# def update_ride(ride_id, current_riders, max_capacity=None, origin=None, destination=None, 
-#                 arrival_time=None):
-#     """"
-#     Updates an existing ride in the Rides database
-#     """
-
-#     # NEED TO FIX TO DEAL WITH INJECTION ATTACKS!!!
-  
-#     sql_command = f"""
-#         UPDATE Rides
-#         SET updated_at = CURRENT_TIMESTAMP
-#     """
-
-#     if max_capacity != None:
-#         sql_command += f""", max_capacity = {max_capacity}"""
-#     if origin != None:
-#         sql_command += f""", origin = {origin}, """
-#     if destination != None:
-#         sql_command += f""", destination = {destination}"""
-#     if arrival_time != None:
-#         sql_command += f""", arrival_time = {arrival_time}"""
-
-#     sql_command += f""" WHERE id = {ride_id};"""
-
-#     conn = connect()
-    
-#     # if it was successful connection, execute SQL commands to database & commit
-#     if conn:
-#         try:
-#             with conn.cursor() as cursor:
-#                 cursor.execute(sql_command)
-#                 conn.commit()
-#                 print("Ride updated successfully!")
-#         except Exception as e:
-#             print(f"Error updating ride: {e}")
-#         finally:
-#             conn.close()
-#     else:
-#         print("Connection not established.")
 
 def delete_ride(netid, ride_id):
     """
@@ -195,7 +155,6 @@ def create_ride_request(netid, full_name, mail, ride_id):
 
     status = 'pending'
     
-    # check whether exists
     sql_exists_check = """
         SELECT 1 FROM RideRequests WHERE netid = %s AND ride_id = %s;
     """
@@ -232,7 +191,6 @@ def create_ride_request(netid, full_name, mail, ride_id):
     else:
         print("Connection not established.")
 
-# can u check if this is used. i don't think it is. if so delete
 def update_ride_request(request_id, status):
     """"
     Updates an existing ride request in the RidesRequest database
@@ -314,119 +272,6 @@ def update_arrival_time(rideid, new_arrival_time):
         finally:
             conn.close()
 
-# def create_location(id, name):
-#     """
-#     Adds a location in the Locations database
-#     """
-
-#     sql_command = f"""
-#         INSERT INTO PredefinedLocations (id, name) VALUES (%s, %s);        
-#     """
-
-#     values = (id, name)
-    
-#     conn = connect()
-    
-#     # if it was successful connection, execute SQL commands to database & commit
-#     if conn:
-#         try:
-#             with conn.cursor() as cursor:
-#                 cursor.execute(sql_command, values)
-#                 conn.commit()
-#                 print("Location created successfully!")
-#         except Exception as e:
-#             print(f"Error creating location: {e}")
-#         finally:
-#             conn.close()
-#     else:
-#         print("Connection not established.")
-
-
-# don't think this is used either
-def delete_all_rides():
-    sql_command = "DELETE FROM Rides"
-    
-    conn = connect()
-    
-    # if it was successful connection, execute SQL commands to database & commit
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command)
-                conn.commit()
-                print("Ride deleted successfully!")
-        except Exception as e:
-            print(f"Error deleting rides: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
-
-def get_users_rides(netid):
-    """
-    Get all of a user's rides from Rides database
-    """
-
-    sql_command = """
-        SELECT 
-            Rides.id, 
-            Rides.admin_netid, 
-            Rides.admin_name,
-            Rides.admin_email,
-            Rides.max_capacity, 
-            Rides.origin_dict, 
-            Rides.destination_dict, 
-            Rides.arrival_time, 
-            Rides.creation_time, 
-            Rides.updated_at, 
-            Rides.note,
-            Rides.current_riders, 
-            COALESCE(ARRAY_AGG(
-                CASE 
-                    WHEN RideRequests.netid IS NULL THEN NULL 
-                    ELSE ARRAY[RideRequests.netid, RideRequests.full_name, RideRequests.mail]
-                END
-            ) FILTER (WHERE RideRequests.netid IS NOT NULL), ARRAY[]::text[][]) AS riderequesters
-        FROM 
-            Rides 
-        LEFT JOIN 
-            RideRequests ON RideRequests.ride_id = Rides.id AND RideRequests.status = 'pending'
-        WHERE 
-            Rides.admin_netid = %s
-        GROUP BY 
-            Rides.id, 
-            Rides.admin_netid, 
-            Rides.admin_name,
-            Rides.admin_email,
-            Rides.max_capacity, 
-            Rides.origin_dict, 
-            Rides.destination_dict, 
-            Rides.arrival_time, 
-            Rides.creation_time, 
-            Rides.updated_at, 
-            Rides.note,
-            Rides.current_riders;
-    """
-
-    values = (str(netid),)
-    rides = []
-    
-    conn = connect()
-    if conn:
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command, values)
-                rides = cursor.fetchall()
-                print("Rides retrieved successfully!")
-        except Exception as e:
-            print(f"Error retrieving rides: {e}")
-        finally:
-            conn.close()
-    else:
-        print("Connection not established.")
-
-    return rides
-
 def get_all_rides():
     
     sql_command = """
@@ -453,28 +298,6 @@ def get_all_rides():
 
     return rides
 
-
-# def get_all_locations():
-#     sql_command = "SELECT * FROM PredefinedLocations"
-#     conn = connect()
-
-#     locations = []
-
-#     # if it was successful connection, execute SQL commands to database & commit
-#     if conn:
-#         try:
-#             with conn.cursor() as cursor:
-#                 cursor.execute(sql_command)
-#                 locations = cursor.fetchall()
-#                 print("Locations retrieved successfully!")
-#         except Exception as e:
-#             print(f"Error retrieving locations: {e}")
-#         finally:
-#             conn.close()
-#     else:
-#         print("Connection not established.")
-
-#     return locations
 
 def search_rides(origin_id=None, destination_id=None, arrival_time=None, start_search_time=None):
     query = """
@@ -547,7 +370,6 @@ def get_users_requested_rides(netid):
             with conn.cursor() as cursor:
                 cursor.execute(sql_command, values)
                 req_rides = cursor.fetchall()
-                print("riderequests are", req_rides)
                 print("RideRequests retrieved successfully!")
         except Exception as e:
             print(f"Error retrieving ride requests: {e}")
@@ -593,7 +415,6 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
     is successfully created for user with
     """
 
-    # checks status of ride request
     sql_command_check_status = """
         SELECT status
         FROM RideRequests
@@ -655,8 +476,7 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
             print("Connection not established.")
     return True
 
-# SHOULD THIS AUTO DELETE AFTER A WHILE??? OR ACTUALLY DELETE THE REQUEST INSTEAD OF REJECTING?
-#  OR IS A USER WHO IS REJECTED THEREFORE BANNED FROM REQUESTING AGAIN
+
 def reject_ride_request(user_netid, ride_id):
     """
     Rejects a ride request
@@ -669,8 +489,6 @@ def reject_ride_request(user_netid, ride_id):
 
     values = (user_netid, ride_id)
 
-    print("Rejecting ride request for user", user_netid, "for ride", ride_id)
-
     conn = connect()
     
     # if it was successful connection, execute SQL commands to database & commit
@@ -680,7 +498,6 @@ def reject_ride_request(user_netid, ride_id):
                 cursor.execute(sql_command, values)
                 conn.commit()
                 print("RideRequest rejected successfully!")
-            print("UPDATING CURRENT RIDERS")
             remove_from_current_riders(ride_id, user_netid)
         except Exception as e:
             print(f"Error rejecting ride request: {e}")
@@ -714,7 +531,7 @@ def get_all_my_ride_requests(netid):
 
     return requests
 
-# helper function
+
 def remove_from_current_riders(ride_id, requester_id):
     conn = connect()
 
@@ -731,13 +548,10 @@ def remove_from_current_riders(ride_id, requester_id):
             current_riders = result[0]  # This should be a 2D array (list of lists)
 
             # Remove the matching sub-array from current_riders
-            print("Original current_riders:", current_riders)
             current_riders = [rider for rider in current_riders if not (
                 rider[0] == requester_id
             )]
-            print("Modified current_riders:", current_riders)
 
-            # Step 3: Update the table with the modified current_riders
             cursor.execute(
                 "UPDATE Rides SET current_riders = %s WHERE id = %s;",
                 (current_riders, ride_id)
@@ -779,66 +593,6 @@ def remove_rider(requester_id, full_name, mail, ride_id):
         print("Connection not established.")
 
 
-# def location_to_id(location):    
-#     """
-#     given location name, returns ID from PredefinedLocations.
-#     """
-#     sql_command = "SELECT id FROM PredefinedLocations WHERE name = %s"
-#     values = (location,)
-#     id_result = None
-#     print(location)
-
-#     conn = connect()
-#     if conn:
-#         try:
-#             with conn.cursor() as cursor:
-#                 cursor.execute(sql_command, values)
-#                 result = cursor.fetchone()
-#                 if result:
-#                     id_result = result[0]
-#                     print("id retrieved successfully:", id_result)
-#                 else:
-#                     print("No matching location found.")
-#                     return -1
-#         except Exception as e:
-#             print(f"Error retrieving requests: {e}")
-#         finally:
-#             conn.close()
-#     else:
-#         print("Connection not established.")
-
-#     print("ID corresponding to num is", id_result)
-#     return int(id_result)
-
-# def id_to_location(id):
-#     """
-#      Given id, returns location name from PredefinedLocations
-#     """
-#     sql_command = "SELECT name FROM PredefinedLocations WHERE id = %s"
-#     values = (id,)
-#     location_result=None
-
-#     conn = connect()
-#     if conn:
-#         try:
-#             with conn.cursor() as cursor:
-#                 cursor.execute(sql_command, values)
-#                 result = cursor.fetchone()
-#                 if result:
-#                     location_result = result[0]
-#                     print("location retrieved successfully:", location_result)
-#                 else:
-#                     print("No matching location found.")
-#         except Exception as e:
-#             print(f"Error retrieving requests: {e}")
-#         finally:
-#             conn.close()
-#     else:
-#         print("Connection not established.")
-
-#     print("ID corresponding to num is", location_result)
-#     return int(location_result)
-
 def rideid_to_admin_id_email(ride_id):
     """
     Given a rideid, returns admin_netid and email
@@ -867,7 +621,6 @@ def rideid_to_admin_id_email(ride_id):
     else:
         print("Connection not established.")
 
-    print("Admin_netid corresponding to ride_id is", admin_netid_result)
     return (admin_netid_result, admin_mail_result) if admin_netid_result else None
 
 def get_user_notifs(netid):
@@ -888,7 +641,6 @@ def get_user_notifs(netid):
             with conn.cursor() as cursor:
                 cursor.execute(sql_command, values)
                 result = cursor.fetchall()
-                print(result, " is result")
                 return result
         except Exception as e:
             print(f"Error fetching notifications: {e}")
