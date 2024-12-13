@@ -37,11 +37,29 @@ def isloggedin():
 
 @app.route('/api/login', methods=['GET'])
 def login():
+    """
+    Log users into TigerLift
+
+    Parameters:
+        None
+
+    Returns:
+        Redirects users to the AllRides page upon logging in
+    """
     user_info = _cas.authenticate() # This will redirect to CAS login page if not logged in
     return redirect(f"{FRONTEND_URL}/allrides")
 
 @app.route("/api/logout", methods=["GET"])
 def logout():
+    """
+    Log users out of TigerLift.
+
+    Parameters:
+        None
+
+    Returns:
+        Redirects users to our login page.
+    """
     _cas.logout()
     return redirect("/")
 
