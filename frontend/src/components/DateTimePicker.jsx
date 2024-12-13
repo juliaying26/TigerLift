@@ -10,12 +10,10 @@ export default function MyDateTimePicker({
 }) {
   const handleDateChange = (value) => {
     setDate(value);
-    console.log("Selected Date:", value ? value.format("YYYY-MM-DD") : null);
   };
 
   const handleTimeChange = (value) => {
     setTime(value);
-    console.log("Selected Time:", value ? value.format("HH:mm:ss") : null);
   };
 
   const disabledDate = (current) => {
