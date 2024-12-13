@@ -122,11 +122,12 @@ export default function AllRides() {
   const searchRide = async () => {
     console.log("in search ride. search origin: ", searchOrigin);
 
-    // TODO: is this even necessary?
+    // TODO: is this even necessary? it's fetching dash data mutlipe times
     if (!searchOrigin && !searchDest && !startSearchDate && !endSearchDate) {
       //alert(
         //"You must provide at least one of origin, destination, start date, or end date."
       //);
+      console.log("dash data call 1");
       await fetchDashboardData();
       return;
     }
@@ -286,6 +287,7 @@ export default function AllRides() {
       resetSearch();
       setInSearch(false);
       handleShowPopupMessage(responseData.success, responseData.message);
+      console.log("dash data call 2");
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -355,6 +357,7 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
+      console.log("dash data call 3");
       await fetchDashboardData();
       if (!response.ok) {
         console.error("Request failed:", response.status);
@@ -384,11 +387,13 @@ export default function AllRides() {
     setEndSearchTime(null);
     setLoading(true);
     setInSearch(false);
+    console.log("dash data call 4");
     await fetchDashboardData();
     setLoading(false);
   };
 
   useEffect(() => {
+    console.log("dash data call 5");
     fetchDashboardData();
   }, []);
 
@@ -401,18 +406,33 @@ export default function AllRides() {
     searchRide();
   }, [endSearchDate]);
 
+  useEffect(() => {
+    searchRide();
+  }, [searchOrigin]);
 
   useEffect(() => {
+    searchRide();
+  }, [startSearchTime]);
+
+  useEffect(() => {
+    searchRide();
+  }, [endSearchTime]);
+
+
+  useEffect(() => {
+    /*
     if (searchOrigin) {
       console.log("searchRide call 2");
       searchRide();
     }
+    
 
     // if search origin was cleared
     if (searchOrigin == null && hasPreviousSearchOrigin) {
       console.log("searchRide call 3");
       searchRide();
     }
+    */
 
     if (searchDest) {
       searchRide();
@@ -496,6 +516,7 @@ export default function AllRides() {
                 onChange={(event) => {
                   if (event.target.value === '' && hasPreviousSearchOrigin) {
                     setSearchOrigin(null);
+                    searchRide();
                     // TODO: try new ref searchOriginWasCleared, and then inside search, do if was cleared fetch dashboard and return
                   }
                 }}
@@ -504,7 +525,7 @@ export default function AllRides() {
 
                   if (event.key === 'Enter') {
                     console.log("search orign lolz:", searchOrigin)
-
+                    console.log("dash data call 6");
                     fetchDashboardData();
                     //return false;
                     //event.preventDefault();
@@ -546,6 +567,7 @@ export default function AllRides() {
           <div className="flex justify-start md:justify-center mb-2 sm:mb-0">
             <div className="flex flex-col">
               <p className="font-medium mb-1">Arrive After</p>
+              {/* STEP: if it's null, just set state to null */}
               <DateTimePicker
                 date={startSearchDate}
                 //setDate={setStartSearchDate}
@@ -559,7 +581,16 @@ export default function AllRides() {
                   }
                 }}
                 time={startSearchTime}
-                setTime={setStartSearchTime}
+                //setTime={setStartSearchTime}
+                setTime={(value) => {
+                  setStartSearchTime(value);
+                  if (value === null) {
+                    console.log("start time cleared");
+                    //searchRide();
+                    setStartSearchTime(null);
+                    console.log("start time state:", startSearchTime.format("HH:mm:ss"));
+                  }
+                }}
               />
             </div>
           </div>
@@ -579,7 +610,16 @@ export default function AllRides() {
                   }
                 }}
                 time={endSearchTime}
-                setTime={setEndSearchTime}
+                //setTime={setEndSearchTime}
+                setTime={(value) => {
+                  setEndSearchTime(value);
+                  if (value === null) {
+                    console.log("end time cleared");
+                    //searchRide();
+                    setEndSearchTime(null);
+                    console.log("end time state:", endSearchTime.format("HH:mm:ss"));
+                  }
+                }}
               />
             </div>
           </div>
