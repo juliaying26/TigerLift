@@ -26,7 +26,7 @@ import {
 
 // Displaying and managing all upcoming Rideshares in the database
 export default function AllRides() {
-  const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY;  // Google API key from environment variables
+  const google_api_key = import.meta.env.VITE_GOOGLE_API_KEY; // Google API key from environment variables
   const [pendingRideId, setPendingRideId] = useState([]); // tracking requests in progress
   const [dashboardData, setDashboardData] = useState({
     user_info: null,
@@ -34,7 +34,7 @@ export default function AllRides() {
     ridereqs: {},
   });
 
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [ridesData, setRidesData] = useState([]); // storing fetched Rides Data
   const [createRideModal, setCreateRideModal] = useState(false); // state for create new ride modal
 
@@ -46,9 +46,9 @@ export default function AllRides() {
   // whether we are showing validation modal (e.g. warning for creating new ride without all necessary fields in it filled)
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [validationModalMessage, setValidationModalMessage] = useState(""); // message inside validation modal
-  const [validationModalTitle, setValidationModalTitle] = useState("");  // title of validation modal
+  const [validationModalTitle, setValidationModalTitle] = useState(""); // title of validation modal
 
-    // Refs for handling input elements
+  // Refs for handling input elements
   const originRef = useRef(null); // stores origin
   const destinationRef = useRef(null); // stores destination
   const isInitialRender = useRef(true);
@@ -144,7 +144,6 @@ export default function AllRides() {
 
         arrival_time_iso = new Date(arrival_time_string).toISOString();
       }
-
 
       const params = new URLSearchParams({
         ...(searchOrigin && { origin: searchOrigin.place_id }),
@@ -260,7 +259,7 @@ export default function AllRides() {
       console.error("Error during fetch:", error);
     }
     setLoading(false);
-    setIsCreatingRide(false); // reset 
+    setIsCreatingRide(false); // reset
   };
 
   // Opens Create Ride modal
@@ -297,17 +296,15 @@ export default function AllRides() {
     setLoading(false);
   };
 
-  // Handles ride requests made by user 
+  // Handles ride requests made by user
   const handleRideRequest = async (
     rideid,
     origin,
     destination,
     arrival_time
   ) => {
-
     setPendingRideId((prev) => [...prev, rideid]); // track pending request by ID
     try {
-
       const formattedArrivalTime = dayjs(arrival_time)
         .tz("America/New_York") // ET timezone
         .format("MMMM D, YYYY, h:mm A");
