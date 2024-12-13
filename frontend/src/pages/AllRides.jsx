@@ -10,7 +10,6 @@ import dayjs from "dayjs";
 import PopUpMessage from "../components/PopUpMessage.jsx";
 import LoadingIcon from "../components/LoadingIcon.jsx";
 import Autocomplete from "react-google-autocomplete";
-import CopyEmailButton from "../components/CopyEmailButton.jsx";
 import CustomTextArea from "../components/TextArea.jsx";
 import WarningModal from "../components/WarningModal.jsx";
 import {
@@ -42,6 +41,7 @@ export default function AllRides() {
     status: "",
     message: "",
   });
+
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [validationModalMessage, setValidationModalMessage] = useState("");
   const [validationModalTitle, setValidationModalTitle] = useState("");
@@ -70,13 +70,11 @@ export default function AllRides() {
   const [inSearch, setInSearch] = useState(false);
 
   const autocompleteOptions = {
-    // componentRestrictions: { country: "us" },
     fields: ["formatted_address", "geometry", "name", "place_id"],
     types: ["establishment", "geocode"], // This will show both businesses and addresses
   };
 
   const capacity_options = [];
-
   for (let i = 1; i < MAX_CAPACITY + 1; i++) {
     let dict = { value: i, label: i };
     capacity_options.push(dict);
@@ -149,7 +147,7 @@ export default function AllRides() {
           start_search_time_string = `${startSearchDate.format(
             "YYYY-MM-DD"
           )}T${startSearchTime.format("HH:mm:ss")}`;
-        } else if (startSearchTime == null) {
+        } else {
           const today = dayjs().format("YYYY-MM-DD");
           console.log("today:", today);
           console.log("startsearchdate:", startSearchDate.format("YYYY-MM-DD"));
@@ -174,7 +172,7 @@ export default function AllRides() {
           arrival_time_string = `${endSearchDate.format(
             "YYYY-MM-DD"
           )}T${endSearchTime.format("HH:mm:ss")}`;
-        } else if (endSearchTime == null) {
+        } else {
           arrival_time_string = `${endSearchDate.format(
             "YYYY-MM-DD"
           )}T23:59:00`; // defaults to 11:59pm to include all rides on that day
@@ -219,13 +217,19 @@ export default function AllRides() {
     const parsedDate = dayjs(date);
     const parsedTime = dayjs(time);
 
-    const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
-      "HH:mm:ss"
-    )}`;
+    console.log(date);
+    console.log(time);
 
-    const arrival_time_iso = new Date(arrival_time_string);
+    let arrival_time_iso = null;
 
-    if (time === "" || now.getTime() >= arrival_time_iso.getTime()) {
+    if (date && time) {
+      const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
+        "HH:mm:ss"
+      )}`;
+      arrival_time_iso = new Date(arrival_time_string);
+    }
+
+    if (arrival_time_iso && now.getTime() >= arrival_time_iso.getTime()) {
       setValidationModalTitle("Invalid Input");
       setValidationModalMessage("Cannot enter a date in the past.");
       setShowValidationModal(true); // Show the validation modal
@@ -251,9 +255,9 @@ export default function AllRides() {
       );
       setShowValidationModal(true); // Show the validation modal
       return;
-    } else {
-      createRide();
     }
+
+    createRide();
   };
 
   const createRide = async () => {
@@ -270,13 +274,14 @@ export default function AllRides() {
         },
         body: JSON.stringify({
           capacity: capacity["label"],
-          origin: origin, // .name,
-          destination: dest, // .name,
+          origin: origin,
+          destination: dest,
           arrival_time: arrival_time_iso,
           note: rideNote,
         }),
       });
       const responseData = await response.json();
+
       handleCloseRideModal();
       resetSearch();
       setInSearch(false);
@@ -298,13 +303,11 @@ export default function AllRides() {
     setIsCreatingRide(false);
   };
 
-  const handleOpenRideModal = async () => {
-    console.log("origin state = ", origin);
-    console.log("destd state = ", dest);
+  const handleOpenRideModal = () => {
     setCreateRideModal(true);
   };
 
-  const handleCloseRideModal = async () => {
+  const handleCloseRideModal = () => {
     setCreateRideModal(false);
     setCapacity("");
     setOrigin("");
