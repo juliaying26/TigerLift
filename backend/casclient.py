@@ -81,7 +81,7 @@ class CASClient:
             user_info = self.validate(ticket)
             if user_info is not None:
                 # The user is authenticated, so store the user's
-                # username in the session.
+                # info in the session.
                 session['netid'] = user_info['netid'].lower().strip()
                 session['displayname'] = user_info['displayname'].strip()
                 session['mail'] = user_info['mail'].lower().strip()
@@ -94,7 +94,7 @@ class CASClient:
     
     def logout(self):
         if 'netid' in session:
-            # Delete the user's username from the session.
+            # Delete the user's info from the session.
             session.pop('netid')
             session.pop('displayname')
             session.pop('mail')
