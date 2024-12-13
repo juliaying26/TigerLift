@@ -320,20 +320,6 @@ def cancelriderequest():
     except:
         return jsonify({'success': False, 'message': 'Failed to cancel ride request.'}), 400
 
-@app.route("/deleteallrides", methods=["GET"])
-def deleteallrides():
-    """
-    Deletes all rides from the database.
-
-    Parameters:
-        None
-    
-    Returns:
-        A redirect to the homepage.
-    """
-    database.delete_all_rides()
-    return redirect("/allrides")
-
 @app.route("/api/searchrides", methods=["GET"])
 def searchrides():
     """
