@@ -235,7 +235,7 @@ export default function MyRides() {
     setIsSaving(false);
   };
 
-// determine if any changes have been made to the ride details
+  // determine if any changes have been made to the ride details
   const hasRideChanges = () => {
     if (
       (newCapacity && newCapacity.label !== selectedRide.max_capacity) ||
@@ -469,7 +469,8 @@ export default function MyRides() {
                 : () => {}
             }
             buttonClassName={`${
-              ride.request_status !== "pending" ||
+              ride.request_status === "accepted" ||
+              ride.request_status === "rejected" ||
               new Date(ride.arrival_time) <= new Date()
                 ? "cursor-auto"
                 : "bg-theme_medium_2 text-white font-medium hover:bg-theme_dark_2"
