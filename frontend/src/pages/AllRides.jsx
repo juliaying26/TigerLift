@@ -195,6 +195,7 @@ export default function AllRides() {
       return;
     }
 
+    // Check if any required fields are missing
     if (
       !capacity ||
       !origin ||
@@ -212,15 +213,16 @@ export default function AllRides() {
       setValidationModalMessage(
         "You must provide all fields to create a ride."
       );
-      setShowValidationModal(true); // Show the validation modal
+      setShowValidationModal(true); // Show the validation modal if nothing missing
       return;
     }
 
     createRide();
   };
 
+  // Creates ride by making API call to /addride
   const createRide = async () => {
-    setIsCreatingRide(true);
+    setIsCreatingRide(true); // indicate adding ride is in progress
     const arrival_time_string = `${date.format("YYYY-MM-DD")}T${time.format(
       "HH:mm:ss"
     )}`;
@@ -241,8 +243,8 @@ export default function AllRides() {
       });
       const responseData = await response.json();
 
-      handleCloseRideModal();
-      resetSearch();
+      handleCloseRideModal(); // Close the modal after successfully created
+      resetSearch(); // Reset search filters
       setInSearch(false);
 
       handleShowPopupMessage(
@@ -250,7 +252,7 @@ export default function AllRides() {
         responseData.success,
         responseData.message
       );
-      await fetchDashboardData();
+      await fetchDashboardData(); // Refresh the dashboard, since new ride created
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -258,13 +260,15 @@ export default function AllRides() {
       console.error("Error during fetch:", error);
     }
     setLoading(false);
-    setIsCreatingRide(false);
+    setIsCreatingRide(false); // reset 
   };
 
+  // Opens Create Ride modal
   const handleOpenRideModal = () => {
     setCreateRideModal(true);
   };
 
+  // Closes Create Ride Modal, reset corresponding input fields
   const handleCloseRideModal = () => {
     setCreateRideModal(false);
     setCapacity("");
@@ -277,12 +281,13 @@ export default function AllRides() {
     destinationRef.current = null;
   };
 
+  // Fetch data for dashboard from server using API call to /dashboard
   const fetchDashboardData = async () => {
     try {
       const response = await fetch("/api/dashboard");
       const data = await response.json();
-      setDashboardData(data);
-      setRidesData(data.rides);
+      setDashboardData(data); // update DashboardData state
+      setRidesData(data.rides); // update RidesData
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
@@ -292,6 +297,7 @@ export default function AllRides() {
     setLoading(false);
   };
 
+  // Handles ride requests made by user 
   const handleRideRequest = async (
     rideid,
     origin,
@@ -299,11 +305,11 @@ export default function AllRides() {
     arrival_time
   ) => {
 
-    setPendingRideId((prev) => [...prev, rideid]);
+    setPendingRideId((prev) => [...prev, rideid]); // track pending request by ID
     try {
 
       const formattedArrivalTime = dayjs(arrival_time)
-        .tz("America/New_York")
+        .tz("America/New_York") // ET timezone
         .format("MMMM D, YYYY, h:mm A");
 
       const response = await fetch("/api/requestride", {
@@ -318,7 +324,7 @@ export default function AllRides() {
           formatted_arrival_time: formattedArrivalTime,
         }),
       });
-      await fetchDashboardData();
+      await fetchDashboardData(); // refresh dashboardData after requesting ride
       if (!response.ok) {
         console.error("Request failed:", response.status);
       }
