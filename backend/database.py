@@ -241,6 +241,71 @@ def update_arrival_time(rideid, new_arrival_time):
         finally:
             conn.close()
 
+def get_users_rides(netid):
+    """
+    Get all of a user's rides from Rides database
+    """
+
+    sql_command = """
+        SELECT 
+            Rides.id, 
+            Rides.admin_netid, 
+            Rides.admin_name,
+            Rides.admin_email,
+            Rides.max_capacity, 
+            Rides.origin_dict, 
+            Rides.destination_dict, 
+            Rides.arrival_time, 
+            Rides.creation_time, 
+            Rides.updated_at, 
+            Rides.note,
+            Rides.current_riders, 
+            COALESCE(ARRAY_AGG(
+                CASE 
+                    WHEN RideRequests.netid IS NULL THEN NULL 
+                    ELSE ARRAY[RideRequests.netid, RideRequests.full_name, RideRequests.mail]
+                END
+            ) FILTER (WHERE RideRequests.netid IS NOT NULL), ARRAY[]::text[][]) AS riderequesters
+        FROM 
+            Rides 
+        LEFT JOIN 
+            RideRequests ON RideRequests.ride_id = Rides.id AND RideRequests.status = 'pending'
+        WHERE 
+            Rides.admin_netid = %s
+        GROUP BY 
+            Rides.id, 
+            Rides.admin_netid, 
+            Rides.admin_name,
+            Rides.admin_email,
+            Rides.max_capacity, 
+            Rides.origin_dict, 
+            Rides.destination_dict, 
+            Rides.arrival_time, 
+            Rides.creation_time, 
+            Rides.updated_at, 
+            Rides.note,
+            Rides.current_riders;
+    """
+
+    values = (str(netid),)
+    rides = []
+
+    conn = connect()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_command, values)
+                rides = cursor.fetchall()
+                print("Rides retrieved successfully!")
+        except Exception as e:
+            print(f"Error retrieving rides: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Connection not established.")
+
+    return rides
+
 def get_all_rides():
     
     sql_command = """
