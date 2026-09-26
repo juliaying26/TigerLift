@@ -1,10 +1,12 @@
 import os
 import psycopg2
 from dotenv import load_dotenv
+
 load_dotenv()
 from datetime import datetime
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
 
 def database_setup():
     """
@@ -50,7 +52,7 @@ def database_setup():
     """
     # Connect
     conn = connect()
-    
+
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
@@ -65,8 +67,9 @@ def database_setup():
     else:
         print("Connection not established.")
 
+
 def connect():
-    """ 
+    """
     Establishes connection to PostgreSQL database via psycopg2
     """
     try:
@@ -77,7 +80,17 @@ def connect():
         print(f"Error connecting to the database: {e}")
         return None
 
-def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, destination, arrival_time, note=""):
+
+def create_ride(
+    admin_netid,
+    admin_name,
+    admin_email,
+    max_capacity,
+    origin,
+    destination,
+    arrival_time,
+    note="",
+):
     """
     Adds a ride to the Rides database
     """
@@ -90,11 +103,20 @@ def create_ride(admin_netid, admin_name, admin_email, max_capacity, origin, dest
         %s, %s, %s, %s, %s, CURRENT_TIMESTAMP);   
     """
 
-    values = (admin_netid, admin_name, admin_email, max_capacity, current_riders, origin, destination, 
-              arrival_time, note)  
-    
+    values = (
+        admin_netid,
+        admin_name,
+        admin_email,
+        max_capacity,
+        current_riders,
+        origin,
+        destination,
+        arrival_time,
+        note,
+    )
+
     conn = connect()
-    
+
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
@@ -130,7 +152,7 @@ def delete_ride(netid, ride_id):
     ride_request_values = (ride_id,)
 
     conn = connect()
-    
+
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
@@ -148,12 +170,12 @@ def delete_ride(netid, ride_id):
 
 
 def create_ride_request(netid, full_name, mail, ride_id):
-    """"
+    """ "
     Adds a ride request in the RidesRequest database
     """
 
-    status = 'pending'
-    
+    status = "pending"
+
     sql_exists_check = """
         SELECT 1 FROM RideRequests WHERE netid = %s AND ride_id = %s;
     """
@@ -164,9 +186,9 @@ def create_ride_request(netid, full_name, mail, ride_id):
     """
 
     values = (netid, full_name, mail, ride_id, status)
-    
+
     conn = connect()
-    
+
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
@@ -182,13 +204,13 @@ def create_ride_request(netid, full_name, mail, ride_id):
                 conn.commit()
                 print("Ride request addded successfully!")
 
-
         except Exception as e:
             print(f"Error adding ride request: {e}")
         finally:
             conn.close()
     else:
         print("Connection not established.")
+
 
 def update_capacity(rideid, new_capacity):
     """
@@ -240,6 +262,7 @@ def update_arrival_time(rideid, new_arrival_time):
             print(f"Error updating ride arrival time: {e}")
         finally:
             conn.close()
+
 
 def get_users_rides(netid):
     """
@@ -306,8 +329,9 @@ def get_users_rides(netid):
 
     return rides
 
+
 def get_all_rides():
-    
+
     sql_command = """
     SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin_dict,
     destination_dict, arrival_time, creation_time, updated_at, current_riders, note FROM Rides
@@ -333,7 +357,9 @@ def get_all_rides():
     return rides
 
 
-def search_rides(origin_id=None, destination_id=None, arrival_time=None, start_search_time=None):
+def search_rides(
+    origin_id=None, destination_id=None, arrival_time=None, start_search_time=None
+):
     query = """
         SELECT id, admin_netid, admin_name, admin_email, max_capacity, origin_dict, 
         destination_dict, arrival_time, creation_time, updated_at, current_riders, note FROM Rides
@@ -363,10 +389,12 @@ def search_rides(origin_id=None, destination_id=None, arrival_time=None, start_s
         values.append(arrival_time)
 
     if not (origin_id or destination_id or start_search_time or arrival_time):
-        raise ValueError("At least one of origin, destination, start time, or end time must be provided.")
+        raise ValueError(
+            "At least one of origin, destination, start time, or end time must be provided."
+        )
 
     if conn:
-        try: 
+        try:
             with conn.cursor() as cursor:
                 cursor.execute(query, values)
                 rides = cursor.fetchall()
@@ -381,11 +409,12 @@ def search_rides(origin_id=None, destination_id=None, arrival_time=None, start_s
 
     return rides
 
+
 def get_users_requested_rides(netid):
     """
     Get all of a user's REQUESTED rides from RideRequests database and its associated status
     """
-    
+
     sql_command = """
         SELECT Rides.id, admin_netid, admin_name, admin_email, max_capacity, origin_dict, destination_dict, 
             arrival_time, creation_time, updated_at, note, 
@@ -397,7 +426,7 @@ def get_users_requested_rides(netid):
 
     values = (str(netid),)
     req_rides = []
-    
+
     conn = connect()
     if conn:
         try:
@@ -414,6 +443,7 @@ def get_users_requested_rides(netid):
 
     return req_rides
 
+
 def delete_ride_request(netid, ride_id):
     """
     Deletes row with ride of ride_id & User of netid from RideRequests
@@ -426,7 +456,7 @@ def delete_ride_request(netid, ride_id):
     values = (str(netid), ride_id)
 
     conn = connect()
-    
+
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
@@ -440,6 +470,7 @@ def delete_ride_request(netid, ride_id):
             conn.close()
     else:
         print("Connection not established.")
+
 
 def accept_ride_request(user_netid, full_name, mail, ride_id):
     """
@@ -466,14 +497,14 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
                 result = cursor.fetchone()
                 if result:
                     request_status = result[0]
-                    if request_status == 'accepted':
+                    if request_status == "accepted":
                         return False
         except Exception as e:
             print(f"Error checking ride request status: {e}")
         finally:
             conn.close()
 
-    if request_status != 'accepted':
+    if request_status != "accepted":
         update_ride_requests_sql_command = """
             UPDATE RideRequests
             SET status = 'accepted', response_time = CURRENT_TIMESTAMP
@@ -492,16 +523,18 @@ def accept_ride_request(user_netid, full_name, mail, ride_id):
         ride_values = (user_netid, full_name, mail, ride_id)
 
         conn = connect()
-        
+
         # if it was successful connection, execute SQL commands to database & commit
         if conn:
             try:
                 with conn.cursor() as cursor:
-                    cursor.execute(update_ride_requests_sql_command, ride_request_values)
+                    cursor.execute(
+                        update_ride_requests_sql_command, ride_request_values
+                    )
                     cursor.execute(update_rides_sql_command, ride_values)
                     conn.commit()
                     print("RideRequest accepted successfully!")
-                                        
+
             except Exception as e:
                 print(f"Error accepting ride request: {e}")
             finally:
@@ -524,7 +557,7 @@ def reject_ride_request(user_netid, ride_id):
     values = (user_netid, ride_id)
 
     conn = connect()
-    
+
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
@@ -540,7 +573,7 @@ def reject_ride_request(user_netid, ride_id):
     else:
         print("Connection not established.")
 
-    
+
 def get_all_my_ride_requests(netid):
     sql_command = """
             SELECT netid, ride_id, status FROM RideRequests
@@ -548,7 +581,7 @@ def get_all_my_ride_requests(netid):
     """
     requests = []
     values = (netid,)
-    
+
     conn = connect()
     if conn:
         try:
@@ -572,7 +605,9 @@ def remove_from_current_riders(ride_id, requester_id):
     try:
         with conn.cursor() as cursor:
 
-            cursor.execute("SELECT current_riders FROM Rides WHERE id = %s;", (ride_id,))
+            cursor.execute(
+                "SELECT current_riders FROM Rides WHERE id = %s;", (ride_id,)
+            )
             result = cursor.fetchone()
 
             if result is None:
@@ -582,13 +617,13 @@ def remove_from_current_riders(ride_id, requester_id):
             current_riders = result[0]  # This should be a 2D array (list of lists)
 
             # Remove the matching sub-array from current_riders
-            current_riders = [rider for rider in current_riders if not (
-                rider[0] == requester_id
-            )]
+            current_riders = [
+                rider for rider in current_riders if not (rider[0] == requester_id)
+            ]
 
             cursor.execute(
                 "UPDATE Rides SET current_riders = %s WHERE id = %s;",
-                (current_riders, ride_id)
+                (current_riders, ride_id),
             )
             conn.commit()
             print("Ride's current_riders updated successfully!")
@@ -611,7 +646,7 @@ def remove_rider(requester_id, full_name, mail, ride_id):
     values_ride_requests = (requester_id, ride_id)
 
     conn = connect()
-    
+
     # if it was successful connection, execute SQL commands to database & commit
     if conn:
         try:
@@ -657,18 +692,19 @@ def rideid_to_admin_id_email(ride_id):
 
     return (admin_netid_result, admin_mail_result) if admin_netid_result else None
 
+
 def get_user_notifs(netid):
     """
     Given user's netid, finds that user's notifs
     """
-    sql_command =  """
+    sql_command = """
             SELECT id, message, notification_time, subject, status
             FROM Notifications 
             WHERE netid = %s
             ORDER BY notification_time DESC
         """
     values = (netid,)
-    
+
     conn = connect()
     if conn:
         try:
@@ -678,23 +714,24 @@ def get_user_notifs(netid):
                 return result
         except Exception as e:
             print(f"Error fetching notifications: {e}")
-            return None # meaning error
+            return None  # meaning error
         finally:
             conn.close()
     else:
         print("Failed to establish a database connection.")
         return None
-    
+
+
 def add_notification(netid, subject, message):
     """
     Adds the relevant message to notification table
     """
-    sql_command =  """
+    sql_command = """
             INSERT INTO Notifications (netid, message, notification_time, subject)
             VALUES (%s, %s, CURRENT_TIMESTAMP, %s)
         """
     values = (netid, message, subject)
-    
+
     conn = connect()
     if conn:
         try:
@@ -702,27 +739,28 @@ def add_notification(netid, subject, message):
                 cursor.execute(sql_command, values)
                 conn.commit()
                 print("Notification added successfully.")
-                return True 
+                return True
         except Exception as e:
             print(f"Error adding to notifications: {e}")
-            return None # meaning error
+            return None  # meaning error
         finally:
             conn.close()
     else:
         print("Failed to establish a database connection.")
         return None
-    
+
+
 def read_notification(netid, notif_id):
     """
     Given user's netid and notif_id, marks that notif as read
     """
-    sql_command =  """
+    sql_command = """
             UPDATE Notifications
             SET status = 'read'
             WHERE netid = %s AND id = %s
         """
     values = (netid, notif_id)
-    
+
     conn = connect()
     if conn:
         try:
@@ -733,25 +771,26 @@ def read_notification(netid, notif_id):
                 return True
         except Exception as e:
             print(f"Error marking notification as read: {e}")
-            return None # meaning error
+            return None  # meaning error
         finally:
             conn.close()
     else:
         print("Failed to establish a database connection.")
         return None
-    
+
+
 def read_all_users_notifications(netid):
     """
     Marks all notifications as read
     """
-    sql_command =  """
+    sql_command = """
             UPDATE Notifications
             SET status = 'read'
             WHERE netid = %s
         """
-    
+
     values = (netid,)
-    
+
     conn = connect()
     if conn:
         try:
@@ -762,12 +801,13 @@ def read_all_users_notifications(netid):
                 return True
         except Exception as e:
             print(f"Error marking all notifications as read: {e}")
-            return None # meaning error
+            return None  # meaning error
         finally:
             conn.close()
     else:
         print("Failed to establish a database connection.")
         return None
+
 
 if __name__ == "__main__":
     database_setup()
