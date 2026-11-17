@@ -63,9 +63,9 @@ function App() {
             </Routes>
           </div>
         ) : (
-          <div className="text-center flex flex-col items-center justify-center gap-8 overflow-y-auto py-10">
-            <div className="flex flex-col lg:absolute lg:top-1/2 left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 bg-white w-4/5 max-h-fit lg:h-auto lg:w-1/2 rounded-lg px-4 py-8 lg:px-12 lg:py-16">
-              <h1 className="text-4xl mb-6 font-serif">
+          <div className="text-center flex flex-col items-center justify-center gap-8 overflow-y-auto py-10 max-md:px-4">
+            <div className="flex flex-col lg:absolute lg:top-1/2 left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 bg-white w-4/5 max-md:w-full max-h-fit lg:h-auto lg:w-1/2 rounded-lg px-4 py-8 lg:px-12 lg:py-16">
+              <h1 className="text-4xl mb-6 font-serif max-md:text-3xl">
                 Welcome to TigerLift!
               </h1>
               <p className="text-lg mb-4 font-serif max-w-lg mx-auto">

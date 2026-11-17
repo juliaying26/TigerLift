@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import useLockBodyScroll from "../utils/useLockBodyScroll";
 import { useLocation, useNavigate } from "react-router-dom";
 import IconButton from "./IconButton";
 import NotificationsModal from "./NotificationsModal";
@@ -16,13 +17,7 @@ export default function Navbar({ user_info }) {
   const [newNotifications, setNewNotifications] = useState([]);
   const [pastNotifications, setPastNotifications] = useState([]);
 
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-  }, [isMobileMenuOpen]);
+  useLockBodyScroll(isMobileMenuOpen);
 
   const navigateTo = (path) => {
     navigate(path);
@@ -144,7 +139,7 @@ export default function Navbar({ user_info }) {
   return (
     <div>
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed top-0 h-full bg-white w-full z-30 flex flex-col justify-between p-8">
+        <div className="md:hidden fixed inset-0 bg-white z-30 flex flex-col justify-between p-8 max-md:p-6 max-md:pt-[max(1.5rem,env(safe-area-inset-top))] max-md:pb-[max(1.5rem,env(safe-area-inset-bottom))] overflow-y-auto">
           <div className="flex flex-col gap-6 w-full">
             <div className="relative w-full items-center">
               <h2 className="text-center text-xl font-medium">Menu</h2>
@@ -152,6 +147,7 @@ export default function Navbar({ user_info }) {
                 <IconButton
                   type="xmark"
                   onClick={() => setIsMobileMenuOpen(false)}
+                  ariaLabel="Close menu"
                   className="hover:bg-zinc-100"
                 />
               </div>
@@ -202,10 +198,11 @@ export default function Navbar({ user_info }) {
         <div className="w-full">
           <div className="flex h-14 items-center justify-between px-4 md:px-8">
             {/* Left Side - Dashboard and Logo */}
-            <div className="md:hidden absolute">
+            <div className="md:hidden shrink-0">
               <IconButton
                 type="hamburger"
                 onClick={() => setIsMobileMenuOpen(true)}
+                ariaLabel="Open menu"
                 className="hover:bg-theme_light_1"
               />
             </div>
@@ -214,10 +211,10 @@ export default function Navbar({ user_info }) {
               <div className="flex space-x-4">
                 <a
                   href="/"
-                  className="group rounded-md theme_medium_1 text-3xl font-medium text-black"
+                  className="group rounded-md theme_medium_1 text-3xl font-medium text-black max-md:text-2xl max-md:flex max-md:items-center max-md:min-h-11"
                   aria-current="page"
                 >
-                  <div className="flex gap-5 items-center pl-3">
+                  <div className="flex gap-5 items-center pl-3 max-md:gap-4 max-md:pl-1">
                     <CarIcon />
                     TigerLift
                   </div>
@@ -229,16 +226,18 @@ export default function Navbar({ user_info }) {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <IconButton
-                  onClick={() =>
-                    setShowNotificationsModal(!showNotificationsModal)
-                  }
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setShowNotificationsModal(!showNotificationsModal);
+                  }}
                   type="notification"
+                  ariaLabel="Notifications"
                   className={`${
                     showNotificationsModal ? "bg-theme_light_2" : ""
                   } relative hover:bg-theme_light_2 z-[21]`}
                 />
                 {newNotifications.length > 0 && (
-                  <div className="absolute top-2 right-2.5 z-[22]">
+                  <div className="absolute top-2 right-2.5 max-md:top-3 max-md:right-3.5 z-[22] pointer-events-none">
                     <svg
                       width="7"
                       height="7"
