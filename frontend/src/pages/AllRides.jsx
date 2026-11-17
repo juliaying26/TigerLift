@@ -79,6 +79,8 @@ export default function AllRides() {
   const [endSearchDate, setEndSearchDate] = useState();
   const [endSearchTime, setEndSearchTime] = useState();
   const [inSearch, setInSearch] = useState(false);
+  // phones collapse the search filters behind a toggle (always shown on desktop)
+  const [showFilters, setShowFilters] = useState(false);
 
   // for requesting to join a ride with an optional note
   const [requestModalRide, setRequestModalRide] = useState(null);
@@ -95,11 +97,10 @@ export default function AllRides() {
   };
 
   // make capacity dropdown options
-  const capacity_options = [];
-  for (let i = 1; i < MAX_CAPACITY + 1; i++) {
-    let dict = { value: i, label: i };
-    capacity_options.push(dict);
-  }
+  const capacity_options = Array.from({ length: MAX_CAPACITY }, (_, i) => ({
+    value: i + 1,
+    label: i + 1,
+  }));
 
   // searching for ride functionality
   const searchRide = async () => {
@@ -446,10 +447,10 @@ export default function AllRides() {
   };
 
   const resetSearch = async () => {
-    if (searchOriginRef.current.value) {
+    if (searchOriginRef.current?.value) {
       searchOriginRef.current.value = "";
     }
-    if (searchDestinationRef.current.value) {
+    if (searchDestinationRef.current?.value) {
       searchDestinationRef.current.value = "";
     }
     setSearchOrigin("");
@@ -541,7 +542,7 @@ export default function AllRides() {
   };
 
   return (
-    <div className="p-8 pb-14">
+    <div className="p-4 pb-14 md:p-8">
       {popupMessageInfo.message && (
         <PopUpMessage
           status={popupMessageInfo.status}
@@ -549,15 +550,25 @@ export default function AllRides() {
         />
       )}
       <div className="flex flex-col space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center max-md:gap-3">
           <Link
             to="/myrides"
-            className={`hidden md:inline-block ${bigButtonStyling1}`}
+            className={`hidden md:inline-block ${bigButtonStyling1} max-md:!hidden`}
           >
             My Rideshares
           </Link>
           <Button
-            className={`${bigButtonStyling1}`}
+            className="md:hidden shrink-0 border border-zinc-300 bg-white text-zinc-700 rounded-md px-3 py-2"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            {showFilters
+              ? "Hide search"
+              : inSearch
+              ? "Search (on)"
+              : "Search & filter"}
+          </Button>
+          <Button
+            className={`${bigButtonStyling1} max-md:flex-1`}
             onClick={() => handleOpenRideModal()}
           >
             Create a Rideshare
@@ -568,9 +579,11 @@ export default function AllRides() {
             inSearch
               ? "lg:grid-cols-[9fr,5fr,5fr,2.5fr]"
               : "lg:grid-cols-[9fr,5fr,5fr]"
-          } items-center justify-between pb-4 sm:space-x-3`}
+          } items-center justify-between pb-4 sm:space-x-3 max-md:gap-y-3 ${
+            showFilters ? "" : "max-md:hidden"
+          }`}
         >
-          <div className="grid grid-cols-[5fr,1fr] gap-2 md:flex justify-center mb-3 md:mb-0">
+          <div className="grid grid-cols-[1fr,auto] gap-2 md:flex justify-center mb-3 md:mb-0">
             <div>
               <p className="font-medium mb-1">Origin</p>
               <Autocomplete
@@ -590,8 +603,9 @@ export default function AllRides() {
               />
             </div>
             <IconButton
-              className="flex-none mt-[27px] w-9 h-9 hover:bg-theme_medium_2"
+              className="flex-none mt-[27px] w-9 h-9 hover:bg-theme_medium_2 max-md:mt-0 max-md:col-start-2 max-md:row-start-1 max-md:row-span-2 max-md:self-center"
               type="flip"
+              ariaLabel="Swap origin and destination"
               onClick={() =>
                 flipFields(
                   searchOrigin,
@@ -603,7 +617,7 @@ export default function AllRides() {
                 )
               }
             ></IconButton>
-            <div className="flex flex-col">
+            <div className="flex flex-col max-md:col-start-1">
               <p className="font-medium mb-1">Destination</p>
               <Autocomplete
                 key={"searchDestination"}
@@ -623,7 +637,7 @@ export default function AllRides() {
             </div>
           </div>
           <div className="flex justify-start md:justify-center mb-2 sm:mb-0">
-            <div className="flex flex-col">
+            <div className="flex flex-col max-md:w-full">
               <p className="font-medium mb-1">Arrive After</p>
               <DateTimePicker
                 date={startSearchDate}
@@ -638,7 +652,7 @@ export default function AllRides() {
             </div>
           </div>
           <div className="flex justify-start md:justify-center">
-            <div className="flex flex-col">
+            <div className="flex flex-col max-md:w-full">
               <p className="font-medium mb-1">Arrive Before</p>
               <DateTimePicker
                 date={endSearchDate}
@@ -656,7 +670,7 @@ export default function AllRides() {
             <div>
               <Button
                 onClick={resetSearch}
-                className="text-theme_dark_1 px-4 py-2 hover:text-theme_medium_1 font-medium mt-6"
+                className="text-theme_dark_1 px-4 py-2 hover:text-theme_medium_1 font-medium mt-6 max-md:mt-0 max-md:px-0"
               >
                 Clear Search Filters
               </Button>
@@ -681,8 +695,8 @@ export default function AllRides() {
                   key={key}
                   className="p-4 bg-white rounded-xl drop-shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3"
                 >
-                  <div className="flex flex-col gap-1">
-                    <p>
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <p className="break-words">
                       <span className="font-semibold">
                         {pendingRequest.fullName}
                       </span>{" "}
@@ -703,9 +717,9 @@ export default function AllRides() {
                       </p>
                     )}
                   </div>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex gap-2 shrink-0 max-md:w-full">
                     <Button
-                      className="bg-theme_green text-theme_dark_green hover:bg-theme_light_green"
+                      className="bg-theme_green text-theme_dark_green hover:bg-theme_light_green max-md:flex-1"
                       onClick={() =>
                         handleRespondToRequest(pendingRequest, "accept")
                       }
@@ -715,7 +729,7 @@ export default function AllRides() {
                       Accept
                     </Button>
                     <Button
-                      className="bg-theme_red text-theme_dark_red hover:bg-theme_light_red"
+                      className="bg-theme_red text-theme_dark_red hover:bg-theme_light_red max-md:flex-1"
                       onClick={() =>
                         handleRespondToRequest(pendingRequest, "reject")
                       }
@@ -739,7 +753,7 @@ export default function AllRides() {
             Upcoming & available rideshares ({ridesData.length})
           </h3>
           {ridesData.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 max-md:gap-4">
               {ridesData.map((ride) => {
                 const isOwnRide =
                   ride.admin_netid === dashboardData.user_info.netid;
@@ -776,7 +790,10 @@ export default function AllRides() {
                     secondaryButtonClassName="cursor-auto"
                     secondaryButtonStatus={wasRemoved ? "removed" : ""}
                   >
-                    {renderRideCardInfo(ride, { showRiders: true })}
+                    {renderRideCardInfo(ride, {
+                      showRiders: true,
+                      status: requestStatus,
+                    })}
                   </RideCard>
                 );
               })}
@@ -810,7 +827,7 @@ export default function AllRides() {
               />
             </div>
             <Button
-              className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1"
+              className="self-start bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1 max-md:self-stretch"
               onClick={() => {
                 const ride = requestModalRide;
                 setRequestModalRide(null);
@@ -852,7 +869,7 @@ export default function AllRides() {
               </div>
               <div className="flex flex-col">
                 <p className="font-medium mb-1">Origin & Destination</p>
-                <div className="flex items-center space-x-2 w-full justify-between">
+                <div className="flex items-center space-x-2 w-full justify-between max-md:grid max-md:grid-cols-[1fr_auto] max-md:gap-2 max-md:space-x-0">
                   <Autocomplete
                     key={"createOrigin"}
                     className={autocompleteStyling}
@@ -866,8 +883,9 @@ export default function AllRides() {
                     ref={originRef}
                   />
                   <IconButton
-                    className="flex-none w-9 h-9 hover:bg-theme_light_1"
+                    className="flex-none w-9 h-9 hover:bg-theme_light_1 max-md:col-start-2 max-md:row-start-1 max-md:row-span-2 max-md:self-center"
                     type="flip"
+                    ariaLabel="Swap origin and destination"
                     onClick={() =>
                       flipFields(
                         origin,
@@ -881,7 +899,7 @@ export default function AllRides() {
                   ></IconButton>
                   <Autocomplete
                     key={"createDestination"}
-                    className={autocompleteStyling}
+                    className={`${autocompleteStyling} max-md:col-start-1`}
                     apiKey={google_api_key}
                     placeholder="Enter destination"
                     onPlaceSelected={(place) => {
@@ -918,7 +936,9 @@ export default function AllRides() {
                 </p>
                 <Input
                   type="tel"
+                  inputMode="tel"
                   autoComplete="tel"
+                  className="max-md:!h-11"
                   placeholder="(609) 555-1234"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
@@ -936,7 +956,7 @@ export default function AllRides() {
               </div>
             </div>
             <Button
-              className="self-end bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1"
+              className="self-end bg-theme_dark_1 py-1.5 px-3 text-white hover:bg-theme_medium_1 max-md:self-stretch"
               onClick={checkCreateRideParams}
               loading={isCreatingRide}
             >
@@ -953,10 +973,10 @@ export default function AllRides() {
         >
           <div className="flex flex-col gap-3">
             <p>{validationModalMessage}</p>
-            <div className="flex self-end">
+            <div className="flex self-end max-md:self-stretch">
               <Button
                 onClick={() => setShowValidationModal(false)}
-                className="bg-theme_medium_1 text-white hover:bg-theme_dark_1"
+                className="bg-theme_medium_1 text-white hover:bg-theme_dark_1 max-md:flex-1"
               >
                 Okay
               </Button>

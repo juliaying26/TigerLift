@@ -219,7 +219,10 @@ export default function RideEditor({ ride, onDone, onCancel }) {
     warning?.title === "Capacity Full" || warning?.title === "Invalid Input";
 
   return (
-    <div className="p-6 bg-white rounded-xl h-full drop-shadow-sm ring-2 ring-theme_medium_1 flex flex-col gap-3">
+    <div
+      data-testid="ride-editor"
+      className="p-4 md:p-6 bg-white rounded-xl h-full drop-shadow-sm ring-2 ring-theme_medium_1 flex flex-col gap-3"
+    >
       {origin && destination ? (
         renderToAndFrom({ origin, destination })
       ) : (
@@ -283,12 +286,13 @@ export default function RideEditor({ ride, onDone, onCancel }) {
         {currentRiders.length > 0 ? (
           <div className="flex flex-col gap-2">
             {currentRiders.map((rider) => (
-              <Pill key={rider[0]}>
+              <Pill key={rider[0]} className="max-md:py-0.5 max-md:pr-1">
                 <div className="flex items-center justify-between w-full">
                   <div>{rider[1]}</div>
                   <IconButton
                     type="xmark"
                     onClick={() => handleRemoveRider(rider)}
+                    ariaLabel={`Remove ${rider[1]}`}
                     className="text-zinc-700 hover:text-zinc-500"
                   />
                 </div>
@@ -302,12 +306,12 @@ export default function RideEditor({ ride, onDone, onCancel }) {
 
       <div>
         <p className="font-medium mb-1">Requests to Join</p>
-        <div className="overflow-y-auto bg-zinc-100 rounded-lg p-3 max-h-40 flex flex-col gap-2">
+        <div className="overflow-y-auto bg-zinc-100 rounded-lg p-3 max-h-40 flex flex-col gap-2 max-md:max-h-none">
           {requestedRiders.length > 0 ? (
             requestedRiders.map((rider) => (
-              <Pill key={rider[0]}>
-                <div className="flex justify-between items-center gap-2">
-                  <div className="flex flex-col">
+              <Pill key={rider[0]} className="max-md:rounded-2xl max-md:py-2">
+                <div className="flex justify-between items-center gap-2 max-[359px]:flex-wrap">
+                  <div className="flex flex-col min-w-0">
                     <span>{rider[1]}</span>
                     {rider[3] && (
                       <span className="text-sm text-zinc-600 break-words">
@@ -315,15 +319,17 @@ export default function RideEditor({ ride, onDone, onCancel }) {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0 max-md:gap-3 max-[359px]:w-full max-[359px]:justify-end">
                     <IconButton
                       type="checkmark"
                       onClick={() => handleAcceptRider(rider)}
+                      ariaLabel={`Accept ${rider[1]}`}
                       className="bg-theme_green text-theme_dark_green hover:bg-theme_light_green"
                     />
                     <IconButton
                       type="xmark"
                       onClick={() => handleRejectRider(rider)}
+                      ariaLabel={`Reject ${rider[1]}`}
                       className="bg-theme_red text-theme_dark_red hover:bg-theme_light_red"
                     />
                   </div>
@@ -343,7 +349,7 @@ export default function RideEditor({ ride, onDone, onCancel }) {
       <div className="flex justify-between items-center gap-2 pt-1">
         <Button
           onClick={handleDelete}
-          className="hover:bg-theme_red border border-zinc-300 text-zinc-700 hover:text-white"
+          className="hover:bg-theme_red border border-zinc-300 text-zinc-700 hover:text-white max-md:px-4"
           disabled={isSaving}
         >
           Delete
@@ -351,18 +357,18 @@ export default function RideEditor({ ride, onDone, onCancel }) {
         <div className="flex gap-2">
           <Button
             onClick={handleCancel}
-            className="border border-zinc-300 text-zinc-700 hover:bg-zinc-100"
+            className="border border-zinc-300 text-zinc-700 hover:bg-zinc-100 max-md:px-4"
             disabled={isSaving}
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className={
+            className={`max-md:px-4 ${
               hasChanges && isValid
                 ? "bg-theme_green text-white hover:bg-theme_dark_green"
                 : ""
-            }
+            }`}
             disabled={!hasChanges || !isValid}
             loading={isSaving}
           >
@@ -389,10 +395,10 @@ export default function RideEditor({ ride, onDone, onCancel }) {
                 />
               </div>
             )}
-            <div className="flex items-center self-end gap-2">
+            <div className="flex items-center self-end gap-2 max-md:self-stretch">
               {!isInfoWarning && (
                 <Button
-                  className="border-[1px] border-gray-300 text-zinc-500 hover:bg-zinc-100"
+                  className="border-[1px] border-gray-300 text-zinc-500 hover:bg-zinc-100 max-md:flex-1"
                   onClick={() => {
                     setWarning(null);
                     setDeleteRideMessage("");
@@ -403,11 +409,11 @@ export default function RideEditor({ ride, onDone, onCancel }) {
                 </Button>
               )}
               <Button
-                className={
+                className={`max-md:flex-1 ${
                   isInfoWarning
                     ? "bg-theme_medium_1 text-white hover:bg-theme_dark_1"
                     : "bg-red-400 text-white hover:bg-red-500"
-                }
+                }`}
                 onClick={warning.onConfirm || (() => setWarning(null))}
                 loading={isSaving}
                 disabled={
