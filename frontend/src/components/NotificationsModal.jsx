@@ -1,8 +1,9 @@
-import { useEffect } from "react";
 import IconButton from "./IconButton";
 import LoadingIcon from "./LoadingIcon";
 import { useNavigate } from "react-router-dom";
 import Button from "./Button";
+import useIsMobile from "../utils/useIsMobile";
+import useLockBodyScroll from "../utils/useLockBodyScroll";
 
 export default function NotificationsModal({
   isOpen,
@@ -16,20 +17,9 @@ export default function NotificationsModal({
 }) {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isOpen && window.innerWidth < 768) {
-      // Disable scrolling on body when modal is open
-      document.body.style.overflow = "hidden";
-    } else {
-      // Enable scrolling on body when modal is closed
-      document.body.style.overflow = "auto";
-    }
-
-    // Cleanup when the component is unmounted or modal closes
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isOpen]);
+  const isMobile = useIsMobile();
+  // full-screen sheet on phones, so stop the page behind it scrolling
+  useLockBodyScroll(isOpen && isMobile);
 
   if (!isOpen) return null;
 
@@ -69,7 +59,7 @@ export default function NotificationsModal({
             <div
               className={`${
                 !isNew && "opacity-50"
-              } border-zinc-300 cursor-pointer hover:bg-zinc-200 rounded-lg p-2`}
+              } border-zinc-300 cursor-pointer hover:bg-zinc-200 rounded-lg p-2 max-md:p-3`}
             >
               <li
                 onClick={() =>
@@ -80,7 +70,7 @@ export default function NotificationsModal({
                   <p className="font-semibold">{notification.subject}</p>
                   <p>{notification.message}</p>
                   <Button
-                    className="text-theme_medium_2 hover:text-theme_dark_2 !text-sm"
+                    className="text-theme_medium_2 hover:text-theme_dark_2 !text-sm max-md:self-start max-md:-ml-3"
                     onClick={() => navigate("/myrides")}
                   >
                     Go to My Rideshares
@@ -110,47 +100,48 @@ export default function NotificationsModal({
     );
   };
 
-  const notifsHeight = window.innerHeight - 73;
-
   return (
     <div>
       <div
         className="fixed inset-0 z-20 bg-zinc-800 bg-opacity-20 h-full"
         onClick={handleBackdropClick}
       ></div>
-      <div className="md:pb-0 z-[25] relative md:absolute w-full md:w-[340px] md:top-16 md:right-24 bg-white rounded-xl shadow-lg border-2 border-theme_medium_2 h-full md:h-[480px]">
-        <div className="flex justify-between items-center p-4 border-b border-zinc-200">
-          <h2 className="text-lg font-semibold flex gap-4 items-center">
-            Notifications
-            <Button
-              onClick={markAllRead}
-              className="text-theme_medium_2 hover:text-theme_dark_2 text-sm py-0 px-0 mt-0.5"
-            >
-              Mark All As Read
-            </Button>
-            <Button
-              onClick={clearAll}
-              className="text-theme_medium_2 hover:text-theme_dark_2 text-sm py-0 px-0 mt-0.5"
-            >
-              Clear
-            </Button>
+      {/* popover under the bell on desktop; full-screen sheet on phones */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Notifications"
+        className="z-[25] bg-white rounded-xl shadow-lg border-2 border-theme_medium_2 md:absolute md:w-[360px] md:top-16 md:right-24 md:h-[480px] md:flex md:flex-col max-md:fixed max-md:inset-0 max-md:z-30 max-md:flex max-md:flex-col max-md:rounded-none max-md:border-0"
+      >
+        {/* phones: row 1 is the title and close button, row 2 the two actions */}
+        <div className="flex justify-between items-center p-4 border-b border-zinc-200 max-md:flex-wrap max-md:gap-y-1 max-md:pb-2 max-md:pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <h2 className="text-lg font-semibold flex gap-4 md:gap-3 items-center max-md:contents">
+            <span className="max-md:order-1 max-md:flex-1 max-md:text-xl">
+              Notifications
+            </span>
+            <span className="flex gap-4 md:gap-2 items-center max-md:order-3 max-md:w-full max-md:gap-2 max-md:-ml-3 max-md:font-medium">
+              <Button
+                onClick={markAllRead}
+                className="text-theme_medium_2 hover:text-theme_dark_2 text-sm py-0 px-0 mt-0.5 md:whitespace-nowrap md:!px-1.5 max-md:px-3 max-md:mt-0"
+              >
+                Mark All As Read
+              </Button>
+              <Button
+                onClick={clearAll}
+                className="text-theme_medium_2 hover:text-theme_dark_2 text-sm py-0 px-0 mt-0.5 md:whitespace-nowrap md:!px-1.5 max-md:px-3 max-md:mt-0"
+              >
+                Clear
+              </Button>
+            </span>
           </h2>
           <IconButton
             type="xmark"
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100"
+            ariaLabel="Close notifications"
+            className="text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 max-md:order-2"
           ></IconButton>
         </div>
-        <div
-          className={`p-4 overflow-y-auto md:h-[400px] w-full ${
-            window.innerWidth < 768
-              ? "notification-panel-mobile"
-              : "notification-panel"
-          }`}
-          style={{
-            "--dynamic-height": `${notifsHeight}px`,
-          }}
-        >
+        <div className="p-4 overflow-y-auto w-full md:flex-1 md:min-h-0 overscroll-contain max-md:flex-1 max-md:min-h-0 max-md:pb-[max(1rem,env(safe-area-inset-bottom))]">
           {isLoading ? (
             <LoadingIcon carColor="bg-theme_medium_2" />
           ) : (

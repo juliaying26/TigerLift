@@ -22,10 +22,14 @@ export default function PopUpMessage({ status, message, duration = 1500 }) {
       ></div>
       <div
         className={`z-30 fixed left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out
-        ${isVisible ? "bottom-5 opacity-100" : "-bottom-20 opacity-0"}
-        bg-white text-zinc-800 px-5 py-3 rounded-lg drop-shadow-xl text-lg`}
+        ${
+          isVisible
+            ? "bottom-5 max-md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] opacity-100"
+            : "-bottom-20 opacity-0"
+        }
+        bg-white text-zinc-800 px-5 py-3 rounded-lg drop-shadow-xl text-lg max-md:left-4 max-md:right-4 max-md:translate-x-0 max-md:text-base`}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 max-md:items-start">
           {status ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -33,7 +37,7 @@ export default function PopUpMessage({ status, message, duration = 1500 }) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6 text-theme_green"
+              className="size-6 shrink-0 text-theme_green"
             >
               <path
                 strokeLinecap="round"
@@ -48,7 +52,7 @@ export default function PopUpMessage({ status, message, duration = 1500 }) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6 text-theme_red"
+              className="size-6 shrink-0 text-theme_red"
             >
               <path
                 strokeLinecap="round"
