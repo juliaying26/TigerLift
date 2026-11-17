@@ -1,3 +1,5 @@
+import { statusPillStyling } from "../utils/utils";
+
 export default function Button({
   onClick,
   loading,
@@ -6,17 +8,12 @@ export default function Button({
   children,
   status = "",
 }) {
-  let buttonStyling = "";
-  if (status === "pending") {
-    buttonStyling = "px-3 rounded-full bg-theme_light_2 text-theme_dark_2";
-  } else if (status === "rejected") {
-    buttonStyling = "px-3 rounded-full bg-red-100 text-red-500";
-  } else if (status === "removed") {
-    buttonStyling = "px-3 rounded-full bg-zinc-200 text-zinc-600";
-  } else if (status === "accepted") {
-    buttonStyling =
-      "px-3 rounded-full bg-theme_light_green text-theme_dark_green";
-  }
+  const buttonStyling = statusPillStyling[status]
+    ? `px-3 rounded-full ${statusPillStyling[status]}`
+    : "";
+  // real actions get a 44px tap target on phones; status pills and empty
+  // placeholder buttons keep their size
+  const isAction = !status && Boolean(children);
 
   const disabledStyling =
     "bg-zinc-100 text-zinc-400 hover:text-zinc-400 hover:bg-zinc-100";
@@ -26,7 +23,7 @@ export default function Button({
       onClick={onClick}
       className={`py-1.5 px-3 font-medium ${
         buttonStyling ? buttonStyling : "px-2.5 rounded-md"
-      } ${className} ${
+      } ${isAction ? "max-md:min-h-11" : ""} ${className} ${
         disabled
           ? `${disabledStyling} 
            cursor-not-allowed hover:bg-zinc-100`

@@ -24,7 +24,9 @@ export default function CustomTextArea({
         height: 80,
         resize: "none",
       }}
-      {...(maxLength ? { maxLength, showCount: true } : {})}
+      {...(maxLength
+        ? { maxLength, showCount: true, className: "max-md:!mb-6" }
+        : {})}
     />
   );
 }

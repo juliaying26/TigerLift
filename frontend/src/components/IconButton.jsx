@@ -2,7 +2,8 @@ export default function IconButton({
   type,
   onClick,
   disabled = false,
-  className,
+  className = "",
+  ariaLabel,
 }) {
   const renderIcon = () => {
     switch (type) {
@@ -115,9 +116,11 @@ export default function IconButton({
 
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-full p-1.5 flex items-center justify-center ${className}`}
+      aria-label={ariaLabel}
+      className={`rounded-full p-1.5 flex items-center justify-center max-md:min-h-11 max-md:min-w-11 ${className}`}
     >
       {renderIcon()}
     </button>

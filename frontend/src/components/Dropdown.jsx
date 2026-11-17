@@ -2,6 +2,7 @@ import Select from "react-select";
 import { inputStyling } from "../utils/utils";
 import tailwindConfig from "../../tailwind.config.js";
 import resolveConfig from "tailwindcss/resolveConfig";
+import useIsMobile from "../utils/useIsMobile";
 
 export default function Dropdown({
   options,
@@ -15,6 +16,7 @@ export default function Dropdown({
   };
 
   const fullConfig = resolveConfig(tailwindConfig);
+  const isMobile = useIsMobile();
 
   return (
     <Select
@@ -23,6 +25,10 @@ export default function Dropdown({
       options={options}
       placeholder={placeholder}
       isClearable={isClearable}
+      // class hooks for the phone sizing rules in index.css
+      classNamePrefix="tl-select"
+      // few options; on phones typing would only open the keyboard
+      isSearchable={!isMobile}
       styles={{
         // Fixes the overlapping problem of the component
         menu: (provided) => ({ ...provided, zIndex: 1000 }),

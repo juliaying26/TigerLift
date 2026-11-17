@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { DatePicker, TimePicker } from "antd";
 import dayjs from "dayjs";
+import useIsMobile from "../utils/useIsMobile";
 
 export default function MyDateTimePicker({
   date,
@@ -8,6 +10,19 @@ export default function MyDateTimePicker({
   setTime,
   allowClear = true,
 }) {
+  // on phones, tapping opens the picker without the on-screen keyboard
+  const isMobile = useIsMobile();
+  const wrapperRef = useRef(null);
+
+  // On phones, scroll the field near the top before the popup positions, so it
+  // opens below the input instead of flipping up past the top of the screen
+  // (which hid the month/year header and arrows on iPhone).
+  const handleOpenChange = (open) => {
+    if (open && isMobile && wrapperRef.current) {
+      wrapperRef.current.scrollIntoView({ block: "start" });
+    }
+  };
+
   const handleDateChange = (value) => {
     setDate(value);
   };
@@ -40,8 +55,12 @@ export default function MyDateTimePicker({
   };
 
   return (
-    <div className="flex">
+    <div ref={wrapperRef} className="flex max-md:w-full max-md:scroll-mt-16">
       <DatePicker
+        className="max-md:!h-11 max-md:flex-[1.2] max-md:!min-w-0"
+        inputReadOnly={isMobile}
+        onOpenChange={handleOpenChange}
+        placement={isMobile ? "bottomLeft" : undefined}
         onChange={handleDateChange}
         placeholder="Select date"
         style={{ marginRight: "8px", height: "38px", minWidth: "120px" }}
@@ -50,6 +69,10 @@ export default function MyDateTimePicker({
         allowClear={allowClear}
       />
       <TimePicker
+        className="max-md:!h-11 max-md:flex-1 max-md:!min-w-0"
+        inputReadOnly={isMobile}
+        onOpenChange={handleOpenChange}
+        placement={isMobile ? "bottomLeft" : undefined}
         format="h:mm A"
         onChange={handleTimeChange}
         placeholder="Select time"

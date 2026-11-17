@@ -17,6 +17,7 @@ export default function CopyEmailIcon({ text, copy, className = "" }) {
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
       className={`${
         copied ? "!text-theme_dark_2 !cursor-auto" : ""

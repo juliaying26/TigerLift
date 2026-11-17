@@ -60,12 +60,77 @@ a:hover {
   padding: 2px 6px;
 }
 
-/* notification panel */
-.notification-panel {
-  height: 400px;
-}
+/* Phones (below Tailwind md) */
+@media (max-width: 767.98px) {
+  /* 16px inputs stop iOS Safari from zooming in on focus */
+  input,
+  textarea,
+  select,
+  .ant-input,
+  .ant-picker .ant-picker-input > input,
+  .tl-select__input-container,
+  .tl-select__single-value,
+  .tl-select__placeholder {
+    font-size: 16px !important;
+  }
 
-/* notification panel mobile */
-.notification-panel-mobile {
-  height: var(--dynamic-height);
+  /* 44px tap targets for the capacity dropdown */
+  .tl-select__control {
+    min-height: 44px !important;
+  }
+
+  .tl-select__option {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* taller note box so the whole placeholder fits. antd 5 puts the inline
+     80px height on the bordered affix wrapper, so size that too, not just the
+     inner textarea (otherwise WebKit draws the 4th line below the border). */
+  .ant-input-textarea-affix-wrapper.ant-input-textarea-show-count {
+    height: auto !important;
+    min-height: 128px;
+  }
+  .ant-input-textarea-show-count textarea.ant-input {
+    min-height: 128px;
+  }
+
+  /* date picker popup: wider panel so the header stays on one line
+     ("Nov 2026" between the arrows) with 44px arrow buttons */
+  .ant-picker-dropdown .ant-picker-date-panel {
+    width: min(calc(100vw - 32px), 340px);
+  }
+  .ant-picker-dropdown .ant-picker-date-panel .ant-picker-content {
+    width: 100%;
+  }
+  .ant-picker-dropdown .ant-picker-header-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  /* 44px tap targets in the antd date/time picker popups */
+  .ant-picker-dropdown .ant-picker-header > button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .ant-picker-dropdown .ant-picker-header-view button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 4px;
+  }
+  .ant-picker-dropdown .ant-picker-today-btn,
+  .ant-picker-dropdown .ant-picker-now-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+  }
+
+  /* tappable Google Places suggestions */
+  .pac-item {
+    padding: 10px 8px;
+  }
 }

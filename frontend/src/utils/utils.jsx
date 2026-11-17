@@ -1,4 +1,5 @@
 import CopyEmailButton from "../components/CopyEmailButton";
+import RideNote from "../components/RideNote";
 
 export const MAX_CAPACITY = 5;
 export const NOTE_MAX_LENGTH = 300;
@@ -34,17 +35,30 @@ export const inputStyling =
   "outline-1 outline-zinc-200 focus:outline-theme_medium_1 text-sm font-normal hover:outline-theme_medium_1";
 
 export const autocompleteStyling =
-  "w-full md:max-w-full min-w-[100px] px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal hover:outline-theme_medium_1";
+  "w-full md:max-w-full min-w-[100px] px-3 py-2 outline outline-1 outline-zinc-200 rounded focus:outline-theme_medium_1 text-sm font-normal hover:outline-theme_medium_1 max-md:min-h-11 max-md:text-base";
+
+// 44px minimum tap targets on phones (below md); desktop is unchanged
+export const tapTarget = "max-md:min-h-11 max-md:min-w-11";
+export const tapTargetInline =
+  "max-md:inline-flex max-md:items-center max-md:min-h-11";
+
+// colors for request status pills, shared with Button
+export const statusPillStyling = {
+  pending: "bg-theme_light_2 text-theme_dark_2",
+  rejected: "bg-red-100 text-red-500",
+  removed: "bg-zinc-200 text-zinc-600",
+  accepted: "bg-theme_light_green text-theme_dark_green",
+};
 
 export const capitalizeFirstLetter = (val) => {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 };
 
 export const bigButtonStyling1 =
-  "bg-theme_medium_1 text-white px-4 py-2 rounded-md hover:bg-theme_dark_1 hover:text-white text-center";
+  "bg-theme_medium_1 text-white px-4 py-2 rounded-md hover:bg-theme_dark_1 hover:text-white text-center max-md:min-h-11 max-md:inline-flex max-md:items-center max-md:justify-center";
 
 export const bigButtonStyling2 =
-  "bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white text-center";
+  "bg-theme_medium_2 text-white px-4 py-2 rounded-md hover:bg-theme_dark_2 hover:text-white text-center max-md:min-h-11 max-md:inline-flex max-md:items-center max-md:justify-center";
 
 export const handleShowPopupMessage = (
   setPopupMessageInfo,
@@ -122,18 +136,22 @@ export const renderAirportBadge = (location) => {
 };
 
 // the origin and destination formatting in ride cards
+// side by side on desktop; stacked (origin, down arrow, destination) on phones
 export const renderToAndFrom = (ride) => {
   return (
-    <p className="text-xl flex items-center justify-center gap-2">
-      <span className="flex text-center flex-col">
+    <p className="text-xl flex items-center justify-center gap-2 max-md:flex-col max-md:gap-1 max-md:text-lg">
+      <span className="flex text-center flex-col max-md:w-full max-md:min-w-0 break-words">
         <strong>{ride.origin["name"]}</strong>
         {renderAirportBadge(ride.origin)}
         <span className="text-sm">
           {ride.origin["address"].split(" ").slice(0, -2).join(" ")}
         </span>
       </span>
-      →
-      <span className="flex text-center flex-col">
+      <span className="max-md:hidden">→</span>
+      <span className="md:hidden text-zinc-500" aria-hidden="true">
+        ↓
+      </span>
+      <span className="flex text-center flex-col max-md:w-full max-md:min-w-0 break-words">
         <strong>{ride.destination["name"]}</strong>
         {renderAirportBadge(ride.destination)}
         <span className="text-sm">
@@ -152,28 +170,36 @@ export const placeToLocation = (place) => ({
 });
 
 export const renderRideNote = (ride) => {
-  return (
-    ride.note && (
-      <div className="mb-0.5">
-        <span className="font-semibold">Note:</span>
-        <div className="py-2 px-3 bg-zinc-100 rounded-lg">
-          <p className="break-words">{ride.note}</p>
-        </div>
-      </div>
-    )
-  );
+  return ride.note && <RideNote note={ride.note} />;
 };
 
 // used in AllRides and MyRides to render ride card info
-export const renderRideCardInfo = (ride, { showRiders = false } = {}) => {
+// status (optional) adds a request status chip next to the time on phones
+export const renderRideCardInfo = (
+  ride,
+  { showRiders = false, status = "" } = {}
+) => {
   return (
     <>
       <div className="flex flex-col gap-2">
         {renderToAndFrom(ride)}
-        <p className="mt-2 mb-1 text-center">
+        {/* on phones, seats and status sit next to the time at the top of the card */}
+        <p className="mt-2 mb-1 text-center max-md:flex max-md:flex-wrap max-md:justify-center max-md:gap-2">
           <span className="px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
             Arrives by {getFormattedDate(new Date(ride.arrival_time))}
           </span>
+          <span className="md:hidden px-3 py-1 bg-zinc-200 rounded-full whitespace-nowrap">
+            {ride.current_riders.length}/{ride.max_capacity} seats
+          </span>
+          {status && (
+            <span
+              className={`md:hidden px-3 py-1 rounded-full whitespace-nowrap font-medium ${
+                statusPillStyling[status] || "bg-zinc-200"
+              }`}
+            >
+              {capitalizeFirstLetter(status)}
+            </span>
+          )}
         </p>
       </div>
       <hr className="border-1 my-3 border-theme_medium_1" />
@@ -183,10 +209,10 @@ export const renderRideCardInfo = (ride, { showRiders = false } = {}) => {
         <CopyEmailButton
           copy={[ride.admin_email]}
           text="Copy Email"
-          className="inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle"
+          className={`inline-flex text-theme_medium_2 hover:text-theme_dark_2 ml-1 mb-0.5 align-middle ${tapTargetInline} max-md:-my-2`}
         />
       </p>
-      <p>
+      <p className="max-md:hidden">
         <span className="font-semibold">Seats Taken:</span>{" "}
         {ride.current_riders.length}/{ride.max_capacity}
       </p>
@@ -205,7 +231,7 @@ export const renderRideCardInfo = (ride, { showRiders = false } = {}) => {
           <span className="font-semibold">Phone:</span>{" "}
           <a
             href={`tel:+1${ride.phone_number}`}
-            className="text-theme_medium_2 hover:text-theme_dark_2"
+            className={`text-theme_medium_2 hover:text-theme_dark_2 ${tapTargetInline}`}
           >
             {formatPhoneNumber(ride.phone_number)}
           </a>
